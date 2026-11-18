@@ -7,13 +7,6 @@ import { Arrow } from "./UrlForm";
 
 const CASES = [
   {
-    id: "saas",
-    tab: "SaaS landing page",
-    problem: "Visitors can't tell what it does in 10 seconds, and the price is hidden behind “Contact us”.",
-    looks: ["The headline and first screen", "Whether the price is easy to find", "Signup form length and card requirements"],
-    fix: "Say who it is for in the headline, and show at least a starting price.",
-  },
-  {
     id: "app",
     tab: "App onboarding + paywall",
     problem: "The paywall appears before the person has felt any value, and the trial terms are unclear.",
@@ -21,11 +14,26 @@ const CASES = [
     fix: "Show the first win before the paywall, and put the price and trial length next to the button.",
   },
   {
+    id: "saas",
+    tab: "SaaS landing page",
+    problem: "Visitors can't tell what it does in 10 seconds, and the price is hidden behind “Contact us”.",
+    looks: ["The headline and first screen", "Whether the price is easy to find", "Signup form length and card requirements"],
+    fix: "Say who it is for in the headline, and show at least a starting price.",
+  },
+
+  {
     id: "waitlist",
     tab: "Waitlist page",
     problem: "People like the idea but see no reason to join now, and no proof anyone else did.",
     looks: ["The promise and the proof", "How much you ask for (email only vs more)", "What happens after joining"],
     fix: "Add a reason to join now (early access, a perk) and one real proof point.",
+  },
+  {
+    id: "shop",
+    tab: "Online store (coming soon)",
+    problem: "Shoppers add to cart, then see the shipping cost and delivery time at checkout and leave.",
+    looks: ["Product page: photos, price, size guide, reviews", "Shipping cost and delivery time, shown early or late", "Trust signals: returns, contact, secure checkout"],
+    fix: "Show shipping cost and delivery on the product page, and make returns easy to find.",
   },
   {
     id: "pricing",
@@ -37,7 +45,7 @@ const CASES = [
 ] as const;
 
 export default function UseCases() {
-  const [id, setId] = useState<(typeof CASES)[number]["id"]>("saas");
+  const [id, setId] = useState<(typeof CASES)[number]["id"]>("app");
   const c = CASES.find((x) => x.id === id)!;
   return (
     <div className="mx-auto max-w-4xl">
@@ -73,8 +81,8 @@ export default function UseCases() {
         <div>
           <p className="t-label">a typical fix</p>
           <p className="mt-2 font-medium">{c.fix}</p>
-          <Link href={c.id === "app" ? "/onboarding?kind=app" : "/onboarding"} className="btn btn-text mt-3 h-10 px-0 text-sm">
-            Test {c.id === "app" ? "my app" : "my page"}
+          <Link href={c.id === "app" ? "/onboarding?kind=app" : c.id === "shop" ? "/signup" : "/onboarding"} className="btn btn-text mt-3 h-10 px-0 text-sm">
+            {c.id === "shop" ? "Join the store waitlist" : c.id === "app" ? "Test my app" : "Test my page"}
             <Arrow />
           </Link>
         </div>

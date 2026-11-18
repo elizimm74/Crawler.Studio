@@ -9,8 +9,8 @@
 // Rule for <animate>: keyTimes must start at 0 and END AT 1, or the browser ignores it.
 import { useEffect, useRef } from "react";
 
-const BLUE = "#1a2aa6";
-const NAVY = "#0e1873";
+const BLUE = "#000000";
+const NAVY = "#1c1c1c";
 
 // The website window (in the drawing's own units: 640 × 420).
 const SITE = { x: 360, y: 70, w: 250, h: 280 };
@@ -63,7 +63,7 @@ export default function BotRush({ live }: { live?: Live }) {
             dx="0"
             dy="16"
             stdDeviation="18"
-            floodColor="#050a3c"
+            floodColor="#000000"
             floodOpacity="0.45"
           />
         </filter>
@@ -90,7 +90,7 @@ export default function BotRush({ live }: { live?: Live }) {
           <path
             d={b.path}
             pathLength={100}
-            stroke="#9fb0ff"
+            stroke="#bdbdbd"
             strokeWidth="6"
             strokeDasharray="16 100"
             filter="url(#br-glow)"
@@ -140,14 +140,14 @@ export default function BotRush({ live }: { live?: Live }) {
         width={SITE.w}
         height="30"
         rx="16"
-        fill="#f3f5fb"
+        fill="#f5f5f5"
       />
       <rect
         x={SITE.x}
         y={SITE.y + 16}
         width={SITE.w}
         height="14"
-        fill="#f3f5fb"
+        fill="#f5f5f5"
       />
       {[0, 1, 2].map((d) => (
         <circle
@@ -155,7 +155,7 @@ export default function BotRush({ live }: { live?: Live }) {
           cx={SITE.x + 18 + d * 13}
           cy={SITE.y + 15}
           r="4"
-          fill="#c3c9da"
+          fill="#c8c8c8"
         />
       ))}
       <rect
@@ -173,7 +173,7 @@ export default function BotRush({ live }: { live?: Live }) {
         width="160"
         height="14"
         rx="4"
-        fill="#0c0e1f"
+        fill="#0a0a0a"
       />
       <rect
         x={SITE.x + 24}
@@ -189,7 +189,7 @@ export default function BotRush({ live }: { live?: Live }) {
         width="200"
         height="6"
         rx="3"
-        fill="#dfe3ee"
+        fill="#e6e6e6"
       />
       <rect
         x={SITE.x + 24}
@@ -197,7 +197,7 @@ export default function BotRush({ live }: { live?: Live }) {
         width="168"
         height="6"
         rx="3"
-        fill="#dfe3ee"
+        fill="#e6e6e6"
       />
       <rect
         x={SITE.x + 24}
@@ -215,18 +215,18 @@ export default function BotRush({ live }: { live?: Live }) {
           width="60"
           height="44"
           rx="8"
-          fill="#f3f5fb"
-          stroke="#dfe3ee"
+          fill="#f5f5f5"
+          stroke="#e6e6e6"
         />
       ))}
 
       {live ? (
         <>
           {/* live: the real progress */}
-          <text x={SITE.x + 24} y={SITE.y + 248} fontSize="11" fill={live.progress >= 1 ? BLUE : "#5f6780"} fontFamily="var(--font-mono)">
+          <text x={SITE.x + 24} y={SITE.y + 248} fontSize="11" fill={live.progress >= 1 ? BLUE : "#666666"} fontFamily="var(--font-mono)">
             {live.label}
           </text>
-          <rect x={SITE.x + 24} y={SITE.y + 258} width="202" height="6" rx="3" fill="#e8ebf6" />
+          <rect x={SITE.x + 24} y={SITE.y + 258} width="202" height="6" rx="3" fill="#eaeaea" />
           <rect
             x={SITE.x + 24}
             y={SITE.y + 258}
@@ -243,7 +243,7 @@ export default function BotRush({ live }: { live?: Live }) {
             x={SITE.x + 24}
             y={SITE.y + 248}
             fontSize="11"
-            fill="#5f6780"
+            fill="#666666"
             fontFamily="var(--font-mono)"
           >
             reading · 100 customers
@@ -278,7 +278,7 @@ export default function BotRush({ live }: { live?: Live }) {
             width="202"
             height="6"
             rx="3"
-            fill="#e8ebf6"
+            fill="#eaeaea"
           />
           <rect
             x={SITE.x + 24}
@@ -347,7 +347,7 @@ export default function BotRush({ live }: { live?: Live }) {
             />
             {/* An avatar badge, drawn around (0,0):
                 soft halo → thin outer ring → white disc → person icon. */}
-            <circle r="24" fill="#9fb0ff" opacity="0.35" filter="url(#br-glow)" />
+            <circle r="24" fill="#bdbdbd" opacity="0.35" filter="url(#br-glow)" />
             <circle r="19" fill="none" stroke="#ffffff" strokeOpacity="0.55" strokeWidth="1.5" />
             <circle r="15" fill="#ffffff" />
             <clipPath id={`br-face-${i}`}>
@@ -383,7 +383,7 @@ export default function BotRush({ live }: { live?: Live }) {
             dur={LOOP}
             repeatCount="indefinite"
           />
-          <circle r="34" fill="#9fb0ff" opacity="0.55" filter="url(#br-glow)" />
+          <circle r="34" fill="#bdbdbd" opacity="0.55" filter="url(#br-glow)" />
           <circle r="28" fill="#ffffff" />
           <circle r="22" fill={BLUE} />
           <path

@@ -7,24 +7,24 @@
 import Reveal from "../Reveal";
 
 const PEOPLE = [
-  { name: "Maya", age: 16, mind: "Skeptical teen", budget: "tight budget", device: "phone", quote: "I'm not giving my email just to see a price.", skin: "#f2c9a0", hair: "#2b1d12", shirt: "#1a2aa6" },
-  { name: "Jordan", age: 24, mind: "Early adopter", budget: "okay budget", device: "laptop", quote: "Cool idea. Show me it working before I sign up.", skin: "#c68b5c", hair: "#111", shirt: "#4d60f5" },
-  { name: "Priya", age: 34, mind: "Busy parent", budget: "okay budget", device: "phone", quote: "If I can't get it in two taps, I'm gone.", skin: "#a8744a", hair: "#1b1210", shirt: "#0c0e1f" },
-  { name: "Sam", age: 29, mind: "Price-sensitive", budget: "tight budget", device: "phone", quote: "Is there a free plan, or is this a trial trap?", skin: "#f5d5b5", hair: "#8a5a2b", shirt: "#1a2aa6" },
-  { name: "Marcus", age: 41, mind: "Small-business owner", budget: "comfortable", device: "laptop", quote: "What does it save me, in hours or dollars?", skin: "#8d5a3b", hair: "#222", shirt: "#4d60f5" },
-  { name: "Lena", age: 52, mind: "Careful buyer", budget: "comfortable", device: "laptop", quote: "I want reviews from people like me.", skin: "#eec3a0", hair: "#b9b9c4", shirt: "#0c0e1f" },
+  { name: "Maya", age: 16, mind: "Skeptical teen", budget: "tight budget", device: "phone", quote: "I'm not giving my email just to see a price.", skin: "#f2c9a0", hair: "#2b1d12", shirt: "#000000" },
+  { name: "Jordan", age: 24, mind: "Early adopter", budget: "okay budget", device: "laptop", quote: "Cool idea. Show me it working before I sign up.", skin: "#c68b5c", hair: "#111", shirt: "#555555" },
+  { name: "Priya", age: 34, mind: "Busy parent", budget: "okay budget", device: "phone", quote: "If I can't get it in two taps, I'm gone.", skin: "#a8744a", hair: "#1b1210", shirt: "#0a0a0a" },
+  { name: "Sam", age: 29, mind: "Price-sensitive", budget: "tight budget", device: "phone", quote: "Is there a free plan, or is this a trial trap?", skin: "#f5d5b5", hair: "#8a5a2b", shirt: "#000000" },
+  { name: "Marcus", age: 41, mind: "Small-business owner", budget: "comfortable", device: "laptop", quote: "What does it save me, in hours or dollars?", skin: "#8d5a3b", hair: "#222", shirt: "#555555" },
+  { name: "Lena", age: 52, mind: "Careful buyer", budget: "comfortable", device: "laptop", quote: "I want reviews from people like me.", skin: "#eec3a0", hair: "#bdbdbd", shirt: "#0a0a0a" },
 ] as const;
 
 function Face({ p }: { p: (typeof PEOPLE)[number] }) {
   return (
     <svg viewBox="0 0 80 80" className="h-20 w-20 shrink-0" role="img" aria-label={`Illustration of ${p.name}, a simulated customer`}>
-      <circle cx="40" cy="40" r="40" fill="#e8ebf6" />
+      <circle cx="40" cy="40" r="40" fill="#eaeaea" />
       <path d="M12 80c2-18 14-26 28-26s26 8 28 26z" fill={p.shirt} />
       <circle cx="40" cy="34" r="15" fill={p.skin} />
       <path d="M25 33c0-11 7-16 15-16s15 5 15 16c-3-5-8-8-15-8s-12 3-15 8z" fill={p.hair} />
-      <circle cx="35" cy="36" r="1.6" fill="#0c0e1f" />
-      <circle cx="45" cy="36" r="1.6" fill="#0c0e1f" />
-      <path d="M36 43c2 2 6 2 8 0" stroke="#0c0e1f" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <circle cx="35" cy="36" r="1.6" fill="#0a0a0a" />
+      <circle cx="45" cy="36" r="1.6" fill="#0a0a0a" />
+      <path d="M36 43c2 2 6 2 8 0" stroke="#0a0a0a" strokeWidth="1.5" fill="none" strokeLinecap="round" />
     </svg>
   );
 }

@@ -18,7 +18,7 @@ import HeadlineCheck from "./HeadlineCheck";
 import UseCases from "./UseCases";
 import { Customers, Research, Compare } from "./Sections";
 
-const BLUE = "#1a2aa6";
+const BLUE = "#000000";
 
 type Feature = { n: string; title: string; text: string; visual: (blue: boolean) => React.ReactNode };
 
@@ -164,7 +164,7 @@ function StatsBand() {
               <p className="t-wordmark" style={{ fontSize: "clamp(4.5rem, 9vw, 8rem)" }}>
                 <CountUp to={n} />
               </p>
-              <p className="mt-4 max-w-[16rem] text-lg text-[#d6dbff]">{label}</p>
+              <p className="mt-4 max-w-[16rem] text-lg text-[#cfcfcf]">{label}</p>
             </div>
           ))}
         </div>
@@ -227,13 +227,13 @@ function CrowdVisual({ blue }: { blue: boolean }) {
         {dots.map((d, i) => (
           <span
             key={i}
-            className={`aspect-square rounded-full ${d === "buy" ? "bg-accent" : d === "maybe" ? "bg-[#9aa6e6]" : "border border-line-strong"}`}
+            className={`aspect-square rounded-full ${d === "buy" ? "bg-accent" : d === "maybe" ? "bg-[#9b9b9b]" : "border border-line-strong"}`}
           />
         ))}
       </div>
       <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm">
         <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-accent" /> 38 buy</span>
-        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#9aa6e6]" /> 22 maybe</span>
+        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#9b9b9b]" /> 22 maybe</span>
         <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full border border-line-strong" /> 40 no</span>
       </div>
     </Frame>

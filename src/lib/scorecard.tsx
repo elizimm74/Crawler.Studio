@@ -15,7 +15,7 @@ export type Shared = {
   high: number | null;
 };
 
-const BLUE = "#1a2aa6";
+const BLUE = "#000000";
 
 // The site's chunky headline font (Archivo 900), fetched once and kept in memory.
 // If Google Fonts can't be reached, the image still draws, just in a plainer font.
@@ -70,7 +70,7 @@ function Frame({ children }: { children: React.ReactNode }) {
           <Claws color="#fff" />
           <div style={{ display: "flex", fontSize: 42, fontFamily: HEAVY, marginLeft: 18, letterSpacing: -2 }}>crawler</div>
         </div>
-        <div style={{ display: "flex", fontSize: 24, color: "#aeb7f6" }}>simulated customers · buying intent, not real purchases</div>
+        <div style={{ display: "flex", fontSize: 24, color: "#9b9b9b" }}>simulated customers · buying intent, not real purchases</div>
       </div>
     </div>
   );
@@ -85,13 +85,13 @@ export async function scorecardImage(s: Shared) {
     (
       <Frame>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", fontSize: 30, color: "#d6dbff", letterSpacing: 2, textTransform: "uppercase" }}>{what}</div>
+          <div style={{ display: "flex", fontSize: 30, color: "#cfcfcf", letterSpacing: 2, textTransform: "uppercase" }}>{what}</div>
           <div style={{ display: "flex", alignItems: "flex-end", marginTop: 4 }}>
             <div style={{ display: "flex", fontSize: 230, fontFamily: HEAVY, letterSpacing: -12, lineHeight: 1 }}>{s.score ?? "?"}</div>
-            <div style={{ display: "flex", fontSize: 80, fontFamily: HEAVY, color: "#8c98ee", marginBottom: 20, marginLeft: 10 }}>/{s.total ?? 100}</div>
+            <div style={{ display: "flex", fontSize: 80, fontFamily: HEAVY, color: "#9b9b9b", marginBottom: 20, marginLeft: 10 }}>/{s.total ?? 100}</div>
           </div>
           <div style={{ display: "flex", fontSize: 52, fontFamily: HEAVY, marginTop: 0, letterSpacing: -1 }}>{goal}</div>
-          <div style={{ display: "flex", marginTop: 20, fontSize: 30, color: "#d6dbff" }}>
+          <div style={{ display: "flex", marginTop: 20, fontSize: 30, color: "#cfcfcf" }}>
             {s.blocker ? `Biggest blocker: ${s.blocker}` : ""}
             {range ? `${s.blocker ? "  ·  " : ""}${range}` : ""}
           </div>
@@ -109,7 +109,7 @@ export async function brandImage() {
       <Frame>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", fontSize: 98, fontFamily: HEAVY, letterSpacing: -5, lineHeight: 1 }}>See what stops customers from buying.</div>
-          <div style={{ display: "flex", fontSize: 30, color: "#d6dbff", marginTop: 18 }}>Simulated customers test your website or app before launch day.</div>
+          <div style={{ display: "flex", fontSize: 30, color: "#cfcfcf", marginTop: 18 }}>Simulated customers test your website or app before launch day.</div>
         </div>
       </Frame>
     ),

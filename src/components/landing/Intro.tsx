@@ -1,9 +1,9 @@
 "use client";
 // The opening animation on the landing page:
 //   1. a plain white page,
-//   2. blue claw scratches rip down the middle,
+//   2. black claw scratches rip down the middle,
 //   3. the white page tears in two along a jagged line and the halves fly apart,
-//      revealing the blue site underneath.
+//      revealing the black site underneath.
 // Plays once per browser tab (sessionStorage), and never for people who turn
 // off animations. A tiny script in layout.tsx decides BEFORE the page is drawn
 // (html data-intro="play" or "skip"), so the site never flashes first.
@@ -52,7 +52,7 @@ export default function Intro() {
       <div className="intro-half intro-left" />
       <div className="intro-half intro-right" />
       <div className="intro-claws">
-        <Claws color="#1a2aa6" delay={0.1} className="h-72 w-56 sm:h-[26rem] sm:w-80" />
+        <Claws color="#000000" delay={0.1} className="h-72 w-56 sm:h-[26rem] sm:w-80" />
       </div>
     </div>
   );

@@ -117,10 +117,10 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
                     role="img"
                     aria-label={`Example screen ${s.n}: ${s.type}`}
                   >
-                    <span className="block h-2 w-3/4 rounded bg-[#1a2aa6]" />
-                    <span className="mt-2 block h-1.5 w-1/2 rounded bg-[#dfe3f5]" />
-                    <span className="mt-1.5 block h-1.5 w-2/3 rounded bg-[#dfe3f5]" />
-                    <span className="mt-auto block h-5 w-full rounded bg-[#1a2aa6]" />
+                    <span className="block h-2 w-3/4 rounded bg-[#000000]" />
+                    <span className="mt-2 block h-1.5 w-1/2 rounded bg-[#e6e6e6]" />
+                    <span className="mt-1.5 block h-1.5 w-2/3 rounded bg-[#e6e6e6]" />
+                    <span className="mt-auto block h-5 w-full rounded bg-[#000000]" />
                   </div>
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
