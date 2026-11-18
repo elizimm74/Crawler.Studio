@@ -16,9 +16,10 @@ import Claws from "../Claws";
 import { Arrow } from "./UrlForm";
 import HeadlineCheck from "./HeadlineCheck";
 import UseCases from "./UseCases";
-import { Customers, Research, Compare } from "./Sections";
+import { Customers, Compare } from "./Sections";
+import Science from "./Science";
 
-const BLUE = "#000000";
+const BLUE = "#1a2aa6";
 
 type Feature = { n: string; title: string; text: string; visual: (blue: boolean) => React.ReactNode };
 
@@ -74,12 +75,21 @@ export default function Features() {
   return (
     // relative z-10: paints OVER the sticky blue screen. The shadow sits on the torn top edge.
     <section id="features" className="paper features bleed sheet relative z-10 scroll-mt-16 space-y-24 overflow-x-clip py-24 sm:space-y-32 sm:py-32">
+      {/* claw scratches where the sheet starts (instead of a torn edge) */}
+      <Claws color={BLUE} className="pointer-events-none absolute -top-14 left-[6%] h-36 w-28 opacity-90 sm:h-48 sm:w-36" />
+      <Claws color={BLUE} className="pointer-events-none absolute -top-10 right-[10%] hidden h-28 w-24 rotate-12 opacity-40 sm:block" />
+
       {/* 1. a statement that lights up word by word as you scroll */}
       <div className="page">
         <Manifesto
           className="text-center"
           text="Most launches fail quietly. Nobody tells you *why*. Crawler sends 100 simulated customers in first, and they tell you *everything*."
         />
+      </div>
+
+      {/* 1b. the science: how the consumer models are built (research first) */}
+      <div className="page space-y-24 sm:space-y-32">
+        <Science />
       </div>
 
       {/* 2. the pinned story: the stage stays, the picture changes as you scroll */}
@@ -117,7 +127,6 @@ export default function Features() {
         <HeadlineCheck />
         <Customers />
         <UseCases />
-        <Research />
         <Compare />
 
         {/* honest note + the buttons */}

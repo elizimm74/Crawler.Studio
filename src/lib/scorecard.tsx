@@ -15,7 +15,7 @@ export type Shared = {
   high: number | null;
 };
 
-const BLUE = "#000000";
+const BLUE = "#1a2aa6";
 
 // The site's chunky headline font (Archivo 900), fetched once and kept in memory.
 // If Google Fonts can't be reached, the image still draws, just in a plainer font.

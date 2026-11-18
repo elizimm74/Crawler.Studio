@@ -331,7 +331,7 @@ export default function DashboardView({ data }: { data: DashboardData }) {
                           100 customers are waiting.
                         </p>
                         <p className="mt-3 max-w-md text-white/70">
-                          About a minute from now you'll know what stops them
+                          About a minute from now you&apos;ll know what stops them
                           from buying.
                         </p>
                         <div className="mt-6 flex flex-wrap gap-2">

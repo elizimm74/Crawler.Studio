@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
   <!-- browser-tab icon: white claw scratches on a rounded blue square -->
-  <rect width="120" height="120" rx="28" fill="#000000"/>
+  <rect width="120" height="120" rx="28" fill="#1a2aa6"/>
   <g fill="#ffffff" transform="translate(60 60) scale(0.74) translate(-60 -60) rotate(14 60 60)">
     <path d="M22 10 C 36 40, 40 74, 30 108 C 56 76, 52 38, 22 10 Z"/>
     <path d="M52 4 C 68 38, 72 76, 62 114 C 90 78, 86 36, 52 4 Z"/>
