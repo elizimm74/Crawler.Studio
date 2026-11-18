@@ -125,3 +125,27 @@ export type DashboardData = {
   plan: PlanData;
   trends: Trends | null;
 };
+
+// The headline numbers across all of a person's tests (counted in code, never estimated).
+export type Summary = { tests: number; finished: number; avgPct: number | null; bestPct: number | null; customers: number; trend: { pct: number; date: string }[] };
+
+// trend = the latest product's finished tests, oldest first (same site / same app flow).
+export function summarize(list: Analysis[]): Summary {
+  const done = list.filter((a) => a.pct !== null);
+  const pcts = done.map((a) => a.pct!);
+  const latest = done[0];
+  const trend = latest
+    ? done
+        .filter((a) => a.label === latest.label && a.kind === latest.kind)
+        .map((a) => ({ pct: a.pct!, date: a.created_at }))
+        .reverse()
+    : [];
+  return {
+    tests: list.length,
+    finished: done.length,
+    avgPct: pcts.length ? Math.round(pcts.reduce((s, x) => s + x, 0) / pcts.length) : null,
+    bestPct: pcts.length ? Math.max(...pcts) : null,
+    customers: done.reduce((s, a) => s + (a.total ?? 0), 0),
+    trend,
+  };
+}

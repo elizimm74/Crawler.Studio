@@ -2,7 +2,7 @@
 // (no AI, no database). Part of `npm run bench`. Any failure = exit code 1.
 const path = require("path");
 const lib = path.join(__dirname, "..", ".bench-build", "lib");
-const { analyses, recurringBlockers, fixQueue, nextMoves, labelOf } = require(path.join(lib, "dashboard.js"));
+const { analyses, recurringBlockers, fixQueue, nextMoves, labelOf, summarize } = require(path.join(lib, "dashboard.js"));
 const { PLAYS, playsFor, MIND_TYPES, BENCHMARKS } = require(path.join(lib, "playbook.js"));
 const { cleanAudience, mindProblem } = require(path.join(lib, "audience.js"));
 
@@ -78,6 +78,16 @@ test("long text and long lists are cut", () => {
   return eq([a.occupations.length, a.occupations[0].length], [12, 60], "cut");
 });
 test("a mind needs a budget, a mindset and a tech level", () => eq([mindProblem(cleanAudience({})), mindProblem(cleanAudience({ budgets: ["okay"], mindsets: ["busy"], techComfort: ["low"] }))], ["Pick at least one budget.", null], "problems"));
+
+test("summary: counts, average, best, customers simulated", () => {
+  const sm = summarize(analyses(ROWS));
+  return eq([sm.tests, sm.finished, sm.avgPct, sm.bestPct, sm.customers], [6, 4, 25, 40, 400], "summary");
+});
+test("summary trend = latest product only, oldest first", () => eq(summarize(analyses(ROWS)).trend.map((t) => t.pct), [31, 40], "trend"));
+test("summary of nothing has no fake numbers", () => {
+  const sm = summarize([]);
+  return eq([sm.avgPct, sm.bestPct, sm.customers, sm.trend.length], [null, null, 0, 0], "empty");
+});
 
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);
