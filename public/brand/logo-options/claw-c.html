@@ -1,0 +1,55 @@
+<!doctype html>
+<!-- Option A, reworked: a "C" made of wavy claw scratches. No crescent-and-dot (that read as a religious symbol).
+     Render: node scripts/render-logo-options.cjs claw-c -->
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@900&family=Geist+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;box-sizing:border-box} body{background:#0b0b0b;font-family:"Geist Mono",monospace;color:#fff}
+  .grid{display:grid;grid-template-columns:repeat(3,440px);gap:24px;padding:32px}
+  .opt{border-radius:24px;overflow:hidden;background:#141414}
+  .hero{height:320px;display:flex;align-items:center;justify-content:center;background:#1a2aa6}
+  .row{display:flex;gap:16px;align-items:center;justify-content:center;padding:20px;background:#000}
+  .app{width:72px;height:72px;border-radius:18px;display:flex;align-items:center;justify-content:center}
+  .tiny{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center}
+  .name{padding:16px 20px;font-size:14px;display:flex;justify-content:space-between;gap:12px}
+  .word{font-family:Archivo;font-weight:900;letter-spacing:-.06em;font-size:22px;display:flex;align-items:center;gap:6px}
+</style></head><body><div class="grid" id="g"></div>
+<script>
+// One claw scratch bent along a circle: thick in the middle, sharp at both ends, with a wiggle.
+// a0..a1 = start/end angle in degrees (0 = right, 90 = down). The gap on the right makes the "C".
+function claw({ cx = 60, cy = 60, r, a0, a1, w, amp = 0, freq = 3, phase = 0, dx = 0, dy = 0 }) {
+  const N = 80, out = [], inn = [];
+  for (let i = 0; i <= N; i++) {
+    const t = i / N, a = ((a0 + (a1 - a0) * t) * Math.PI) / 180;
+    const taper = Math.pow(Math.sin(Math.PI * t), 0.75);
+    const rc = r + amp * Math.sin(freq * Math.PI * t + phase) * Math.sin(Math.PI * t);
+    const half = (w * taper) / 2;
+    out.push([cx + dx + Math.cos(a) * (rc + half), cy + dy + Math.sin(a) * (rc + half)]);
+    inn.push([cx + dx + Math.cos(a) * (rc - half), cy + dy + Math.sin(a) * (rc - half)]);
+  }
+  const pts = [...out, ...inn.reverse()];
+  return "M" + pts.map((p) => p.map((v) => v.toFixed(2)).join(",")).join("L") + "Z";
+}
+const svg = (paths, c) => `<svg viewBox="0 0 120 120" width="100%" height="100%"><g fill="${c}" transform="rotate(-18 60 60)">${paths.map((d) => `<path d="${d}"/>`).join("")}</g></svg>`;
+
+const OPTIONS = [
+  ["A1 · three squiggle claws", "Three thin wavy scratches with clear gaps: claws, not a moon",
+    [claw({ r: 47, a0: 46, a1: 318, w: 10, amp: 1.8, freq: 7 }), claw({ r: 33, a0: 62, a1: 304, w: 9, amp: 1.6, freq: 6, phase: 1.2 }), claw({ r: 19, a0: 80, a1: 288, w: 8, amp: 1.2, freq: 5, phase: 2.4 })]],
+  ["A2 · squiggle C", "One bold C with a fast wiggle along it, like a scribbled swipe",
+    [claw({ r: 40, a0: 44, a1: 324, w: 18, amp: 2.6, freq: 9 }), claw({ r: 22, a0: 110, a1: 260, w: 6, amp: 1.2, freq: 5 })]],
+  ["A3 · rift C", "Three squiggle claws pulled apart, like the C was ripped",
+    [claw({ r: 47, a0: 48, a1: 318, w: 10, amp: 2, freq: 8, dx: -5, dy: 1 }), claw({ r: 33, a0: 58, a1: 306, w: 9, amp: 1.8, freq: 7, phase: 2, dx: 4, dy: -3 }), claw({ r: 19, a0: 72, a1: 292, w: 8, amp: 1.4, freq: 6, phase: 1, dx: -3, dy: 3 })]],
+];
+document.getElementById("g").innerHTML = OPTIONS.map(([name, note, paths]) => `
+  <div class="opt">
+    <div class="hero"><div style="width:220px;height:220px">${svg(paths, "#fff")}</div></div>
+    <div class="row">
+      <div class="app" style="background:#1a2aa6"><div style="width:52px;height:52px">${svg(paths, "#fff")}</div></div>
+      <div class="app" style="background:#fff"><div style="width:52px;height:52px">${svg(paths, "#1a2aa6")}</div></div>
+      <div class="app" style="background:#0a0a0a"><div style="width:52px;height:52px">${svg(paths, "#fff")}</div></div>
+      <div class="tiny" style="background:#1a2aa6"><div style="width:22px;height:22px">${svg(paths, "#fff")}</div></div>
+      <span class="word"><span style="width:22px;height:22px;display:inline-block">${svg(paths, "#fff")}</span>crawler</span>
+    </div>
+    <div class="name"><span>${name}</span><span style="color:#9b9b9b;text-align:right">${note}</span></div>
+  </div>`).join("");
+</script></body></html>
