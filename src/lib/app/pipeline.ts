@@ -5,6 +5,7 @@ import { logRunCost } from "../cost";
 import type { BlobStore } from "../blobs";
 import type { Audience, CallCost, ProductProfile } from "../types";
 import { checkPaywall } from "./checks";
+import { answerQuality, type Quality } from "../quality";
 import { generateAppPersonas, SAMPLES } from "./personas";
 import { evaluateApp } from "./evaluate";
 import { aggregateApp, type AppStats } from "./aggregate";
@@ -32,6 +33,7 @@ export type AppRun = {
   personas: AppPersona[];
   verdicts: AppVerdict[];
   stats?: AppStats;
+  quality?: Quality; // checks on the answers themselves (../quality.ts)
   advice?: AppAdvice;
   costs: CallCost[];
   totalCostUsd?: number;
@@ -97,6 +99,7 @@ export async function runAppTest(
 
     run.stage = "Crunching the numbers";
     run.stats = aggregateApp(input.settings.screens, personas, verdicts, SAMPLES);
+    run.quality = answerQuality(verdicts);
 
     run.stage = "Writing your fixes";
     changed();

@@ -6,6 +6,7 @@
 //   4. A/B verdict (when there's a version B)
 //   5. Paywall copy rewrites, why people said no, quotes, segments
 // Every number is counted in code (stats); the advice text is written by Sonnet.
+import QualityNote from "@/components/QualityNote";
 import { useState } from "react";
 import type { AppRun } from "@/lib/app/pipeline";
 import type { Range } from "@/lib/app/aggregate";
@@ -271,6 +272,7 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
         </>
       )}
 
+      <QualityNote quality={run.quality} />
       <p className="text-center text-xs text-faint">
         Simulated customers show buying intent, not real purchases. Cost of this test: ${run.totalCostUsd?.toFixed(3) ?? "?"}.
       </p>

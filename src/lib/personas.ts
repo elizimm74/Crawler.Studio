@@ -3,6 +3,7 @@
 // settings, so 100 personas come out varied instead of 100 copies.
 import type { Audience, Persona } from "./types";
 import { simulateVisit } from "./behavior";
+import { describeMind, simulateMind } from "./mind";
 
 // A "seeded" random number generator: the same seed always produces the same
 // personas. That makes runs repeatable, which matters for before/after tests.
@@ -74,6 +75,8 @@ export function generatePersonas(audience: Audience, count: number, seed: number
     }
     // Simulate the visit itself: device, where they came from, patience.
     Object.assign(p, simulateVisit(p, rand));
+    // ...and their inner life: why they're here, what wins them, what loses them (mind.ts).
+    p.mind = simulateMind(p, rand);
     personas.push(p);
   }
   return personas;
@@ -92,6 +95,7 @@ export function describePersona(p: Persona): string {
     `visiting on a ${p.device}`,
     `came from ${p.arrivedFrom}`,
     `patience ${p.patience}`,
+    ...describeMind(p.mind ?? {}),
   ];
   if (p.role) {
     parts.push(

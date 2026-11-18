@@ -6,6 +6,7 @@
 //   4. Everything else, folded away (click to open), most useful first
 // Every number comes from run.stats (calculated in code); the advice text
 // comes from run.advice (written by Sonnet).
+import QualityNote from "./QualityNote";
 import { useState } from "react";
 import type { Run } from "@/lib/pipeline";
 import type { QuoteItem, SegmentRow } from "@/lib/aggregate";
@@ -227,6 +228,7 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
         </>
       )}
 
+      <QualityNote quality={run.quality} />
       {run.totalCostUsd !== undefined && <p className="t-label">run cost ${run.totalCostUsd.toFixed(4)}</p>}
     </div>
   );

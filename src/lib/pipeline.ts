@@ -8,6 +8,7 @@
 import { generatePersonas } from "./personas";
 import { evaluatePersonas } from "./evaluate";
 import { aggregate, type Stats } from "./aggregate";
+import { answerQuality, type Quality } from "./quality";
 import { writeAdvice, type Advice } from "./report";
 import { exploreProduct } from "./explore";
 import { checkReputation } from "./reputation";
@@ -45,6 +46,7 @@ export type Run = {
   journey?: Journey; // what the explorer did inside the product
   reputation?: Reputation | null;
   stats?: Stats;
+  quality?: Quality; // checks on the answers themselves (quality.ts)
   advice?: Advice;
   costs: CallCost[];
   totalCostUsd?: number;
@@ -133,6 +135,7 @@ export async function runTest(input: RunInput, hooks: RunHooks): Promise<Run> {
 
     run.stage = "Crunching the numbers";
     run.stats = aggregate(run.audience, run.personas, verdicts, Boolean(run.journey?.steps.length));
+    run.quality = answerQuality(verdicts);
 
     run.stage = "Writing your fixes";
     changed();

@@ -14,6 +14,8 @@ export type Raw = {
   objection: string;
   would_change_mind: string;
   quote: string;
+  first_glance?: string;
+  thought?: string;
 };
 
 // Fix contradictions so the counting is clean. Exported for the bench.
@@ -55,5 +57,7 @@ export function normalizeApp(r: Raw, p: AppPersona, settings: AppSettings, hasB:
     objection: r.objection,
     wouldChangeMind: r.would_change_mind,
     quote: r.quote,
+    ...(r.first_glance ? { firstGlance: r.first_glance } : {}),
+    ...(r.thought ? { thought: r.thought } : {}),
   };
 }

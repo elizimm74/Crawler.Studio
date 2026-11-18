@@ -14,6 +14,7 @@ import { describePersona } from "./personas";
 import type { BlobStore } from "./blobs";
 import { profileToText, signalsToText } from "./suggest";
 import { rulesFor } from "./behavior";
+import { DECISION_STEPS } from "./mind";
 import {
   OBJECTION_CATEGORIES,
   type CallCost,
@@ -41,6 +42,9 @@ const BatchSchema = z.object({
   results: z.array(
     z.object({
       persona_id: z.string(),
+      // thinking fields come FIRST so the model reasons before it decides
+      first_glance: z.string(),
+      thought: z.string(),
       verdict: z.enum(["buy", "maybe", "no"]),
       lost_at: z.enum(["hero", "pricing", "product", "signup", "none"]),
       objection_category: z.enum(OBJECTION_CATEGORIES),
@@ -69,7 +73,10 @@ Be realistic, not polite:
 - Sometimes an EXPLORER JOURNEY is included: a tester actually used the product (screenshots of key moments + a step log). Treat it as what this persona would experience if they tried the product: did it deliver the promise quickly? Was it confusing? Impatient or low-tech personas suffer most from friction there. Use lost_at "product" when trying the product is what lost them. Without a journey, never use "product".
 - Sometimes REAL REVIEWS from the web are included. Personas who would look up reviews (skeptical people, teens checking comments) are influenced by them.
 
-For each persona return:
+${DECISION_STEPS}
+
+For each persona return (in this order):
+- first_glance and thought (see above)
 - verdict: buy / maybe / no
 - lost_at: the funnel step where they gave up or got stuck (hero, pricing, product, signup). Use "none" ONLY for "buy".
 - objection_category: the single best match; use "none" ONLY for "buy".
@@ -246,6 +253,8 @@ function normalize(r: z.infer<typeof BatchSchema>["results"][number], hasJourney
     objection: r.objection,
     wouldChangeMind: r.would_change_mind,
     quote: r.quote,
+    firstGlance: r.first_glance,
+    thought: r.thought,
   };
 }
 

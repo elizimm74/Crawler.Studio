@@ -30,6 +30,18 @@ There are two kinds of rules:
 | Patience | ~10 sec / ~30 sec / a few minutes; teens skew shorter | NN/g: many leave in ~10 sec, and people who stay ~30 sec often stay minutes |
 | Teens on a "card required" trial | Mostly a dead end | Most teens have no card of their own |
 
+## Inner life (added 2026-11-18, `src/lib/mind.ts`; ALL ASSUMPTIONS)
+
+| Trait | How it's rolled | Why |
+|---|---|---|
+| Why they're here | From where they arrived: search = looking or comparing; friend = trusted tip or politeness; ad = mostly curious | Intent differs by traffic source (a common marketing pattern, not a single study) |
+| Need | Urgent / real / nice to have / none, weighted by why they're here | People with no real need rarely convert, however good the page |
+| Burned before | About 1 in 4 people: forgotten free trial charge, unused paid app, email spam, product unlike photos | Past bad experiences make people look harder for proof and exits |
+| Won over by | From mindset (e.g. skeptical = proof from people like them; busy = fewest steps) | Matches the mindset descriptions used across Crawler |
+| Dealbreaker | Tight budget = hidden/high price or card upfront; low tech = confusing setup; needs approval = nothing to show the boss; else by mindset | Same |
+
+Every customer now also writes a **first glance** (what they notice first) and a **thought** (their reasoning) BEFORE deciding, and follows 5 decision steps (first glance, need, dealbreaker, trust, decide). After every test, code checks the answers (`src/lib/quality.ts`): near-duplicate quotes or reasons, or a crowd that all decided the same, are flagged in the report.
+
 ## How the visit simulation works
 
 For every persona, code (not AI) rolls the dice on:

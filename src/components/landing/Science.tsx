@@ -9,7 +9,7 @@ const PIPELINE = [
   { n: "01", title: "Published research", text: "Studies on how real people browse, sign up and pay: attention spans, sign-up walls, card requirements, how teens shop." },
   { n: "02", title: "Behavior rules", text: "Each finding becomes a rule. A rule only applies to the people it fits: teen rules for teens, buyer rules for buyers." },
   { n: "03", title: "A varied crowd, sampled in code", text: "100 people with different ages, budgets, devices, patience and habits. Rolled by code, not invented by AI, so it isn't 100 copies of one person." },
-  { n: "04", title: "Counted, not guessed", text: "Each person decides on their own. Code counts the answers, groups the reasons and ranks the fixes. App tests run 3 crowds to show an honest range." },
+  { n: "04", title: "Counted, not guessed", text: "Each person thinks first (first glance, need, dealbreaker, trust), then decides. Code counts the answers, checks they are varied, groups the reasons and ranks the fixes." },
 ] as const;
 
 const FACTS = [
@@ -26,6 +26,7 @@ const ASSUMPTIONS = [
   { what: "Share on a phone", value: "Teens 85% · adults 60% · business buyers 35%" },
   { what: "Patience", value: "About 10 sec, 30 sec or a few minutes; teens skew shorter" },
   { what: "Teens and card-required trials", value: "Mostly a dead end (most have no card of their own)" },
+  { what: "Inner life", value: "Why they're here, how much they need it, past bad experiences (about 1 in 4), what wins them, their dealbreaker" },
 ] as const;
 
 export default function Science() {
@@ -85,7 +86,7 @@ export default function Science() {
         </div>
         <div className="border-t border-line bg-subtle px-5 py-4 sm:px-6">
           <p className="t-label">assumptions (our estimates, tuned as real results come in)</p>
-          <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+          <ul className="mt-3 grid gap-3 sm:grid-cols-2">
             {ASSUMPTIONS.map((a) => (
               <li key={a.what} className="text-sm">
                 <span className="font-medium">{a.what}: </span>

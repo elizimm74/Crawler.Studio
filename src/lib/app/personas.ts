@@ -7,6 +7,7 @@
 // three and comparing them tells us how much the result moves by chance, so
 // the report can show a range ("28–36%") instead of one fake-precise number.
 import { generatePersonas, makeRandom } from "../personas";
+import { describeMind, simulateMind } from "../mind";
 import type { Audience } from "../types";
 import type { AppPersona, AppSettings } from "./types";
 
@@ -41,6 +42,8 @@ export function generateAppPersonas(audience: Audience, settings: AppSettings, p
         platform: rand() * 100 < settings.iphonePct ? "iPhone" : "Android",
         source,
         sample: s,
+        // the inner life follows where they REALLY found the app
+        mind: simulateMind({ ...p, arrivedFrom: source }, rand),
       });
     }
   }
@@ -59,6 +62,7 @@ export function describeAppPersona(p: AppPersona): string {
     `on ${p.platform === "iPhone" ? "an iPhone" : "an Android phone"}`,
     `found the app via ${p.source}`,
     `patience ${p.patience}`,
+    ...describeMind(p.mind ?? {}),
   ];
   if (p.role) {
     parts.push(`role ${p.role} at a ${p.companySize}-person ${p.industry} company`, p.canBuyAlone ? "can buy on their own" : "needs approval to buy");

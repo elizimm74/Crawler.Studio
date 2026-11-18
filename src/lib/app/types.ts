@@ -92,6 +92,8 @@ export type AppVerdict = {
   objection: string;
   wouldChangeMind: string;
   quote: string;
+  firstGlance?: string; // what they noticed first (newer runs)
+  thought?: string; // their inner reasoning before deciding (newer runs)
 };
 
 export type AppPersona = Persona & { platform: "iPhone" | "Android"; source: AppSource; sample: number };

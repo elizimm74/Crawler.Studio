@@ -172,6 +172,8 @@ export type Persona = {
   device: "phone" | "laptop";
   arrivedFrom: string;
   patience: string;
+  // Their inner life: why they're here and how they decide (see mind.ts). Older runs don't have it.
+  mind?: import("./mind").Mind;
   // Only filled in when audience.mode === "business"
   role?: string;
   canBuyAlone?: boolean;
@@ -205,6 +207,8 @@ export type Verdict = {
   objection: string;
   wouldChangeMind: string;
   quote: string;
+  firstGlance?: string; // what they noticed first (newer runs)
+  thought?: string; // their inner reasoning before deciding (newer runs)
 };
 
 // ---------- Cost tracking ----------

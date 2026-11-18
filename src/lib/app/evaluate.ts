@@ -23,6 +23,7 @@ import { describeAppPersona } from "./personas";
 import { paywallToText } from "./checks";
 import { PAYWALL_DECISIONS, type AppPersona, type AppSettings, type AppVerdict } from "./types";
 import { normalizeApp } from "./normalize";
+import { DECISION_STEPS } from "../mind";
 
 const BATCH_SIZE = 25;
 const PARALLEL = 4;
@@ -31,6 +32,9 @@ const BatchSchema = z.object({
   results: z.array(
     z.object({
       persona_id: z.string(),
+      // thinking fields come FIRST so the model reasons before it decides
+      first_glance: z.string(),
+      thought: z.string(),
       stopped_at_screen: z.number(),
       paywall_a: z.enum(PAYWALL_DECISIONS),
       paywall_b: z.enum(PAYWALL_DECISIONS),
@@ -62,7 +66,10 @@ For each persona also return:
 - objection: their main objection in one sentence (for converters: their small remaining doubt).
 - would_change_mind: the one specific change to the screens or paywall that would win them (or keep them).
 - quote: one short, natural sentence in their own voice, as if said out loud while using the app. Match their age. No marketing speak.
-Return one result per persona, using their exact persona_id.`;
+${DECISION_STEPS}
+(Here, first_glance is what they notice on the FIRST screen, and the steps repeat at every screen and at the paywall.)
+
+Return one result per persona, using their exact persona_id, with first_glance and thought before the decisions.`;
 
 // Research about mobile onboarding + paywalls, attached to who it fits.
 // Qualitative on purpose: we don't put numbers here that we can't source.

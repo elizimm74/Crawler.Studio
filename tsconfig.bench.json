@@ -20,6 +20,9 @@
     "src/lib/dashboard.ts",
     "src/lib/playbook.ts",
     "src/lib/productTypes.ts",
-    "src/lib/suggest.ts"
+    "src/lib/suggest.ts",
+    "src/lib/mind.ts",
+    "src/lib/quality.ts",
+    "src/lib/personas.ts"
   ]
 }

@@ -89,5 +89,41 @@ test("summary of nothing has no fake numbers", () => {
   return eq([sm.avgPct, sm.bestPct, sm.customers, sm.trend.length], [null, null, 0, 0], "empty");
 });
 
+// ---------- smarter customers: inner life + answer checks ----------
+const { simulateMind, describeMind } = require(path.join(lib, "mind.js"));
+const { answerQuality } = require(path.join(lib, "quality.js"));
+const { generatePersonas, makeRandom, describePersona } = require(path.join(lib, "personas.js"));
+const { DEFAULT_AUDIENCE } = (() => { try { return require(path.join(lib, "presets.js")); } catch { return {}; } })();
+const aud = DEFAULT_AUDIENCE || { mode: "consumer", ageMin: 18, ageMax: 60, ageSkew: "even", genderSplit: { female: 50, male: 50, nonbinary: 0 }, countries: ["United States"], areaMix: { urban: 1, suburban: 1, rural: 1 }, occupations: ["x"], budgets: ["tight", "okay"], mindsets: ["skeptical", "busy"], techComfort: ["low", "high"], currentSolutions: ["nothing"], business: { roles: [], decisionSelfPct: 50, companySizes: [], industries: [] } };
+test("every persona gets an inner life, and the same seed gives the same minds", () => {
+  const a = generatePersonas(aud, 50, 42), b = generatePersonas(aud, 50, 42);
+  if (a.some((p) => !p.mind || !p.mind.motivation || !p.mind.dealbreaker)) return "missing mind";
+  return eq(a.map((p) => p.mind), b.map((p) => p.mind), "repeatable minds");
+});
+test("minds vary across a crowd (not 100 copies)", () => {
+  const ps = generatePersonas(aud, 100, 7);
+  const motives = new Set(ps.map((p) => p.mind.motivation)).size;
+  const burned = ps.filter((p) => p.mind.burnedBefore).length;
+  return motives >= 4 && burned > 5 && burned < 50 ? null : `motives ${motives}, burned ${burned}`;
+});
+test("tight budget -> price dealbreaker; search visitors are looking", () => {
+  const r = makeRandom(1);
+  const m = simulateMind({ budget: "tight", techComfort: "high", mindset: "busy", arrivedFrom: "a Google search" }, r);
+  return m.dealbreaker.includes("price") && /looking|comparing/.test(m.motivation) ? null : JSON.stringify(m);
+});
+test("the persona line the AI reads includes the inner life", () => {
+  const p = generatePersonas(aud, 1, 3)[0];
+  return /why here:/.test(describePersona(p)) && /dealbreaker:/.test(describePersona(p)) ? null : "not described";
+});
+test("old personas without a mind still describe fine", () => eq(describeMind({}), [], "no mind"));
+test("answer check: varied answers raise no flags", () => {
+  const q = answerQuality(Array.from({ length: 20 }, (_, i) => ({ verdict: i % 3 ? "no" : "buy", objection: `reason ${i}`, quote: `quote number ${i}`, thought: "x" })));
+  return eq([q.uniqueQuotesPct, q.flags.length, q.thoughtful], [100, 0, 20], "healthy");
+});
+test("answer check: copy-paste crowds get flagged", () => {
+  const q = answerQuality(Array.from({ length: 20 }, () => ({ verdict: "no", objection: "Too expensive.", quote: "Too expensive!" })));
+  return q.flags.length === 3 && q.uniqueQuotesPct === 5 ? null : JSON.stringify(q);
+});
+
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);
