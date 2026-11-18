@@ -1,0 +1,181 @@
+<!doctype html>
+<!--
+  Five mock screens of a "Crawler" mobile app: 4 onboarding screens + the paywall.
+  Made so Crawler can test ITSELF (an App test: upload 1.jpg ... 5.jpg in order).
+  Render them with:  node scripts/render-app-screens.cjs
+  Prices match src/lib/plans.ts (one-time packs, no subscription). Example numbers are labelled as examples.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Crawler app screens</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@900&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root { --blue: #1a2aa6; --blue2: #2333b2; --ink: #0a0a0a; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0b0b0b; font-family: Geist, system-ui, sans-serif; color: #fff; -webkit-font-smoothing: antialiased; }
+  .row { display: flex; gap: 32px; padding: 32px; }
+  .screen {
+    position: relative; width: 390px; height: 844px; overflow: hidden; flex: none;
+    background: radial-gradient(120% 70% at 50% 0%, #2a3bd0 0%, var(--blue) 55%, #141f85 100%);
+    display: flex; flex-direction: column; padding: 0 24px;
+  }
+  .screen > * { flex-shrink: 0; }
+  .status { height: 54px; display: flex; align-items: center; justify-content: space-between; padding: 14px 8px 0; font-weight: 600; font-size: 16px; }
+  .status .icons { display: flex; gap: 6px; align-items: center; }
+  .home { position: absolute; bottom: 8px; left: 50%; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; background: #fff; }
+  .top { height: 44px; display: flex; align-items: center; justify-content: space-between; }
+  .progress { display: flex; gap: 6px; flex: 1; margin-right: 16px; }
+  .progress i { height: 4px; flex: 1; border-radius: 2px; background: rgb(255 255 255 / .25); }
+  .progress i.on { background: #fff; }
+  .skip { font-size: 15px; color: rgb(255 255 255 / .8); }
+  .label { font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: .02em; color: rgb(255 255 255 / .7); }
+  h1 { font-family: Archivo, sans-serif; font-weight: 900; letter-spacing: -0.045em; line-height: .95; font-size: 40px; }
+  .lead { font-size: 17px; line-height: 1.45; color: rgb(255 255 255 / .82); }
+  .btn { height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 17px; }
+  .btn.white { background: #fff; color: var(--blue); box-shadow: 0 12px 30px -12px rgb(0 0 0 / .5); }
+  .btn.black { background: var(--ink); color: #fff; }
+  .btn.ghost { color: #fff; height: 44px; font-weight: 500; font-size: 15px; }
+  .bottom { margin-top: auto; padding-bottom: 40px; display: flex; flex-direction: column; gap: 10px; }
+  .claws path { fill: currentColor; }
+  .card { background: #fff; color: var(--ink); border-radius: 20px; padding: 18px; }
+  .ink { background: var(--ink); color: #fff; border-radius: 18px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 5px 10px; font-size: 12px; font-family: "Geist Mono", monospace; }
+</style>
+</head>
+<body>
+<div class="row">
+
+<!-- 1. WELCOME -->
+<section class="screen" id="s1">
+  <div class="status"><span>9:41</span><span class="icons" data-icons></span></div>
+  <svg class="claws" viewBox="0 0 120 120" style="position:absolute;right:-90px;top:120px;width:360px;height:360px;color:rgb(255 255 255 / .07)"><g transform="rotate(14 60 60)"><path d="M22 10 C 36 40, 40 74, 30 108 C 56 76, 52 38, 22 10 Z"/><path d="M52 4 C 68 38, 72 76, 62 114 C 90 78, 86 36, 52 4 Z"/><path d="M82 14 C 96 42, 98 72, 90 102 C 114 74, 110 42, 82 14 Z"/></g></svg>
+  <div style="margin-top:150px;display:flex;flex-direction:column;align-items:center;text-align:center">
+    <div style="width:96px;height:96px;border-radius:26px;background:var(--ink);display:flex;align-items:center;justify-content:center;box-shadow:0 20px 40px -16px rgb(0 0 0 / .6)">
+      <svg class="claws" viewBox="0 0 120 120" width="62" height="62" style="color:#fff"><g transform="rotate(14 60 60)"><path d="M22 10 C 36 40, 40 74, 30 108 C 56 76, 52 38, 22 10 Z"/><path d="M52 4 C 68 38, 72 76, 62 114 C 90 78, 86 36, 52 4 Z"/><path d="M82 14 C 96 42, 98 72, 90 102 C 114 74, 110 42, 82 14 Z"/></g></svg>
+    </div>
+    <p style="font-family:Archivo;font-weight:900;font-size:76px;letter-spacing:-0.065em;line-height:.9;margin-top:28px">crawler</p>
+    <p class="lead" style="margin-top:18px;max-width:300px">See why people won't buy your app, game or store. Before you launch.</p>
+  </div>
+  <div class="bottom">
+    <div class="btn white">Get started</div>
+    <div class="btn ghost">I already have an account</div>
+  </div>
+  <div class="home"></div>
+</section>
+
+<!-- 2. VALUE: the crowd -->
+<section class="screen" id="s2">
+  <div class="status"><span>9:41</span><span class="icons" data-icons></span></div>
+  <div class="top"><div class="progress"><i class="on"></i><i class="on"></i><i></i><i></i></div><span class="skip">Skip</span></div>
+  <p class="label" style="margin-top:28px">how it works</p>
+  <h1 style="margin-top:10px">100 simulated customers try your product.</h1>
+  <p class="lead" style="margin-top:14px">Different ages, budgets, phones and patience. Each one decides: buy, maybe, or leave.</p>
+  <div class="ink" style="margin-top:26px;padding:20px">
+    <div id="crowd" style="display:grid;grid-template-columns:repeat(10,1fr);gap:7px;max-width:250px;margin:0 auto"></div>
+    <div style="display:flex;justify-content:center;gap:16px;margin-top:16px;font-size:13px;color:rgb(255 255 255 / .8)">
+      <span>● 41 buy</span><span style="opacity:.75">● 22 maybe</span><span style="opacity:.6">○ 37 no</span>
+    </div>
+  </div>
+  <p class="label" style="margin-top:10px;text-align:center">example crowd</p>
+  <div class="bottom"><div class="btn white">Continue</div></div>
+  <div class="home"></div>
+</section>
+
+<!-- 3. QUESTION -->
+<section class="screen" id="s3">
+  <div class="status"><span>9:41</span><span class="icons" data-icons></span></div>
+  <div class="top"><div class="progress"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><span class="skip">Skip</span></div>
+  <p class="label" style="margin-top:28px">question 1 of 1</p>
+  <h1 style="margin-top:10px">What are you launching?</h1>
+  <p class="lead" style="margin-top:14px">We'll pick the right customers for it.</p>
+  <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px">
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;color:var(--blue)">
+      <div><p style="font-weight:600;font-size:17px">A mobile app</p><p style="font-size:14px;color:#4a4a5a;margin-top:2px">Onboarding + paywall</p></div>
+      <span style="width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px">✓</span>
+    </div>
+    <div class="ink" style="padding:18px"><p style="font-weight:600;font-size:17px">A game</p><p style="font-size:14px;color:rgb(255 255 255 / .65);margin-top:2px">Roblox or mobile: first minutes + shop</p></div>
+    <div class="ink" style="padding:18px"><p style="font-weight:600;font-size:17px">A website</p><p style="font-size:14px;color:rgb(255 255 255 / .65);margin-top:2px">Landing page, pricing, signup</p></div>
+    <div class="ink" style="padding:18px"><p style="font-weight:600;font-size:17px">An online store</p><p style="font-size:14px;color:rgb(255 255 255 / .65);margin-top:2px">Shopify, clothing, dropshipping</p></div>
+  </div>
+  <div class="bottom"><div class="btn white">Continue</div></div>
+  <div class="home"></div>
+</section>
+
+<!-- 4. VALUE: the report -->
+<section class="screen" id="s4">
+  <div class="status"><span>9:41</span><span class="icons" data-icons></span></div>
+  <div class="top"><div class="progress"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div><span class="skip">Skip</span></div>
+  <p class="label" style="margin-top:28px">your report</p>
+  <h1 style="margin-top:10px">Know exactly what to fix first.</h1>
+  <div class="card" style="margin-top:22px">
+    <div style="display:flex;justify-content:space-between"><span class="label" style="color:#5c5f70">mealmate.app</span><span class="pill" style="background:#eef0fb;color:var(--blue)">example</span></div>
+    <p style="margin-top:10px;display:flex;align-items:flex-end;gap:6px"><span style="font-family:Archivo;font-weight:900;font-size:72px;letter-spacing:-0.06em;line-height:.8;color:var(--blue)">41</span><span style="font-family:Archivo;font-weight:900;font-size:22px;color:#9aa0b8">/100</span></p>
+    <p style="font-size:14px;color:#4a4a5a;margin-top:6px">would sign up</p>
+    <div style="height:1px;background:#e6e6ee;margin:14px 0"></div>
+    <p class="label" style="color:#5c5f70">top blocker</p>
+    <p style="font-weight:600;margin-top:4px">Price hidden · 34% of “no”s</p>
+    <div style="height:6px;border-radius:3px;background:#eceef7;margin-top:8px"><div style="width:34%;height:6px;border-radius:3px;background:var(--blue)"></div></div>
+  </div>
+  <div class="ink" style="margin-top:10px;padding:16px;display:flex;align-items:center;gap:12px">
+    <span style="font-family:Archivo;font-weight:900;font-size:30px;letter-spacing:-0.04em">+11</span>
+    <span style="font-size:14px;line-height:1.35;color:rgb(255 255 255 / .85)">Fix #1: show the price on the home page. Could win back 11 customers.</span>
+  </div>
+  <p class="label" style="margin-top:10px;text-align:center">example report · made-up data</p>
+  <div class="bottom"><div class="btn white">Continue</div></div>
+  <div class="home"></div>
+</section>
+
+<!-- 5. PAYWALL -->
+<section class="screen" id="s5">
+  <div class="status"><span>9:41</span><span class="icons" data-icons></span></div>
+  <div class="top">
+    <span style="width:36px;height:36px;border-radius:50%;background:rgb(255 255 255 / .16);display:flex;align-items:center;justify-content:center;font-size:18px" aria-label="Close">✕</span>
+    <span class="skip">Restore</span>
+  </div>
+  <h1 style="margin-top:14px;font-size:38px">Test before you launch. Every time.</h1>
+  <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px;font-size:15px">
+    <span>✓ 100 simulated customers per test</span>
+    <span>✓ AI explorer tries your product</span>
+    <span>✓ Ranked fixes with rewritten copy</span>
+    <span>✓ Tests never expire</span>
+  </div>
+  <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">
+    <div class="card" style="position:relative;border:3px solid #fff;outline:3px solid var(--ink)">
+      <span class="pill" style="position:absolute;top:-12px;right:16px;background:var(--ink);color:#fff">best value</span>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><p style="font-weight:600;font-size:17px">Studio Pack</p><p style="font-size:14px;color:#4a4a5a">20 tests · $2.45 per test</p></div>
+        <p style="font-family:Archivo;font-weight:900;font-size:30px;letter-spacing:-0.04em;color:var(--blue)">$49</p>
+      </div>
+    </div>
+    <div class="ink" style="padding:18px;display:flex;justify-content:space-between;align-items:center">
+      <div><p style="font-weight:600;font-size:17px">Launch Pack</p><p style="font-size:14px;color:rgb(255 255 255 / .65)">5 tests · $3.80 per test</p></div>
+      <p style="font-family:Archivo;font-weight:900;font-size:30px;letter-spacing:-0.04em">$19</p>
+    </div>
+  </div>
+  <div class="bottom" style="gap:6px">
+    <p style="text-align:center;font-size:13px;color:rgb(255 255 255 / .8)">One-time purchase. No subscription. Nothing renews.</p>
+    <div class="btn white">Buy Studio Pack · $49</div>
+    <div class="btn ghost">Start with 1 free test</div>
+    <p style="text-align:center;font-size:12px;color:rgb(255 255 255 / .65)">Restore purchases · Terms of Use · Privacy Policy</p>
+  </div>
+  <div class="home"></div>
+</section>
+
+</div>
+<script>
+  // iPhone-style status icons (signal, wi-fi, battery)
+  const icons = '<svg width="18" height="12" viewBox="0 0 18 12" fill="#fff"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>' +
+    '<svg width="16" height="12" viewBox="0 0 16 12" fill="#fff"><path d="M8 2.5c2.4 0 4.6.9 6.2 2.5l1.3-1.3A10.6 10.6 0 0 0 8 .6 10.6 10.6 0 0 0 .5 3.7L1.8 5A8.7 8.7 0 0 1 8 2.5zm0 3.6c1.4 0 2.7.5 3.6 1.4l1.3-1.3A7 7 0 0 0 8 4.2 7 7 0 0 0 3.1 6.2l1.3 1.3c1-.9 2.2-1.4 3.6-1.4zM8 9.3l-2 2 2 .7 2-.7z"/></svg>' +
+    '<svg width="27" height="13" viewBox="0 0 27 13"><rect x="0.5" y="0.5" width="22" height="12" rx="3.5" fill="none" stroke="#fff" stroke-opacity=".5"/><rect x="2" y="2" width="19" height="9" rx="2" fill="#fff"/><rect x="24" y="4" width="2" height="5" rx="1" fill="#fff" fill-opacity=".5"/></svg>';
+  document.querySelectorAll("[data-icons]").forEach((el) => (el.innerHTML = icons));
+  // the example crowd: 41 buy, 22 maybe, 37 no
+  const crowd = document.getElementById("crowd");
+  for (let i = 0; i < 100; i++) {
+    const d = document.createElement("span");
+    d.style.cssText = "aspect-ratio:1;border-radius:50%;" + (i < 41 ? "background:#fff" : i < 63 ? "background:rgb(255 255 255 / .45)" : "border:1.5px solid rgb(255 255 255 / .3)");
+    crowd.appendChild(d);
+  }
+</script>
+</body>
+</html>
