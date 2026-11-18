@@ -12,12 +12,14 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { Arrow } from "@/components/landing/UrlForm";
 
+type Kind = "website" | "app" | "game" | "store";
+const needsUrl = (k: Kind) => k === "website" || k === "store";
 const WHEN = ["This week", "This month", "Later", "Already live"];
 const WHO = ["Students", "Founders", "Parents", "Small businesses", "Developers", "Everyone"];
 
-export default function Onboarding({ startUrl, startKind = "website", mind, preset }: { startUrl: string; startKind?: "website" | "app"; mind?: string; preset?: string }) {
+export default function Onboarding({ startUrl, startKind = "website", mind, preset }: { startUrl: string; startKind?: Kind; mind?: string; preset?: string }) {
   const router = useRouter();
-  const [kind, setKind] = useState<"website" | "app">(startKind);
+  const [kind, setKind] = useState<Kind>(startKind);
   const [url, setUrl] = useState(startUrl);
   const [what, setWhat] = useState("");
   const [when, setWhen] = useState("");
@@ -26,11 +28,11 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
   const [busy, setBusy] = useState(false);
 
   const audience = whoText.trim() || who; // their own words win over the chip
-  const canNext = kind === "app" || url.trim().length > 3;
+  const canNext = !needsUrl(kind) || url.trim().length > 3;
 
   async function finish() {
     setBusy(true);
-    const answers = { kind, url: kind === "website" ? url : "", what, when, who: audience };
+    const answers = { kind, url: needsUrl(kind) ? url : "", what, when, who: audience };
     if (AUTH_ENABLED) {
       // Signed in: save the answers + "onboarded" on the account now.
       // Signed out: keep them in this tab; the test page saves them right after sign-up.
@@ -46,7 +48,9 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
       }
     }
     // Website: the analysis starts right away. App: next you upload screenshots.
-    const params = new URLSearchParams(kind === "app" ? { kind: "app" } : { url: url.trim() });
+    const params = new URLSearchParams(
+      kind === "app" ? { kind: "app" } : kind === "game" ? { kind: "app", type: "game" } : kind === "store" ? { url: url.trim(), type: "store" } : { url: url.trim() },
+    );
     if (audience) params.set("for", audience);
     if (what.trim()) params.set("what", what.trim());
     if (mind) params.set("mind", mind); // from the dashboard: "Test with this mind"
@@ -66,8 +70,10 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
       <div className="mt-6 grid grid-cols-2 gap-2" role="radiogroup" aria-label="What are you testing?">
         {(
           [
-            ["website", "A website", "Landing page, pricing, signup"],
             ["app", "A mobile app", "Onboarding + paywall screenshots"],
+            ["game", "A game", "Roblox or mobile: first minutes + shop"],
+            ["website", "A website", "Landing page, pricing, signup"],
+            ["store", "An online store", "Shopify, clothing, dropshipping (beta)"],
           ] as const
         ).map(([k, name, hint]) => (
           <button
@@ -86,10 +92,10 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
         ))}
       </div>
 
-      {kind === "website" ? (
+      {needsUrl(kind) ? (
         <>
           <label htmlFor="ob-url" className="field-label mt-6">
-            The page people land on
+            {kind === "store" ? "Your store's home page" : "The page people land on"}
           </label>
           <div className="relative">
             <span className="t-label field-prefix pointer-events-none absolute left-4 top-1/2 -translate-y-1/2" aria-hidden>
@@ -99,7 +105,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
               id="ob-url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="yourstartup.com"
+              placeholder={kind === "store" ? "yourstore.com" : "yourstartup.com"}
               className="field h-12 pl-20"
               inputMode="url"
               autoFocus
@@ -107,7 +113,11 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
           </div>
         </>
       ) : (
-        <p className="mt-6 text-sm text-muted">After this you&apos;ll drop in screenshots of your onboarding and paywall, in order.</p>
+        <p className="mt-6 text-sm text-muted">
+          {kind === "game"
+            ? "After this you'll drop in screenshots of the first minutes and the shop or game-pass offer, in order. You only upload pictures; Crawler never logs into your game."
+            : "After this you'll drop in screenshots of your onboarding and paywall, in order."}
+        </p>
       )}
 
       {/* optional: makes the simulated customers a little more accurate */}
@@ -123,7 +133,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
               id="ob-what"
               value={what}
               onChange={(e) => setWhat(e.target.value)}
-              placeholder={kind === "app" ? "e.g. a habit tracker for students" : "e.g. a meal-planning site for busy parents"}
+              placeholder={kind === "app" ? "e.g. a habit tracker for students" : kind === "game" ? "e.g. an obby game for teens" : kind === "store" ? "e.g. a streetwear store" : "e.g. a meal-planning site for busy parents"}
               className="field"
             />
           </div>
@@ -159,7 +169,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
 
       <div className="mt-8">
         <button type="submit" disabled={!canNext || busy} className="btn btn-primary w-full px-6">
-          {busy ? "Starting…" : kind === "app" ? "Next: add screens" : "Analyze my site"}
+          {busy ? "Starting…" : !needsUrl(kind) ? "Next: add screens" : kind === "store" ? "Analyze my store" : "Analyze my site"}
           {!busy && <Arrow />}
         </button>
         <p className="mt-3 text-center text-xs text-faint">Free first test. Simulated customers, buying intent, not real purchases.</p>

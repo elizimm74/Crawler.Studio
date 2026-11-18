@@ -26,7 +26,7 @@ export default function Home() {
           />
           <h1 className="t-wordmark rise">crawler</h1>
           <p className="t-lead rise d1 mt-8 max-w-lg px-4">
-            100 simulated customers try your app, site or store and tell you exactly why they wouldn&apos;t buy, before launch day.
+            100 simulated customers try your app, game, site or store and tell you exactly why they wouldn&apos;t buy, before launch day.
           </p>
           <div className="rise d2 mt-10">
             <Magnetic>

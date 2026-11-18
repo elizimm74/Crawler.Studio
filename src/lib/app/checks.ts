@@ -4,12 +4,13 @@
 //    "may be flagged", never "will be rejected": reviewers decide, not us.
 //  - "conversion": things that commonly help or hurt trial starts.
 import type { PaywallFacts, RuleCheck } from "./types";
+import type { ProductType } from "../productTypes";
 
 const APPLE_SUBS = "Apple App Store Review Guidelines 3.1.2 (subscriptions)";
 const APPLE_RESTORE = "Apple App Store Review Guidelines 3.1.1 (restoring purchases)";
 const GOOGLE_SUBS = "Google Play subscriptions policy (clear offer terms)";
 
-export function checkPaywall(f: PaywallFacts | null): RuleCheck[] {
+function baseChecks(f: PaywallFacts | null): RuleCheck[] {
   if (!f) {
     return [
       {
@@ -138,4 +139,12 @@ export function paywallToText(f: PaywallFacts | null): string {
     `Terms / privacy links: ${f.termsLink ? "terms" : "no terms"}, ${f.privacyLink ? "privacy" : "no privacy"}`,
     `Proof shown: ${f.socialProof.join("; ") || "none"}`,
   ].join("\n");
+}
+
+// For games the Apple / Google subscription rules don't apply, so those checks are shown as
+// plain conversion advice from Crawler, never as a "store rule".
+export function checkPaywall(f: PaywallFacts | null, productType?: ProductType): RuleCheck[] {
+  const checks = baseChecks(f);
+  if (productType !== "game") return checks;
+  return checks.map((c) => (c.kind === "store rule" ? { ...c, kind: "conversion" as const, basis: "Crawler guideline (not a platform rule)" } : c));
 }

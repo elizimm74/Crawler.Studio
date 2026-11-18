@@ -138,7 +138,7 @@ function Wizard() {
         body: JSON.stringify({
           crawlId: crawl.id,
           audience,
-          profile,
+          profile: { ...profile, productType: params.get("type") === "store" ? "store" : "website" },
           explore,
           credentials: explore.enabled && explore.access === "account" ? credentials : undefined,
           ownsProduct,

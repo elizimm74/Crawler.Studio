@@ -1,6 +1,7 @@
 // POST /api/tests { crawlId, audience, profile, explore?, credentials?, ownsProduct? } -> { testId }
 // Checks the input, encrypts any test-account login, then start_test()
 // checks your plan's limit and queues the job, all in one transaction.
+import { isProductType } from "@/lib/productTypes";
 import { NextResponse } from "next/server";
 import { requireUser, jsonError } from "@/lib/supabase/api";
 import { encryptJson } from "@/lib/crypto";
@@ -24,6 +25,8 @@ export async function POST(req: Request) {
     app?: Partial<AppSettings>; // app tests: the confirmed screens + paywall facts
   } | null;
   if (!body?.crawlId || !body.audience || !body.profile) return jsonError("Missing the analysis, audience or product profile.");
+  // Only a known product type is kept (it selects a fixed prompt sentence; never raw text).
+  body.profile.productType = isProductType(body.profile.productType) ? body.profile.productType : undefined;
 
   // ---------- App test ----------
   if (body.app) {

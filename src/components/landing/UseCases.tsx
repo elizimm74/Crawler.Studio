@@ -14,6 +14,13 @@ const CASES = [
     fix: "Show the first win before the paywall, and put the price and trial length next to the button.",
   },
   {
+    id: "game",
+    tab: "Games (Roblox and more)",
+    problem: "Players quit during a long tutorial, or reach the shop and can't tell what the game pass is worth.",
+    looks: ["The first minutes: loading, tutorial, first quests", "The shop: game pass, premium and currency prices", "Whether a teen would need a parent to pay"],
+    fix: "Get players to their first win faster, and show exactly what each offer gives before the price.",
+  },
+  {
     id: "saas",
     tab: "SaaS landing page",
     problem: "Visitors can't tell what it does in 10 seconds, and the price is hidden behind “Contact us”.",
@@ -30,7 +37,7 @@ const CASES = [
   },
   {
     id: "shop",
-    tab: "Online store (coming soon)",
+    tab: "Online store (beta)",
     problem: "Shoppers add to cart, then see the shipping cost and delivery time at checkout and leave.",
     looks: ["Product page: photos, price, size guide, reviews", "Shipping cost and delivery time, shown early or late", "Trust signals: returns, contact, secure checkout"],
     fix: "Show shipping cost and delivery on the product page, and make returns easy to find.",
@@ -50,7 +57,7 @@ export default function UseCases() {
   return (
     <div className="mx-auto max-w-4xl">
       <p className="t-label text-center">what can I test?</p>
-      <h2 className="t-chunk mt-3 text-center">Pages, apps and paywalls.</h2>
+      <h2 className="t-chunk mt-3 text-center">Apps, games, pages and stores.</h2>
 
       <div className="mt-8 flex flex-wrap justify-center gap-2" role="group" aria-label="Choose a product type">
         {CASES.map((x) => (
@@ -81,8 +88,8 @@ export default function UseCases() {
         <div>
           <p className="t-label">a typical fix</p>
           <p className="mt-2 font-medium">{c.fix}</p>
-          <Link href={c.id === "app" ? "/onboarding?kind=app" : c.id === "shop" ? "/signup" : "/onboarding"} className="btn btn-text mt-3 h-10 px-0 text-sm">
-            {c.id === "shop" ? "Join the store waitlist" : c.id === "app" ? "Test my app" : "Test my page"}
+          <Link href={c.id === "app" ? "/onboarding?kind=app" : c.id === "game" ? "/onboarding?kind=game" : c.id === "shop" ? "/onboarding?kind=store" : "/onboarding"} className="btn btn-text mt-3 h-10 px-0 text-sm">
+            {c.id === "shop" ? "Test my store" : c.id === "game" ? "Test my game" : c.id === "app" ? "Test my app" : "Test my page"}
             <Arrow />
           </Link>
         </div>

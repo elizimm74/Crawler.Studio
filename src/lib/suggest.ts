@@ -3,6 +3,7 @@
 //   1. a PRODUCT PROFILE — what it is, who it's for, prices, proof, friction
 //   2. a suggested AUDIENCE, so the form arrives pre-filled
 // The founder can correct both before running. Every persona reads the profile.
+import { lensFor } from "./productTypes";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { anthropic, assertNotRefused, HAIKU, requireApiKey } from "./ai";
@@ -170,7 +171,9 @@ export const EMPTY_PROFILE: ProductProfile = {
 // Turns the profile into a few readable lines for the AI prompts.
 export function profileToText(p: ProductProfile): string {
   const list = (items: string[]) => (items.length ? items.join("; ") : "none shown");
+  const lens = lensFor(p.productType); // a fixed sentence per product type (game, store), never user text
   return [
+    ...(lens ? [lens] : []),
     `Goal (what counts as converting): ${p.goal}`,
     `What it is: ${p.whatItIs || "(not given)"}`,
     `Who it's for: ${p.whoItsFor || "(not given)"}`,

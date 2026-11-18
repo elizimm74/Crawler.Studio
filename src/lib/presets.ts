@@ -25,6 +25,46 @@ export const DEFAULT_AUDIENCE: Audience = {
 };
 
 export const PRESETS: Record<string, Audience> = {
+  // Gen Z businesses. Ages start at 13 on purpose: Crawler never simulates younger children.
+  "Roblox and game players": {
+    ...DEFAULT_AUDIENCE,
+    ageMin: 13,
+    ageMax: 20,
+    ageSkew: "younger",
+    genderSplit: { female: 40, male: 57, nonbinary: 3 },
+    areaMix: { urban: 35, suburban: 50, rural: 15 },
+    occupations: ["middle or high school student", "student gamer", "part-time job (food or retail)", "aspiring creator or streamer"],
+    budgets: ["tight", "okay"],
+    mindsets: ["impulse buyer", "skeptical", "price-sensitive", "early adopter"],
+    techComfort: ["high", "medium"],
+    currentSolutions: ["free games", "YouTube / TikTok creators", "what friends play", "nothing"],
+  },
+  "Gen Z streetwear shoppers": {
+    ...DEFAULT_AUDIENCE,
+    ageMin: 16,
+    ageMax: 27,
+    ageSkew: "younger",
+    genderSplit: { female: 52, male: 45, nonbinary: 3 },
+    areaMix: { urban: 55, suburban: 35, rural: 10 },
+    occupations: ["college student", "retail worker", "high school student", "creator", "entry-level office worker"],
+    budgets: ["tight", "okay"],
+    mindsets: ["impulse buyer", "price-sensitive", "skeptical", "early adopter"],
+    techComfort: ["high"],
+    currentSolutions: ["fast-fashion sites", "thrift and resale apps", "TikTok shops", "brand drops"],
+  },
+  "Gen Z creators": {
+    ...DEFAULT_AUDIENCE,
+    ageMin: 16,
+    ageMax: 26,
+    ageSkew: "younger",
+    genderSplit: { female: 50, male: 46, nonbinary: 4 },
+    areaMix: { urban: 55, suburban: 35, rural: 10 },
+    occupations: ["student creator", "part-time freelancer", "streamer", "small-shop owner", "social media manager"],
+    budgets: ["tight", "okay"],
+    mindsets: ["early adopter", "price-sensitive", "busy", "skeptical"],
+    techComfort: ["high"],
+    currentSolutions: ["free tools", "Canva / CapCut", "doing it by hand", "nothing"],
+  },
   "High school teens": {
     ...DEFAULT_AUDIENCE,
     ageMin: 14,

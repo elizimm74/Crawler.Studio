@@ -97,6 +97,7 @@ export const GOALS = [
 export type Goal = (typeof GOALS)[number];
 
 export type ProductProfile = {
+  productType?: import("./productTypes").ProductType; // website (default) | app | game | store: changes what customers judge
   goal: Goal; // what "converting" means for this site
   whatItIs: string;
   whoItsFor: string;
