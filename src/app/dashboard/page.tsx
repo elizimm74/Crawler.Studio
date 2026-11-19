@@ -26,7 +26,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     // Only the small parts of each test the dashboard needs (not the whole saved report).
     supabase
       .from("tests")
-      .select("id, url, goal, status, score, total, created_at, kind:data->>kind, objections:data->stats->objections, fixes:data->advice->fixes")
+      .select("id, url, goal, status, score, total, created_at, crawl_id, kind:data->>kind, ptype:data->profile->>productType, objections:data->stats->objections, fixes:data->advice->fixes")
       .order("created_at", { ascending: false })
       .limit(20),
     supabase.from("saved_audiences").select("id, name, audience, updated_at").order("updated_at", { ascending: false }),
@@ -34,7 +34,24 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     supabase.rpc("crawler_trends"),
   ]);
 
-  const rows = (testsRes.data ?? []) as unknown as TestRow[];
+  const rows = (testsRes.data ?? []) as unknown as (TestRow & { crawl_id: string | null })[];
+
+  // Thumbnails: the first screenshot of each test's page (websites/stores) or its first uploaded
+  // screen (apps/games). Shown through /api/files, which only ever serves your own files.
+  const crawlIds = [...new Set(rows.map((r) => r.crawl_id).filter((x): x is string => Boolean(x)))];
+  if (crawlIds.length && user) {
+    const { data: crawls } = await supabase
+      .from("crawls")
+      .select("id, hero:data->crawl->pages->0->screenshotFiles->>0, batch:data->input->>batch, first:data->input->screens->>0")
+      .in("id", crawlIds);
+    const thumbs = new Map(
+      ((crawls ?? []) as { id: string; hero: string | null; batch: string | null; first: string | null }[]).map((c) => [
+        c.id,
+        c.hero ? `/api/files/${user.id}/crawls/${c.id}/${c.hero}` : c.batch && c.first ? `/api/files/${user.id}/uploads/${c.batch}/${c.first}` : null,
+      ]),
+    );
+    for (const r of rows) r.thumb = r.crawl_id ? (thumbs.get(r.crawl_id) ?? null) : null;
+  }
   const raw = planRes.data as (Omit<PlanData, "inviteLink"> & { referrals: PlanData["referrals"] }) | null;
   const plan: PlanData = raw
     ? { ...raw, inviteLink: `${SITE_URL}/r/${raw.referrals.code}` }

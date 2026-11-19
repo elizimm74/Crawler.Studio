@@ -12,6 +12,8 @@ export type TestRow = {
   total: number | null;
   created_at: string;
   kind: string | null; // "app" for app tests
+  ptype?: string | null; // the product type the founder picked: website | app | game | store
+  thumb?: string | null; // a screenshot address for the thumbnail (filled in by the dashboard page)
   objections: { category: string; count?: number }[] | null;
   fixes: { title: string; change?: string; couldFlip?: number; likelyFlip?: number; couldWin?: number; atPaywall?: number }[] | null;
 };
@@ -19,8 +21,9 @@ export type TestRow = {
 export type Analysis = {
   id: string;
   url: string; // used for "test again"
-  label: string; // "mealmate.app" or "App onboarding + paywall"
-  kind: "website" | "app";
+  label: string; // "mealmate.app", "App onboarding + paywall" or "Game first session + shop"
+  kind: "website" | "app" | "game" | "store";
+  thumb: string | null; // screenshot for the thumbnail, if we have one
   status: string;
   pct: number | null; // score as a percent of customers
   score: number | null;
@@ -32,15 +35,22 @@ export type Analysis = {
 };
 
 export const isApp = (r: TestRow) => r.kind === "app" || r.url.startsWith("app://");
+export const kindOf = (r: TestRow): Analysis["kind"] =>
+  isApp(r) ? (r.ptype === "game" ? "game" : "app") : r.ptype === "store" ? "store" : "website";
 export const labelOf = (r: TestRow) =>
-  isApp(r) ? "App onboarding + paywall" : r.url.replace(/^https?:\/\/(www\.)?/, "").replace(/[/?#].*$/, "");
+  isApp(r)
+    ? r.ptype === "game"
+      ? "Game first session + shop"
+      : "App onboarding + paywall"
+    : r.url.replace(/^https?:\/\/(www\.)?/, "").replace(/[/?#].*$/, "");
 
 export function analyses(rows: TestRow[]): Analysis[] {
   const out: Analysis[] = rows.map((r) => ({
     id: r.id,
     url: r.url,
     label: labelOf(r),
-    kind: isApp(r) ? "app" : "website",
+    kind: kindOf(r),
+    thumb: r.thumb ?? null,
     status: r.status,
     pct: r.status === "done" && r.score !== null && r.total ? Math.round((r.score / r.total) * 100) : null,
     score: r.score,

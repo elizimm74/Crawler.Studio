@@ -2,7 +2,7 @@
 // (no AI, no database). Part of `npm run bench`. Any failure = exit code 1.
 const path = require("path");
 const lib = path.join(__dirname, "..", ".bench-build", "lib");
-const { analyses, recurringBlockers, fixQueue, nextMoves, labelOf, summarize } = require(path.join(lib, "dashboard.js"));
+const { analyses, recurringBlockers, fixQueue, nextMoves, labelOf, summarize, kindOf } = require(path.join(lib, "dashboard.js"));
 const { PLAYS, playsFor, MIND_TYPES, BENCHMARKS } = require(path.join(lib, "playbook.js"));
 const { cleanAudience, mindProblem } = require(path.join(lib, "audience.js"));
 
@@ -187,6 +187,12 @@ test("a different crowd is NOT compared person by person", () => {
   const c = compareRuns(prevSide, other);
   return c.sameCrowd === false && c.matched < 10 ? null : JSON.stringify([c.sameCrowd, c.matched]);
 });
+
+test("game and store tests get their own kind and label; old rows unchanged", () => {
+  const g = { ...ROWS[1], ptype: "game" }, st = { ...ROWS[0], ptype: "store" };
+  return eq([kindOf(g), labelOf(g), kindOf(st), labelOf(st), kindOf(ROWS[1]), labelOf(ROWS[1])], ["game", "Game first session + shop", "store", "mealmate.app", "app", "App onboarding + paywall"], "kinds");
+});
+test("thumbnails pass through (none = null, never invented)", () => eq(analyses([{ ...ROWS[0], thumb: "/api/files/u/crawls/x/hero-1.jpg" }, ROWS[3]]).map((a) => a.thumb), ["/api/files/u/crawls/x/hero-1.jpg", null], "thumbs"));
 
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);

@@ -70,14 +70,28 @@ function Delta({ n, suffix = " pts" }: { n: number | null; suffix?: string }) {
   );
 }
 
-// A small square "thumbnail" for a test: the site's first letter, or a phone for app tests.
+// A small square "thumbnail" for a test: a real screenshot when we have one, otherwise the
+// site's first letter (or a phone for app and game tests).
 function Thumb({ a, size = "h-12 w-12" }: { a: Analysis; size?: string }) {
+  const [broken, setBroken] = useState(false);
+  if (a.thumb && !broken) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- a private signed screenshot, not a static asset
+      <img
+        src={a.thumb}
+        alt=""
+        loading="lazy"
+        onError={() => setBroken(true)}
+        className={`${size} shrink-0 rounded-xl border border-white/10 bg-[#0a1033] object-cover object-top`}
+      />
+    );
+  }
   return (
     <span
       className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-[#1b2a7a] to-[#0a1033] text-lg font-semibold`}
       aria-hidden
     >
-      {a.kind === "app" ? <Icon name="phone" /> : a.label.charAt(0).toUpperCase()}
+      {a.kind === "app" || a.kind === "game" ? <Icon name="phone" /> : a.label.charAt(0).toUpperCase()}
     </span>
   );
 }

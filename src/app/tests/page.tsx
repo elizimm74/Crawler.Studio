@@ -4,7 +4,7 @@ import Link from "next/link";
 import { supabaseServer } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 
-type Row = { id: string; url: string; goal: string | null; status: string; score: number | null; total: number | null; created_at: string };
+type Row = { id: string; url: string; goal: string | null; status: string; score: number | null; total: number | null; created_at: string; ptype?: string | null };
 
 export default async function MyTests() {
   if (!AUTH_ENABLED) {
@@ -18,7 +18,7 @@ export default async function MyTests() {
   const supabase = await supabaseServer();
   const { data, error } = await supabase
     .from("tests")
-    .select("id, url, goal, status, score, total, created_at")
+    .select("id, url, goal, status, score, total, created_at, ptype:data->profile->>productType")
     .order("created_at", { ascending: false });
   const tests = (data ?? []) as Row[];
 
@@ -57,7 +57,7 @@ export default async function MyTests() {
                   {t.status === "done" && <span className="text-sm text-faint">/{t.total}</span>}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-medium">{t.url.startsWith("app://") ? "App onboarding + paywall" : t.url.replace(/^https?:\/\//, "")}</span>
+                  <span className="block truncate font-medium">{t.url.startsWith("app://") ? (t.ptype === "game" ? "Game first session + shop" : "App onboarding + paywall") : t.url.replace(/^https?:\/\//, "")}</span>
                   <span className="text-sm text-muted">
                     {t.status === "done"
                       ? `would ${t.goal ?? "buy"}`
