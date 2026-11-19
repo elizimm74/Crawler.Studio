@@ -1,0 +1,222 @@
+<!doctype html>
+<!--
+  Crawler: the public landing page for GitHub Pages (https://elizimm74.github.io/Study/).
+  A static, glassmorphic page: no server, no tracking, no forms. The real product runs on Vercel
+  (Next.js); this page only explains it. Edit the text here directly.
+  Honest by design: simulated customers, buying intent, not real purchases; no fake logos or reviews.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>crawler: see what stops customers from buying, before you launch</title>
+<meta name="description" content="100 simulated customers try your app, game, site or store and show you exactly why they wouldn't buy, before launch day." />
+<link rel="icon" href="src/app/icon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@900&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root { --blue: #1a2aa6; --ink: #04061a; --text: #fff; --muted: rgb(255 255 255 / .74); --faint: rgb(255 255 255 / .58); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    min-height: 100vh; color: var(--text); font-family: Geist, system-ui, sans-serif; line-height: 1.55; -webkit-font-smoothing: antialiased;
+    background: radial-gradient(1200px 800px at 15% -10%, #2f44e8 0%, transparent 60%),
+                radial-gradient(900px 700px at 100% 20%, #1a2aa6 0%, transparent 60%),
+                radial-gradient(800px 600px at 50% 110%, #0d1666 0%, transparent 70%), var(--ink);
+    background-attachment: fixed; overflow-x: hidden;
+  }
+  /* soft glowing blobs behind the glass */
+  .blob { position: fixed; border-radius: 50%; filter: blur(80px); opacity: .55; z-index: -1; pointer-events: none; }
+  .b1 { width: 420px; height: 420px; background: #3b5bff; top: 10%; left: -120px; }
+  .b2 { width: 360px; height: 360px; background: #7a8cff; top: 55%; right: -100px; opacity: .35; }
+  .b3 { width: 300px; height: 300px; background: #0b1a9e; bottom: -80px; left: 30%; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  /* the glass */
+  .glass {
+    background: linear-gradient(160deg, rgb(255 255 255 / .14), rgb(255 255 255 / .05));
+    border: 1px solid rgb(255 255 255 / .18); border-radius: 22px;
+    box-shadow: 0 1px 0 rgb(255 255 255 / .25) inset, 0 30px 60px -30px rgb(0 0 0 / .6);
+    -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
+  }
+  .glass.dark { background: linear-gradient(160deg, rgb(0 0 0 / .45), rgb(0 0 0 / .25)); }
+  nav { position: sticky; top: 14px; z-index: 10; margin-top: 14px; }
+  nav .glass { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 10px 18px; border-radius: 999px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 18px; color: #fff; text-decoration: none; }
+  .brand svg { width: 28px; height: 28px; color: #fff; }
+  .links { display: flex; gap: 6px; align-items: center; }
+  .links a { color: var(--muted); text-decoration: none; padding: 8px 12px; border-radius: 999px; font-size: 15px; }
+  .links a:hover { color: #fff; background: rgb(255 255 255 / .08); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 14px; font-weight: 600; font-size: 16px; text-decoration: none; transition: transform .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn.white { background: #fff; color: var(--blue); box-shadow: 0 12px 30px -10px rgb(0 0 0 / .5); }
+  .btn.glassy { color: #fff; background: rgb(255 255 255 / .1); border: 1px solid rgb(255 255 255 / .25); }
+  .label { font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: .04em; color: var(--faint); text-transform: lowercase; }
+  h1, h2, .big { font-family: Archivo, sans-serif; font-weight: 900; letter-spacing: -.05em; line-height: .92; }
+  .hero { padding: 90px 0 60px; display: grid; gap: 40px; grid-template-columns: 1.15fr .85fr; align-items: center; }
+  .hero h1 { font-size: clamp(3.2rem, 9vw, 7.5rem); letter-spacing: -.065em; }
+  .hero p.lead { margin-top: 20px; font-size: clamp(1.05rem, 2vw, 1.3rem); color: var(--muted); max-width: 34ch; }
+  .cta { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .note { margin-top: 16px; font-size: 13px; color: var(--faint); }
+  .card { padding: 22px; }
+  .crowd { display: grid; grid-template-columns: repeat(10, 1fr); gap: 7px; margin-top: 16px; }
+  .crowd span { aspect-ratio: 1; border-radius: 50%; }
+  .score { display: flex; align-items: flex-end; gap: 6px; margin-top: 8px; }
+  .score b { font-family: Archivo; font-weight: 900; font-size: 64px; line-height: .8; letter-spacing: -.06em; }
+  .score i { font-style: normal; font-family: Archivo; font-weight: 900; font-size: 22px; color: var(--faint); }
+  section { padding: 70px 0; }
+  h2 { font-size: clamp(2.2rem, 5.5vw, 4rem); }
+  .sub { margin-top: 14px; color: var(--muted); max-width: 60ch; font-size: 1.08rem; }
+  .grid3 { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); margin-top: 34px; }
+  .grid4 { display: grid; gap: 16px; grid-template-columns: repeat(4, 1fr); margin-top: 34px; }
+  .num { font-family: Archivo; font-weight: 900; font-size: 40px; letter-spacing: -.04em; }
+  .card h3 { font-size: 18px; font-weight: 600; margin-top: 10px; }
+  .card p { color: var(--muted); font-size: 15px; margin-top: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; padding: 13px 18px; border-top: 1px solid rgb(255 255 255 / .12); vertical-align: top; }
+  thead th { border-top: 0; }
+  td { color: var(--muted); }
+  .price { font-family: Archivo; font-weight: 900; font-size: 52px; letter-spacing: -.05em; line-height: 1; margin-top: 10px; }
+  .pill { display: inline-block; font-family: "Geist Mono", monospace; font-size: 11px; padding: 4px 10px; border-radius: 999px; background: #fff; color: var(--blue); }
+  ul.ticks { list-style: none; margin-top: 16px; display: grid; gap: 8px; font-size: 15px; color: var(--muted); }
+  ul.ticks li::before { content: "✓  "; color: #fff; }
+  details { padding: 18px 22px; }
+  details + details { margin-top: 10px; }
+  summary { cursor: pointer; font-weight: 600; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  details p { color: var(--muted); margin-top: 10px; }
+  footer { padding: 50px 0 60px; color: var(--faint); font-size: 14px; }
+  .claws { position: absolute; pointer-events: none; color: rgb(255 255 255 / .07); }
+  :focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 10px; }
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding-top: 60px; }
+    .grid3, .grid4 { grid-template-columns: 1fr 1fr; }
+    .links a.hide { display: none; }
+  }
+  @media (max-width: 560px) { .grid3, .grid4 { grid-template-columns: 1fr; } th:nth-child(2), td:nth-child(2) { display: none; } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn { transition: none; } }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .glass { background: rgb(20 30 110 / .92); } }
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+<div class="wrap">
+  <nav aria-label="Main"><div class="glass">
+    <a class="brand" href="#top"><svg viewBox="0 0 120 120" class="" aria-hidden="true"><g fill="currentColor" transform="rotate(-18 60 60)"><path d="M92.6,93.8L89.6,97.4L86.1,100.6L82.2,103.5L77.9,105.9L73.4,107.7L68.6,108.9L63.8,109.5L58.8,109.5L54.0,109.0L49.2,108.2L44.4,107.0L39.7,105.6L35.0,104.0L30.3,101.9L25.8,99.4L21.6,96.3L17.9,92.5L14.8,88.2L12.6,83.5L11.0,78.5L10.2,73.4L9.8,68.3L9.7,63.2L9.8,58.2L10.1,53.3L10.5,48.3L11.2,43.2L12.5,38.2L14.3,33.3L16.9,28.7L20.2,24.6L24.2,21.1L28.6,18.3L33.3,16.1L38.1,14.4L42.9,13.1L47.7,12.0L52.6,11.2L57.4,10.7L62.3,10.5L67.2,10.9L72.0,11.8L76.7,13.3L81.1,15.5L85.1,18.2L88.8,21.3L92.1,24.7L94.9,28.6L94.9,28.6L91.3,25.7L87.5,23.0L83.6,20.7L79.5,18.8L75.2,17.3L70.8,16.5L66.4,16.2L62.0,16.5L57.8,17.1L53.6,18.0L49.5,19.1L45.6,20.3L41.6,21.7L37.6,23.3L33.8,25.3L30.3,27.7L27.1,30.7L24.5,34.2L22.6,38.1L21.3,42.2L20.5,46.4L20.2,50.6L20.0,54.6L19.8,58.6L19.7,62.6L19.6,66.6L19.7,70.8L20.2,75.0L21.2,79.2L22.8,83.2L25.2,86.9L28.1,90.1L31.5,92.8L35.1,95.1L39.0,97.0L42.8,98.6L46.7,100.1L50.7,101.4L54.8,102.6L59.0,103.6L63.3,104.1L67.8,104.1L72.2,103.6L76.6,102.5L80.8,100.9L84.9,98.8L88.8,96.4L92.6,93.8Z"/><path d="M75.5,89.1L73.1,91.0L70.5,92.5L67.7,93.7L64.7,94.5L61.7,94.9L58.6,94.9L55.6,94.6L52.5,94.1L49.5,93.4L46.6,92.5L43.6,91.6L40.6,90.4L37.7,89.1L34.8,87.5L32.0,85.5L29.5,83.2L27.4,80.6L25.7,77.7L24.5,74.5L23.7,71.2L23.4,67.9L23.4,64.5L23.7,61.3L24.0,58.1L24.5,55.0L24.9,51.8L25.5,48.7L26.1,45.5L27.1,42.3L28.4,39.3L30.0,36.3L32.1,33.7L34.6,31.4L37.4,29.5L40.4,28.1L43.5,27.0L46.7,26.2L49.9,25.7L53.0,25.4L56.1,25.3L59.2,25.3L62.3,25.4L65.3,25.8L68.2,26.5L71.1,27.5L73.8,28.9L76.3,30.6L78.5,32.6L78.5,32.6L75.7,31.6L73.0,30.6L70.3,30.0L67.5,29.7L64.7,29.6L62.0,29.8L59.3,30.2L56.7,30.6L54.2,31.1L51.7,31.7L49.1,32.4L46.6,33.2L44.2,34.3L41.9,35.6L39.8,37.3L38.0,39.2L36.5,41.5L35.5,43.9L34.7,46.4L34.2,49.0L33.9,51.5L33.6,53.9L33.4,56.2L33.0,58.6L32.7,61.0L32.3,63.4L32.1,66.0L32.1,68.6L32.5,71.2L33.2,73.8L34.4,76.2L35.9,78.3L37.8,80.2L39.9,81.9L42.1,83.3L44.4,84.6L46.6,85.7L48.9,86.8L51.3,87.9L53.7,88.9L56.2,89.8L58.8,90.5L61.5,91.0L64.3,91.2L67.1,91.1L69.9,90.7L72.7,89.9L75.5,89.1Z"/><path d="M63.3,78.7L61.9,79.5L60.5,79.9L58.9,80.1L57.4,80.1L55.9,80.0L54.3,79.7L52.8,79.4L51.3,78.9L49.8,78.4L48.3,77.8L46.7,77.2L45.2,76.4L43.7,75.6L42.2,74.6L40.9,73.4L39.7,72.0L38.7,70.5L38.0,68.9L37.5,67.2L37.2,65.4L37.2,63.6L37.3,61.9L37.6,60.1L37.9,58.5L38.3,56.8L38.7,55.2L39.2,53.6L39.6,52.0L40.1,50.4L40.6,48.8L41.3,47.2L42.1,45.7L43.1,44.3L44.3,43.0L45.7,41.9L47.2,41.0L48.8,40.3L50.5,39.8L52.1,39.5L53.8,39.4L55.5,39.4L57.1,39.4L58.7,39.6L60.2,39.8L61.7,40.1L63.2,40.5L64.6,41.1L65.9,41.9L65.9,41.9L64.4,42.1L62.9,42.3L61.5,42.5L60.2,42.7L58.9,43.0L57.7,43.3L56.4,43.6L55.2,44.0L54.0,44.3L52.8,44.8L51.7,45.4L50.6,46.1L49.7,47.0L48.9,47.9L48.2,49.0L47.7,50.2L47.4,51.4L47.1,52.6L47.0,53.7L46.8,54.9L46.7,55.9L46.5,57.0L46.2,58.0L45.9,59.0L45.6,60.1L45.2,61.2L45.0,62.4L44.8,63.6L44.8,64.8L44.9,66.1L45.3,67.3L45.9,68.4L46.6,69.4L47.4,70.3L48.4,71.1L49.3,71.9L50.3,72.5L51.3,73.2L52.3,73.9L53.3,74.6L54.3,75.3L55.4,76.0L56.6,76.6L57.8,77.2L59.1,77.7L60.4,78.1L61.8,78.4L63.3,78.7Z"/></g></svg> crawler</a>
+    <div class="links">
+      <a class="hide" href="#how">How it works</a>
+      <a class="hide" href="#science">The science</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+  </div></nav>
+
+  <main id="top">
+    <div class="hero">
+      <div style="position:relative">
+        <p class="label">launching soon · simulated customers</p>
+        <h1 style="margin-top:14px">crawler</h1>
+        <p class="lead">100 simulated customers try your app, game, site or store and show you exactly why they wouldn&rsquo;t buy, before launch day.</p>
+        <div class="cta">
+          <a class="btn white" href="#pricing">See pricing</a>
+          <a class="btn glassy" href="#how">How it works</a>
+        </div>
+        <p class="note">Simulated customers show buying intent, not real purchases.</p>
+      </div>
+
+      <div class="glass card" role="img" aria-label="Example result: 41 of 100 simulated customers would sign up; top blocker: price hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="label">example report · made-up data</span><span class="pill">example</span>
+        </div>
+        <div class="score"><b>41</b><i>/100</i></div>
+        <p style="color:var(--muted);font-size:14px;margin-top:6px">simulated customers would sign up</p>
+        <div class="crowd" id="crowd"></div>
+        <div class="glass dark" style="margin-top:16px;padding:14px;border-radius:16px;display:flex;gap:12px;align-items:center">
+          <span class="num" style="font-size:28px">+11</span>
+          <span style="font-size:14px;color:var(--muted)">Fix #1: show the price on the home page. Could win back 11 customers.</span>
+        </div>
+      </div>
+    </div>
+
+    <section id="how">
+      <p class="label">how it works</p>
+      <h2 style="margin-top:12px">Three steps. About a minute.</h2>
+      <div class="grid3">
+        <div class="glass card"><span class="num">01</span><h3>Show it</h3><p>Paste your website or store link, or drop in your app or game screenshots: onboarding to paywall.</p></div>
+        <div class="glass card"><span class="num">02</span><h3>100 customers walk in</h3><p>A varied crowd with different ages, budgets, devices and patience. Each one decides: buy, maybe, or leave.</p></div>
+        <div class="glass card"><span class="num">03</span><h3>Fix what stops them</h3><p>Every &ldquo;no&rdquo; comes with a reason. You get the drop-off step and fixes ranked by how many people they&rsquo;d win back.</p></div>
+      </div>
+    </section>
+
+    <section id="what">
+      <p class="label">what you can test</p>
+      <h2 style="margin-top:12px">Apps, games, sites and stores.</h2>
+      <div class="grid4">
+        <div class="glass card"><h3>Mobile apps</h3><p>Onboarding screens and the paywall, with App Store and Google Play rule checks.</p></div>
+        <div class="glass card"><h3>Games</h3><p>The first minutes and the shop or game-pass offer (Roblox and more), from your screenshots.</p></div>
+        <div class="glass card"><h3>Websites</h3><p>Landing page, pricing and sign-up. An AI explorer can even try your product.</p></div>
+        <div class="glass card"><h3>Online stores <span class="pill" style="margin-left:4px">beta</span></h3><p>Product pages, shipping costs, returns and trust, judged like a shopper.</p></div>
+      </div>
+    </section>
+
+    <section id="science">
+      <p class="label">the science behind the customers</p>
+      <h2 style="margin-top:12px">Consumer models built on research.</h2>
+      <p class="sub">Each simulated customer starts from published studies about how real people browse and buy. Code samples the crowd and counts every answer; AI only plays each person.</p>
+      <div class="glass" style="margin-top:30px;overflow:hidden">
+        <table>
+          <caption class="label" style="text-align:left;padding:16px 18px">model card · facts are published, sources named</caption>
+          <thead><tr><th scope="col">Finding</th><th scope="col">Applies to</th><th scope="col">Source</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Visitors decide within about 10 seconds, and skim</th><td>Everyone</td><td>Nielsen Norman Group</td></tr>
+            <tr><th scope="row">The median landing page converts about 6.6% of visitors</th><td>Everyone</td><td>Unbounce, Q4 2024</td></tr>
+            <tr><th scope="row">Forced account creation is a top reason people quit</th><td>Everyone</td><td>Baymard Institute</td></tr>
+            <tr><th scope="row">About 87% of US teens own an iPhone</th><td>Ages 13-17</td><td>Piper Sandler, Fall 2025</td></tr>
+            <tr><th scope="row">Median download-to-trial for subscription apps is about 6.2%</th><td>App users</td><td>RevenueCat, 2025</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Our own estimates (phone share, patience, each customer&rsquo;s motives) are labelled as assumptions in the product. None of these organizations endorse or use Crawler.</p>
+    </section>
+
+    <section id="pricing">
+      <p class="label">pricing</p>
+      <h2 style="margin-top:12px">Pay per launch, not per month.</h2>
+      <p class="sub">Buy tests once. They never expire. No subscription.</p>
+      <div class="grid3">
+        <div class="glass card"><h3>Free</h3><div class="price">$0</div><ul class="ticks"><li>1 starter test (25 simulated customers)</li><li>Invite 3 friends: +1 test at 100 customers</li><li>Full report with ranked fixes</li></ul></div>
+        <div class="glass card" style="border-color:rgb(255 255 255 / .45)"><h3>Launch Pack <span class="pill" style="margin-left:4px">most popular</span></h3><div class="price">$19</div><p>one-time · $3.80 per test</p><ul class="ticks"><li>5 tests, never expire</li><li>100 simulated customers each</li><li>AI explorer tries your product</li></ul></div>
+        <div class="glass card"><h3>Studio Pack</h3><div class="price">$49</div><p>one-time · $2.45 per test</p><ul class="ticks"><li>20 tests, never expire</li><li>100 simulated customers each</li><li>Everything in Launch Pack</li></ul></div>
+      </div>
+      <p class="note">Payments are handled securely by Stripe. Crawler never sees your card details.</p>
+    </section>
+
+    <section id="faq">
+      <p class="label">questions</p>
+      <h2 style="margin-top:12px">Honest answers.</h2>
+      <div style="margin-top:28px">
+        <details class="glass"><summary>Are these real customers?</summary><p>No. They are simulated customers: AI playing varied people, built from published research. Crawler shows buying intent and the reasons behind it, not real purchases. Use it before launch, then confirm with real users.</p></details>
+        <details class="glass"><summary>How accurate is it?</summary><p>We don&rsquo;t claim a number yet. Crawler is new, and we&rsquo;re collecting predicted-versus-real results from launches to measure it publicly.</p></details>
+        <details class="glass"><summary>Do you log into my app or game?</summary><p>No. For apps and games you upload screenshots. For websites, Crawler only visits public pages, and never pays, buys or creates accounts on other people&rsquo;s sites.</p></details>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
+      <span class="brand" style="font-size:16px"><svg viewBox="0 0 120 120" style="width:22px;height:22px" aria-hidden="true"><g fill="currentColor" transform="rotate(-18 60 60)"><path d="M92.6,93.8L89.6,97.4L86.1,100.6L82.2,103.5L77.9,105.9L73.4,107.7L68.6,108.9L63.8,109.5L58.8,109.5L54.0,109.0L49.2,108.2L44.4,107.0L39.7,105.6L35.0,104.0L30.3,101.9L25.8,99.4L21.6,96.3L17.9,92.5L14.8,88.2L12.6,83.5L11.0,78.5L10.2,73.4L9.8,68.3L9.7,63.2L9.8,58.2L10.1,53.3L10.5,48.3L11.2,43.2L12.5,38.2L14.3,33.3L16.9,28.7L20.2,24.6L24.2,21.1L28.6,18.3L33.3,16.1L38.1,14.4L42.9,13.1L47.7,12.0L52.6,11.2L57.4,10.7L62.3,10.5L67.2,10.9L72.0,11.8L76.7,13.3L81.1,15.5L85.1,18.2L88.8,21.3L92.1,24.7L94.9,28.6L94.9,28.6L91.3,25.7L87.5,23.0L83.6,20.7L79.5,18.8L75.2,17.3L70.8,16.5L66.4,16.2L62.0,16.5L57.8,17.1L53.6,18.0L49.5,19.1L45.6,20.3L41.6,21.7L37.6,23.3L33.8,25.3L30.3,27.7L27.1,30.7L24.5,34.2L22.6,38.1L21.3,42.2L20.5,46.4L20.2,50.6L20.0,54.6L19.8,58.6L19.7,62.6L19.6,66.6L19.7,70.8L20.2,75.0L21.2,79.2L22.8,83.2L25.2,86.9L28.1,90.1L31.5,92.8L35.1,95.1L39.0,97.0L42.8,98.6L46.7,100.1L50.7,101.4L54.8,102.6L59.0,103.6L63.3,104.1L67.8,104.1L72.2,103.6L76.6,102.5L80.8,100.9L84.9,98.8L88.8,96.4L92.6,93.8Z"/><path d="M75.5,89.1L73.1,91.0L70.5,92.5L67.7,93.7L64.7,94.5L61.7,94.9L58.6,94.9L55.6,94.6L52.5,94.1L49.5,93.4L46.6,92.5L43.6,91.6L40.6,90.4L37.7,89.1L34.8,87.5L32.0,85.5L29.5,83.2L27.4,80.6L25.7,77.7L24.5,74.5L23.7,71.2L23.4,67.9L23.4,64.5L23.7,61.3L24.0,58.1L24.5,55.0L24.9,51.8L25.5,48.7L26.1,45.5L27.1,42.3L28.4,39.3L30.0,36.3L32.1,33.7L34.6,31.4L37.4,29.5L40.4,28.1L43.5,27.0L46.7,26.2L49.9,25.7L53.0,25.4L56.1,25.3L59.2,25.3L62.3,25.4L65.3,25.8L68.2,26.5L71.1,27.5L73.8,28.9L76.3,30.6L78.5,32.6L78.5,32.6L75.7,31.6L73.0,30.6L70.3,30.0L67.5,29.7L64.7,29.6L62.0,29.8L59.3,30.2L56.7,30.6L54.2,31.1L51.7,31.7L49.1,32.4L46.6,33.2L44.2,34.3L41.9,35.6L39.8,37.3L38.0,39.2L36.5,41.5L35.5,43.9L34.7,46.4L34.2,49.0L33.9,51.5L33.6,53.9L33.4,56.2L33.0,58.6L32.7,61.0L32.3,63.4L32.1,66.0L32.1,68.6L32.5,71.2L33.2,73.8L34.4,76.2L35.9,78.3L37.8,80.2L39.9,81.9L42.1,83.3L44.4,84.6L46.6,85.7L48.9,86.8L51.3,87.9L53.7,88.9L56.2,89.8L58.8,90.5L61.5,91.0L64.3,91.2L67.1,91.1L69.9,90.7L72.7,89.9L75.5,89.1Z"/><path d="M63.3,78.7L61.9,79.5L60.5,79.9L58.9,80.1L57.4,80.1L55.9,80.0L54.3,79.7L52.8,79.4L51.3,78.9L49.8,78.4L48.3,77.8L46.7,77.2L45.2,76.4L43.7,75.6L42.2,74.6L40.9,73.4L39.7,72.0L38.7,70.5L38.0,68.9L37.5,67.2L37.2,65.4L37.2,63.6L37.3,61.9L37.6,60.1L37.9,58.5L38.3,56.8L38.7,55.2L39.2,53.6L39.6,52.0L40.1,50.4L40.6,48.8L41.3,47.2L42.1,45.7L43.1,44.3L44.3,43.0L45.7,41.9L47.2,41.0L48.8,40.3L50.5,39.8L52.1,39.5L53.8,39.4L55.5,39.4L57.1,39.4L58.7,39.6L60.2,39.8L61.7,40.1L63.2,40.5L64.6,41.1L65.9,41.9L65.9,41.9L64.4,42.1L62.9,42.3L61.5,42.5L60.2,42.7L58.9,43.0L57.7,43.3L56.4,43.6L55.2,44.0L54.0,44.3L52.8,44.8L51.7,45.4L50.6,46.1L49.7,47.0L48.9,47.9L48.2,49.0L47.7,50.2L47.4,51.4L47.1,52.6L47.0,53.7L46.8,54.9L46.7,55.9L46.5,57.0L46.2,58.0L45.9,59.0L45.6,60.1L45.2,61.2L45.0,62.4L44.8,63.6L44.8,64.8L44.9,66.1L45.3,67.3L45.9,68.4L46.6,69.4L47.4,70.3L48.4,71.1L49.3,71.9L50.3,72.5L51.3,73.2L52.3,73.9L53.3,74.6L54.3,75.3L55.4,76.0L56.6,76.6L57.8,77.2L59.1,77.7L60.4,78.1L61.8,78.4L63.3,78.7Z"/></g></svg> crawler</span>
+      <span>Simulated customers · buying intent, not real purchases · &copy; 2026 Crawler</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+  // the example crowd: 41 would sign up, 22 maybe, 37 no
+  var c = document.getElementById("crowd");
+  for (var i = 0; i < 100; i++) {
+    var d = document.createElement("span");
+    d.style.cssText = i < 41 ? "background:#fff" : i < 63 ? "background:rgb(255 255 255 / .4)" : "border:1.5px solid rgb(255 255 255 / .28)";
+    c.appendChild(d);
+  }
+</script>
+</body>
+</html>
