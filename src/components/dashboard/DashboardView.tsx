@@ -1,83 +1,83 @@
 "use client";
-// The dashboard: a dark, product-grade workspace. It only DISPLAYS data it is given
-// (src/app/dashboard/page.tsx loads it as the signed-in user).
+// The dashboard (v4, 2026-11-19): the founder's mockup style (sidebar, search bar, electric-blue
+// buttons, a hero line, metric tiles with mini charts, a ring, insight + recent-test lists),
+// filled ONLY with Crawler's real numbers. Nothing here is estimated or invented: every number
+// is counted from the person's own tests (src/lib/dashboard.ts). Empty states say so plainly.
 //
 // Layout
-//   left:  sidebar (New test, the 5 views, your plan + invite progress). On phones it becomes a row of tabs.
-//   right: the selected view. "Overview" = your latest result as a crowd of 100 dots, the headline numbers,
-//          your trend, what keeps blocking people, the fix queue and recent tests.
-// Every number on this screen is counted in code from your own tests (src/lib/dashboard.ts). Nothing is estimated.
-// Shortcut: press "N" anywhere (outside a text box) to start a new test.
-import { useEffect, useState } from "react";
+//   left:  sidebar (logo, the 5 views, a "Run a test" card, your plan). Phones: a tab row.
+//   top:   search your tests (press / or ⌘K), plan pill.
+//   views: Dashboard, Tests, Fixes, Customer minds, Playbook. Press "N" for a new test.
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MindsSection from "./MindsSection";
 import PlaybookSection, { PlayCard } from "./PlaybookSection";
 import InviteCard from "./InviteCard";
-import { Bar, Crowd, Icon, TrendChart } from "./viz";
+import { Bar, Icon, Ring, Spark, TrendChart } from "./viz";
+import Mark from "@/components/Mark";
 import { PLAYS } from "@/lib/playbook";
 import { summarize, type Analysis, type DashboardData } from "@/lib/dashboard";
 
 const VIEWS = [
-  ["overview", "Overview"],
+  ["overview", "Dashboard"],
   ["tests", "Tests"],
   ["fixes", "Fixes"],
   ["minds", "Customer minds"],
   ["playbook", "Playbook"],
 ] as const;
 type ViewId = (typeof VIEWS)[number][0];
+const VIEW_ICON: Record<ViewId, string> = { overview: "overview", tests: "chart", fixes: "fix", minds: "minds", playbook: "playbook" };
 
-const date = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-// v9: calm, professional semibold (was the heavy Archivo display font)
-const DISPLAY = {
-  fontFamily: "var(--font-sans)",
-  fontWeight: 600,
-  letterSpacing: "-0.035em",
-} as const;
+const date = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+function ago(iso: string) {
+  const m = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.round(h / 24)}d ago`;
+}
+const pctOf = (a: Analysis) => (a.pct === null ? "–" : `${a.pct}%`);
 
-// A glass panel. Everything on the dashboard sits in one of these.
-function Panel({
-  children,
-  className = "",
-  label,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  label?: string;
-}) {
+function Panel({ children, className = "", label }: { children: React.ReactNode; className?: string; label?: string }) {
   return (
-    <section
-      className={`dash-panel rounded-2xl p-5 sm:p-6 ${className}`}
-      aria-label={label}
-    >
+    <section className={`dash-panel rounded-2xl p-5 sm:p-6 ${className}`} aria-label={label}>
       {children}
     </section>
   );
 }
 
-function Delta({ n }: { n: number | null }) {
-  if (n === null)
-    return (
-      <span className="rounded-full border border-white/15 px-2.5 py-1 font-mono text-[11px] text-white/60">
-        first test
-      </span>
-    );
-  if (n === 0)
-    return (
-      <span className="rounded-full border border-white/15 px-2.5 py-1 font-mono text-[11px] text-white/60">
-        no change
-      </span>
-    );
+function PanelTitle({ icon, children, action }: { icon: string; children: React.ReactNode; action?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <h2 className="flex items-center gap-2.5 font-semibold">
+        <Icon name={icon} className="text-[#6b91ff]" />
+        {children}
+      </h2>
+      {action}
+    </div>
+  );
+}
+
+function Delta({ n, suffix = " pts" }: { n: number | null; suffix?: string }) {
+  if (n === null) return <span className="text-xs text-white/50">first test</span>;
+  if (n === 0) return <span className="text-xs text-white/50">no change</span>;
+  return (
+    <span className={`text-sm font-medium ${n > 0 ? "text-[#4ade80]" : "text-[#f87171]"}`}>
+      {n > 0 ? "↑" : "↓"} {Math.abs(n)}
+      {suffix}
+    </span>
+  );
+}
+
+// A small square "thumbnail" for a test: the site's first letter, or a phone for app tests.
+function Thumb({ a, size = "h-12 w-12" }: { a: Analysis; size?: string }) {
   return (
     <span
-      className={`rounded-full px-2.5 py-1 font-mono text-[11px] ${n > 0 ? "bg-white text-black" : "border border-white/30 text-white"}`}
+      className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-[#1b2a7a] to-[#0a1033] text-lg font-semibold`}
+      aria-hidden
     >
-      {n > 0 ? "▲" : "▼"} {Math.abs(n)} pts
+      {a.kind === "app" ? <Icon name="phone" /> : a.label.charAt(0).toUpperCase()}
     </span>
   );
 }
@@ -86,41 +86,27 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
   const router = useRouter();
   const [view, setView] = useState<ViewId>("overview");
   const [hello, setHello] = useState("Welcome back");
-  const [today, setToday] = useState("");
+  const [query, setQuery] = useState("");
+  const search = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const now = new Date();
-    const h = now.getHours();
-    setHello(
-      h < 5
-        ? "Up late"
-        : h < 12
-          ? "Good morning"
-          : h < 18
-            ? "Good afternoon"
-            : "Good evening",
-    );
-    setToday(
-      now.toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      }),
-    );
+    const h = new Date().getHours();
+    setHello(h < 5 ? "Up late" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening");
     const fromHash = window.location.hash.slice(1) as ViewId;
     if (VIEWS.some(([id]) => id === fromHash)) setView(fromHash);
-    // "N" = new test (ignored while typing in a box)
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
-      if (
-        e.metaKey ||
-        e.ctrlKey ||
-        e.altKey ||
-        /INPUT|TEXTAREA|SELECT/.test(t.tagName) ||
-        t.isContentEditable
-      )
+      const typing = /INPUT|TEXTAREA|SELECT/.test(t.tagName) || t.isContentEditable;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        search.current?.focus();
         return;
-      if (e.key === "n" || e.key === "N") router.push("/onboarding");
+      }
+      if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "/") {
+        e.preventDefault();
+        search.current?.focus();
+      } else if (e.key === "n" || e.key === "N") router.push("/onboarding");
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -139,117 +125,117 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
   const sum = summarize(data.analyses);
   const done = data.analyses.filter((a) => a.status === "done");
   const latest: Analysis | undefined = done[0];
-  const topFix = data.fixes[0];
   const topBlocker = data.blockers[0];
   const recent = Math.min(10, done.length);
-
-  // One personal sentence, built only from this person's own results.
-  const summary = !latest
-    ? "Your first test is free. Drop in your app, game, site or store and meet 100 simulated customers."
-    : `${latest.label} ${latest.delta === null ? "scored" : latest.delta > 0 ? "climbed to" : latest.delta < 0 ? "slipped to" : "held at"} ${latest.score} of ${latest.total}.` +
-      (latest.blocker ? ` Biggest blocker: ${latest.blocker}.` : "");
+  const allPcts = done.map((a) => a.pct!).reverse(); // oldest first, every product
+  const trendPcts = sum.trend.map((t) => t.pct);
+  const trendDelta = trendPcts.length >= 2 ? trendPcts[trendPcts.length - 1] - trendPcts[0] : null;
+  const found = useMemo(
+    () =>
+      query.trim()
+        ? data.analyses.filter((a) => `${a.label} ${a.blocker ?? ""} ${a.kind}`.toLowerCase().includes(query.trim().toLowerCase()))
+        : data.analyses,
+    [query, data.analyses],
+  );
+  const planLabel = plan.unlimited ? "Admin" : plan.plan === "pack" ? "Test packs" : plan.plan === "free" ? "Free plan" : `${plan.plan} plan`;
+  const tiles: [string, string, number | null, number[], string][] = [
+    ["Latest score", latest ? pctOf(latest) : "–", latest?.delta ?? null, trendPcts, `would ${latest?.goal ?? "convert"}`],
+    ["Average score", sum.avgPct === null ? "–" : `${sum.avgPct}%`, null, allPcts, "across finished tests"],
+    ["Best score", sum.bestPct === null ? "–" : `${sum.bestPct}%`, null, allPcts, "your high-water mark"],
+  ];
 
   return (
     <div className="dash mx-auto max-w-7xl">
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[232px_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
         {/* ================= sidebar ================= */}
         <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-          <Link
-            href="/onboarding"
-            className="btn btn-primary hidden h-11 w-full justify-between px-4 lg:flex"
-          >
-            <span className="flex items-center gap-2">
-              <Icon name="plus" /> New test
-            </span>
-            <kbd className="rounded border border-black/20 px-1.5 font-mono text-[11px]">
-              N
-            </kbd>
-          </Link>
-          <nav
-            aria-label="Dashboard"
-            className="-mx-4 flex gap-1 overflow-x-auto px-4 lg:mx-0 lg:mt-6 lg:flex-col lg:overflow-visible lg:px-0"
-          >
+          <div className="dash-panel hidden rounded-2xl p-4 lg:block">
+            <p className="flex items-center gap-2 px-1 text-lg font-semibold">
+              <Mark size={26} className="text-[#6b91ff]" /> Crawler
+            </p>
+            <nav aria-label="Dashboard" className="mt-5 flex flex-col gap-1">
+              {VIEWS.map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => pick(id)}
+                  aria-current={view === id ? "page" : undefined}
+                  className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm transition-colors ${
+                    view === id ? "dash-active text-white" : "text-white/65 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <Icon name={VIEW_ICON[id]} />
+                  {label}
+                </button>
+              ))}
+            </nav>
+            <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.04] p-4">
+              <Icon name="bolt" className="h-7 w-7 text-[#6b91ff]" />
+              <p className="mt-2 font-semibold leading-snug">Run a test in about a minute</p>
+              <p className="mt-1 text-xs text-white/60">{plan.customers} simulated customers try your app, game, site or store.</p>
+              <Link href="/onboarding" className="btn btn-primary mt-4 h-10 w-full text-sm">
+                Start test <span aria-hidden>→</span>
+              </Link>
+            </div>
+            <div className="mt-6 flex items-center gap-3 border-t border-white/10 px-1 pt-4">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 font-semibold" aria-hidden>
+                {data.name.charAt(0).toUpperCase()}
+              </span>
+              <div className="min-w-0 text-sm">
+                <p className="truncate font-medium">{data.name}</p>
+                <p className="text-xs text-white/55">
+                  {planLabel}
+                  {!plan.unlimited && ` · ${plan.left} test${plan.left === 1 ? "" : "s"} left`}
+                </p>
+              </div>
+            </div>
+          </div>
+          {/* phones: a tab row instead of the sidebar */}
+          <nav aria-label="Dashboard views" className="-mx-4 flex gap-1 overflow-x-auto px-4 lg:hidden">
             {VIEWS.map(([id, label]) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => pick(id)}
                 aria-current={view === id ? "page" : undefined}
-                className={`flex min-h-11 shrink-0 items-center gap-3 rounded-lg px-3 text-sm transition-colors ${
-                  view === id
-                    ? "bg-white/10 text-white"
-                    : "text-white/60 hover:bg-white/5 hover:text-white"
-                }`}
+                className={`flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm ${view === id ? "dash-active text-white" : "text-white/65"}`}
               >
-                <Icon name={id} />
+                <Icon name={VIEW_ICON[id]} />
                 {label}
               </button>
             ))}
           </nav>
-
-          <div className="dash-panel mt-6 hidden rounded-2xl p-4 lg:block">
-            <p className="t-label">
-              {plan.unlimited ? "admin" : plan.plan === "pack" ? "test packs" : `${plan.plan} plan`}
-            </p>
-            <p className="mt-2 text-2xl" style={DISPLAY}>
-              {plan.unlimited
-                ? "Unlimited"
-                : `${plan.left} test${plan.left === 1 ? "" : "s"} left`}
-            </p>
-            {!plan.unlimited && (
-              <div className="mt-3">
-                <Bar pct={plan.limit ? (plan.used / plan.limit) * 100 : 0} />
-                <p className="mt-2 text-xs text-white/60">
-                  {plan.used} of {plan.limit} used · {plan.customers} customers
-                  per test
-                </p>
-              </div>
-            )}
-            {!plan.unlimited && plan.plan === "free" && (
-              <button
-                type="button"
-                onClick={() => pick("overview")}
-                className="mt-4 block w-full rounded-lg border border-white/15 p-3 text-left text-xs text-white/70 hover:border-white/30 hover:text-white"
-              >
-                <span className="flex gap-1.5" aria-hidden>
-                  {Array.from({ length: plan.referrals.needed }, (_, i) => (
-                    <span
-                      key={i}
-                      className={`h-1.5 flex-1 rounded-full ${i < plan.referrals.count ? "bg-white" : "bg-white/15"}`}
-                    />
-                  ))}
-                </span>
-                <span className="mt-2 block">
-                  {plan.referrals.count}/{plan.referrals.needed} friends joined.
-                  Unlock 100 customers.
-                </span>
-              </button>
-            )}
-          </div>
         </aside>
 
         {/* ================= main ================= */}
         <div className="min-w-0 space-y-6">
-          <header className="flex flex-wrap items-end justify-between gap-6 pb-2">
-            <div className="min-w-0">
-              <p className="t-label">{today || "dashboard"}</p>
-              <h1 className="mt-3 text-4xl sm:text-5xl" style={DISPLAY}>
-                {hello}, {data.name}.
-              </h1>
-              <p className="mt-3 max-w-2xl text-white/70">{summary}</p>
-            </div>
-            <div className="flex gap-2 lg:hidden">
-              <Link href="/onboarding" className="btn btn-primary h-11 px-5">
-                <Icon name="plus" /> New test
-              </Link>
-            </div>
-          </header>
+          {/* top bar: search + plan */}
+          <div className="flex items-center gap-3">
+            <label className="dash-panel flex min-h-12 flex-1 items-center gap-3 rounded-2xl px-4">
+              <Icon name="search" className="shrink-0 text-white/50" />
+              <span className="sr-only">Search your tests</span>
+              <input
+                ref={search}
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  if (e.target.value && view !== "tests") pick("tests");
+                }}
+                placeholder="Search your tests, sites or blockers…"
+                className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-white/45 focus:outline-none"
+              />
+              <kbd className="hidden rounded-md border border-white/15 px-1.5 py-0.5 font-mono text-[11px] text-white/50 sm:block">⌘K</kbd>
+            </label>
+            <span className="dash-panel hidden min-h-12 items-center gap-2 rounded-2xl px-4 text-sm sm:flex">
+              <Icon name="spark" className="text-[#6b91ff]" /> {planLabel}
+            </span>
+          </div>
 
           {paid && (
             <div role="status" className="dash-panel rounded-2xl p-4 text-sm">
               <span className="font-medium">Payment received. Thank you!</span>{" "}
               <span className="text-white/70">
-                Your {paid === "studio" ? "Studio" : "Launch"} Pack tests are being added. It can take a few seconds; refresh if the count hasn&apos;t changed.
+                Your {paid === "studio" ? "Studio" : "Launch"} Pack tests are being added. Refresh in a few seconds if the count hasn&apos;t changed.
               </span>
             </div>
           )}
@@ -257,238 +243,210 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           {/* ===== OVERVIEW ===== */}
           {view === "overview" && (
             <>
-              <div className="grid gap-6 xl:grid-cols-3">
-                {/* hero: the latest result as a crowd */}
-                <Panel
-                  className="dash-hero xl:col-span-2"
-                  label="Latest result"
-                >
+              {/* hero */}
+              <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="relative overflow-hidden rounded-2xl px-1 py-4 sm:py-6">
+                  <div className="dash-orb" aria-hidden>
+                    <Mark size={220} className="text-[#6b91ff]" />
+                  </div>
+                  <p className="t-label relative">
+                    {hello}, {data.name}
+                  </p>
+                  <h1 className="relative mt-3 text-4xl font-semibold tracking-tight sm:text-6xl">
+                    Test. Fix. <span className="text-[#5b86ff]">Launch.</span>
+                  </h1>
+                  <p className="relative mt-4 max-w-xl text-white/75">
+                    {latest
+                      ? `${latest.label} ${latest.delta === null ? "scored" : latest.delta > 0 ? "climbed to" : latest.delta < 0 ? "slipped to" : "held at"} ${latest.score} of ${latest.total}.${latest.blocker ? ` Biggest blocker: ${latest.blocker}.` : ""}`
+                      : `${plan.customers} simulated customers try your product and tell you exactly what to fix before launch.`}
+                  </p>
+                  <div className="relative mt-6 flex flex-wrap gap-3">
+                    <Link href="/onboarding" className="btn btn-primary h-12 px-6">
+                      Run new test <span aria-hidden>→</span>
+                    </Link>
+                    <Link href={latest ? `/run/${latest.id}` : "/example"} className="btn btn-secondary h-12 px-6">
+                      {latest ? "Open latest report" : "View example"}
+                    </Link>
+                  </div>
+                </div>
+
+                <Panel label="Customers simulated">
+                  <p className="flex items-center gap-2 text-sm text-[#7aa0ff]">
+                    <span className="h-2 w-2 rounded-full bg-[#4d7bff]" /> Your crowd so far
+                  </p>
+                  <p className="mt-3 text-4xl font-semibold tracking-tight">{sum.customers.toLocaleString("en-US")}</p>
+                  <p className="text-sm text-white/60">
+                    simulated customers across {sum.finished} finished test{sum.finished === 1 ? "" : "s"}
+                  </p>
+                  <div className="mt-3">
+                    <Spark values={allPcts} id="crowd" />
+                  </div>
+                </Panel>
+              </div>
+
+              {/* performance overview + latest test */}
+              <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+                <Panel label="Performance overview">
+                  <PanelTitle icon="chart">Performance overview</PanelTitle>
+                  <div className="mt-5 grid gap-6 sm:grid-cols-3 sm:divide-x sm:divide-white/10">
+                    {tiles.map(([label, value, delta, spark, note], i) => (
+                      <div key={label} className={i ? "sm:pl-6" : ""}>
+                        <p className="text-sm text-white/65">{label}</p>
+                        <p className="mt-2 text-4xl font-semibold tracking-tight">{value}</p>
+                        <div className="mt-1 flex min-h-6 items-center gap-2">
+                          {delta !== null ? <Delta n={delta} /> : <span className="text-xs text-white/50">{note}</span>}
+                        </div>
+                        <div className="mt-2">
+                          <Spark values={spark} id={`m${i}`} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Panel>
+
+                <Panel label="Latest test">
+                  <PanelTitle icon="spark">Latest test</PanelTitle>
                   {latest ? (
-                    <>
-                      <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_260px]">
-                        <div>
-                          <p className="t-label">
-                            latest · {latest.label} · {date(latest.created_at)}
-                          </p>
-                          <p className="mt-4 flex items-end gap-2 leading-none">
-                            <span
-                              className="text-[6.5rem] sm:text-[8rem]"
-                              style={{
-                                ...DISPLAY,
-                                letterSpacing: "-0.07em",
-                                lineHeight: 0.8,
-                              }}
-                            >
-                              {latest.score}
-                            </span>
-                            <span
-                              className="pb-2 text-2xl text-white/40"
-                              style={DISPLAY}
-                            >
-                              /{latest.total}
-                            </span>
-                          </p>
-                          <p className="mt-3 text-white/80">
-                            simulated customers would {latest.goal ?? "convert"}
-                          </p>
-                          <div className="mt-4 flex flex-wrap items-center gap-2">
-                            <Delta n={latest.delta} />
-                            <span className="rounded-full border border-white/15 px-2.5 py-1 font-mono text-[11px] text-white/60">
-                              {latest.kind}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="mx-auto w-full max-w-[260px]">
-                          <Crowd
-                            yes={latest.score ?? 0}
-                            total={latest.total ?? 100}
-                          />
-                        </div>
+                    <div className="mt-4 flex gap-4">
+                      <Thumb a={latest} size="h-24 w-24" />
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold">{latest.label}</p>
+                        {latest.blocker && (
+                          <span className="mt-1 inline-block rounded-md bg-[#3d6bff]/20 px-2 py-0.5 text-xs text-[#9db7ff]">blocker: {latest.blocker}</span>
+                        )}
+                        <p className="mt-2 text-sm">
+                          {latest.score} of {latest.total} would {latest.goal ?? "convert"}
+                        </p>
+                        <Delta n={latest.delta} suffix=" pts vs last" />
                       </div>
-                      <div className="mt-6 flex border-t border-white/10 pt-5 flex-wrap gap-2">
-                        <Link
-                          href={`/run/${latest.id}`}
-                          className="btn btn-primary h-11 px-5"
-                        >
-                          Open report
-                        </Link>
-                        <Link
-                          href={`/run/${latest.id}#share`}
-                          className="btn h-11 border border-white/20 px-5 text-white hover:bg-white/10"
-                        >
-                          Send score
-                        </Link>
-                        <Link
-                          href={
-                            latest.kind === "app"
-                              ? "/onboarding?kind=app"
-                              : `/app?url=${encodeURIComponent(latest.url)}`
-                          }
-                          className="btn h-11 px-4 text-white/70 hover:text-white"
-                        >
-                          Test again
-                        </Link>
-                      </div>
-                    </>
+                    </div>
                   ) : (
-                    <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_260px]">
-                      <div>
-                        <p className="t-label">no tests yet</p>
-                        <p
-                          className="mt-4 text-3xl sm:text-4xl"
-                          style={DISPLAY}
-                        >
-                          100 customers are waiting.
-                        </p>
-                        <p className="mt-3 max-w-md text-white/70">
-                          About a minute from now you&apos;ll know what stops them
-                          from buying.
-                        </p>
-                        <div className="mt-6 flex flex-wrap gap-2">
-                          <Link
-                            href="/onboarding"
-                            className="btn btn-primary h-11 px-5"
-                          >
-                            Run my first test
+                    <p className="mt-4 text-sm text-white/60">Your first result lands here.</p>
+                  )}
+                  <Link href={latest ? `/run/${latest.id}` : "/onboarding"} className="btn btn-secondary mt-5 h-10 w-full text-sm">
+                    {latest ? "View details" : "Run my first test"} <span aria-hidden>→</span>
+                  </Link>
+                </Panel>
+              </div>
+
+              {/* result ring, top fixes, recent tests */}
+              <div className="grid gap-6 xl:grid-cols-3">
+                <Panel label="Test result">
+                  <PanelTitle icon="chart">Test result</PanelTitle>
+                  <div className="mt-5 flex flex-wrap items-center gap-6">
+                    <Ring pct={latest?.pct ?? 0} label={latest ? `would ${latest.goal ?? "convert"}` : "no test yet"} />
+                    <ul className="space-y-3 text-sm">
+                      {[`${latest?.total ?? plan.customers} simulated customers`, "Buying intent, not purchases", "A reason for every “no”", "Every number counted in code"].map((t) => (
+                        <li key={t} className="flex items-center gap-2.5">
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#3d6bff]">
+                            <Icon name="check" className="h-3 w-3" />
+                          </span>
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Panel>
+
+                <Panel label="Top fixes">
+                  <PanelTitle
+                    icon="spark"
+                    action={
+                      <button type="button" onClick={() => pick("fixes")} className="text-sm text-[#7aa0ff] hover:text-white">
+                        View all →
+                      </button>
+                    }
+                  >
+                    Top fixes
+                  </PanelTitle>
+                  {data.fixes.length ? (
+                    <ul className="mt-4 divide-y divide-white/10">
+                      {data.fixes.slice(0, 3).map((f, i) => (
+                        <li key={f.title}>
+                          <Link href={`/run/${f.testId}`} className="flex items-center gap-3 py-3 hover:text-white">
+                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#7aa0ff]">
+                              <Icon name={["cart", "phone", "tag"][i] ?? "fix"} />
+                            </span>
+                            <span className="min-w-0 flex-1 text-sm">
+                              {f.title}
+                              {f.wins > 0 && <span className="block text-xs text-white/55">could win back {f.wins} customers</span>}
+                            </span>
+                            <span className="text-white/40" aria-hidden>
+                              ›
+                            </span>
                           </Link>
-                          <Link
-                            href="/example"
-                            className="btn h-11 border border-white/20 px-5 text-white hover:bg-white/10"
-                          >
-                            See an example
-                          </Link>
-                        </div>
-                      </div>
-                      <div className="mx-auto w-full max-w-[260px]">
-                        <Crowd yes={0} total={100} />
-                      </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="mt-4 space-y-3">
+                      <p className="text-sm text-white/60">Your ranked fixes land here after your first test. Meanwhile:</p>
+                      <PlayCard play={PLAYS.find((p) => p.area === "app")!} />
                     </div>
                   )}
                 </Panel>
 
-                {/* what to do next */}
-                <Panel className="flex flex-col" label="What to do next">
-                  <p className="t-label">biggest blocker</p>
-                  <p
-                    className="mt-2 text-2xl first-letter:uppercase"
-                    style={DISPLAY}
-                  >
-                    {topBlocker?.category ?? latest?.blocker ?? "Nothing yet"}
-                  </p>
-                  {topBlocker && (
-                    <p className="mt-1 text-sm text-white/60">
-                      #1 reason in {topBlocker.tests} of your last {recent} test
-                      {recent === 1 ? "" : "s"}
-                    </p>
-                  )}
-                  <div className="my-5 h-px bg-white/10" />
-                  <p className="t-label">best next fix</p>
-                  {topFix ? (
-                    <>
-                      <p className="mt-2 font-medium">{topFix.title}</p>
-                      {topFix.wins > 0 && (
-                        <p className="mt-2 flex items-baseline gap-2">
-                          <span className="text-4xl" style={DISPLAY}>
-                            +{topFix.wins}
-                          </span>
-                          <span className="text-sm text-white/60">
-                            customers it could win back
-                          </span>
-                        </p>
-                      )}
-                      <Link
-                        href={`/run/${topFix.testId}`}
-                        className="mt-auto pt-5 text-sm text-white/70 underline-offset-4 hover:text-white hover:underline"
-                      >
-                        See it in the report →
-                      </Link>
-                    </>
-                  ) : (
-                    <p className="mt-2 text-sm text-white/60">
-                      Your best fix, and how many customers it could win back,
-                      lands here after your first test.{" "}
-                      <button
-                        type="button"
-                        onClick={() => pick("playbook")}
-                        className="underline underline-offset-4 hover:text-white"
-                      >
-                        Browse the playbook
+                <Panel label="Recent tests">
+                  <PanelTitle
+                    icon="clock"
+                    action={
+                      <button type="button" onClick={() => pick("tests")} className="text-sm text-[#7aa0ff] hover:text-white">
+                        View all →
                       </button>
-                    </p>
+                    }
+                  >
+                    Recent tests
+                  </PanelTitle>
+                  {data.analyses.length ? (
+                    <ul className="mt-4 space-y-1">
+                      {data.analyses.slice(0, 3).map((a) => (
+                        <li key={a.id}>
+                          <Link href={`/run/${a.id}`} className="flex items-center gap-3 rounded-xl py-2 hover:bg-white/[0.03]">
+                            <Thumb a={a} />
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate font-medium">{a.label}</span>
+                              <span className="flex items-center gap-2 text-xs text-white/55">
+                                {a.status === "done" ? `${pctOf(a)} would ${a.goal ?? "convert"}` : a.status === "error" ? "failed · not counted" : "running…"}
+                                {a.delta !== null && a.delta !== 0 && <Delta n={a.delta} />}
+                              </span>
+                            </span>
+                            <span className="flex flex-col items-end gap-1 text-xs text-white/50">
+                              {ago(a.created_at)}
+                              <span
+                                className={`h-2 w-2 rounded-full ${a.status === "done" ? "bg-[#4ade80]" : a.status === "error" ? "bg-[#f87171]" : "bg-[#facc15]"}`}
+                                aria-hidden
+                              />
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-4 text-sm text-white/60">No tests yet. Your first one is free.</p>
                   )}
                 </Panel>
               </div>
 
-              {/* headline numbers */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-                {(
-                  [
-                    [
-                      "tests run",
-                      String(sum.tests),
-                      `${sum.finished} finished`,
-                    ],
-                    [
-                      "average score",
-                      sum.avgPct === null ? "–" : `${sum.avgPct}%`,
-                      "across finished tests",
-                    ],
-                    [
-                      "best score",
-                      sum.bestPct === null ? "–" : `${sum.bestPct}%`,
-                      "your high-water mark",
-                    ],
-                    [
-                      "customers simulated",
-                      sum.customers.toLocaleString("en-US"),
-                      "all simulated, all yours",
-                    ],
-                  ] as const
-                ).map(([label, value, note]) => (
-                  <Panel key={label} label={label}>
-                    <p className="t-label">{label}</p>
-                    <p className="mt-3 text-4xl sm:text-5xl" style={DISPLAY}>
-                      {value}
-                    </p>
-                    <p className="mt-2 text-xs text-white/50">{note}</p>
-                  </Panel>
-                ))}
-              </div>
-
+              {/* trend + blockers */}
               <div className="grid gap-6 xl:grid-cols-3">
                 <Panel className="xl:col-span-2" label="Score trend">
-                  <div className="mb-4 flex items-end justify-between gap-4">
-                    <div>
-                      <p className="t-label">trend</p>
-                      <p className="mt-1 font-medium">
-                        {latest ? latest.label : "Your product"}
-                      </p>
-                    </div>
-                    {sum.trend.length >= 2 && (
-                      <Delta
-                        n={
-                          sum.trend[sum.trend.length - 1].pct - sum.trend[0].pct
-                        }
-                      />
-                    )}
+                  <PanelTitle icon="chart" action={trendDelta !== null ? <Delta n={trendDelta} /> : undefined}>
+                    Trend · {latest ? latest.label : "your product"}
+                  </PanelTitle>
+                  <div className="mt-4">
+                    <TrendChart points={sum.trend} />
                   </div>
-                  <TrendChart points={sum.trend} />
                 </Panel>
-
                 <Panel label="What keeps blocking people">
-                  <p className="t-label">what keeps blocking people</p>
+                  <PanelTitle icon="fix">What keeps blocking people</PanelTitle>
                   {data.blockers.length === 0 ? (
-                    <p className="mt-4 text-sm text-white/60">
-                      Your blockers show up here after your first test.
-                    </p>
+                    <p className="mt-4 text-sm text-white/60">Your blockers show up here after your first test.</p>
                   ) : (
                     <ul className="mt-5 space-y-5">
                       {data.blockers.slice(0, 5).map((b, i) => (
                         <li key={b.category}>
                           <div className="mb-2 flex justify-between gap-4 text-sm">
-                            <span className="first-letter:uppercase">
-                              {b.category}
-                            </span>
+                            <span className="first-letter:uppercase">{b.category}</span>
                             <span className="font-mono text-xs text-white/50">
                               {b.tests}/{recent}
                             </span>
@@ -498,59 +456,60 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                       ))}
                     </ul>
                   )}
+                  {topBlocker && <p className="mt-4 text-xs text-white/50">The #1 reason people said no, across your last {recent} tests.</p>}
                 </Panel>
               </div>
 
-              <div className="grid gap-6 xl:grid-cols-2">
-                <Panel label="Fix queue">
-                  <div className="flex items-end justify-between">
-                    <p className="t-label">fix queue</p>
-                    <button
-                      type="button"
-                      onClick={() => pick("fixes")}
-                      className="text-xs text-white/60 hover:text-white"
-                    >
-                      All fixes →
-                    </button>
-                  </div>
-                  <FixList fixes={data.fixes.slice(0, 3)} />
-                </Panel>
-                <Panel label="Recent tests">
-                  <div className="flex items-end justify-between">
-                    <p className="t-label">recent tests</p>
-                    <button
-                      type="button"
-                      onClick={() => pick("tests")}
-                      className="text-xs text-white/60 hover:text-white"
-                    >
-                      All tests →
-                    </button>
-                  </div>
-                  <TestList items={data.analyses.slice(0, 4)} compact />
-                </Panel>
-              </div>
-
-              {!plan.unlimited && plan.plan === "free" && (
-                <InviteCard plan={plan} />
-              )}
+              {!plan.unlimited && plan.plan === "free" && <InviteCard plan={plan} />}
             </>
           )}
 
           {/* ===== TESTS ===== */}
           {view === "tests" && (
             <Panel label="All tests">
-              <div className="flex flex-wrap items-end justify-between gap-2">
-                <h2 className="text-3xl" style={DISPLAY}>
-                  Tests
-                </h2>
-                <Link
-                  href="/tests"
-                  className="text-sm text-white/60 hover:text-white"
-                >
-                  Full history →
-                </Link>
-              </div>
-              <TestList items={data.analyses} />
+              <PanelTitle
+                icon="chart"
+                action={
+                  <Link href="/tests" className="text-sm text-[#7aa0ff] hover:text-white">
+                    Full history →
+                  </Link>
+                }
+              >
+                {query ? `Tests matching “${query}”` : "Tests"}
+              </PanelTitle>
+              {found.length === 0 ? (
+                <p className="mt-4 text-sm text-white/60">{query ? "Nothing matches that search." : "No tests yet. Your first one is free."}</p>
+              ) : (
+                <ul className="mt-4 divide-y divide-white/10">
+                  {found.map((a) => (
+                    <li key={a.id}>
+                      <Link href={`/run/${a.id}`} className="flex items-center gap-4 py-3 hover:bg-white/[0.03]">
+                        <Thumb a={a} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium">{a.label}</span>
+                          <span className="block truncate font-mono text-[11px] text-white/45">
+                            {date(a.created_at)} · {a.kind}
+                            {a.blocker ? ` · ${a.blocker}` : ""}
+                          </span>
+                        </span>
+                        {a.status === "done" && a.pct !== null ? (
+                          <>
+                            <span className="hidden w-28 sm:block">
+                              <Bar pct={a.pct} />
+                            </span>
+                            <span className="w-20 text-right text-2xl font-semibold tracking-tight">
+                              {a.score}
+                              <span className="text-sm text-white/45">/{a.total}</span>
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-mono text-xs text-white/50">{a.status === "error" ? "failed · not counted" : "running…"}</span>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </Panel>
           )}
 
@@ -558,21 +517,32 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           {view === "fixes" && (
             <div className="grid gap-6 xl:grid-cols-5">
               <Panel className="xl:col-span-3" label="Fix queue">
-                <h2 className="text-3xl" style={DISPLAY}>
-                  Fix queue
-                </h2>
-                <p className="mt-1 text-sm text-white/60">
-                  From your latest tests, biggest win-back first.
-                </p>
-                <FixList fixes={data.fixes} />
+                <PanelTitle icon="fix">Fix queue</PanelTitle>
+                <p className="mt-1 text-sm text-white/60">From your latest tests, biggest win-back first.</p>
+                {data.fixes.length === 0 ? (
+                  <p className="mt-4 text-sm text-white/60">Run a test and your ranked fixes land here.</p>
+                ) : (
+                  <ol className="mt-4 divide-y divide-white/10">
+                    {data.fixes.map((f, i) => (
+                      <li key={f.title} className="flex items-start gap-4 py-4">
+                        <span className="w-6 pt-0.5 font-mono text-xs text-white/40">{String(i + 1).padStart(2, "0")}</span>
+                        <div className="min-w-0 flex-1">
+                          <Link href={`/run/${f.testId}`} className="font-medium hover:underline">
+                            {f.title}
+                          </Link>
+                          {f.change && <p className="mt-1 text-sm text-white/60">{f.change}</p>}
+                          <p className="mt-1 font-mono text-[11px] text-white/40">from {f.from}</p>
+                        </div>
+                        {f.wins > 0 && <span className="shrink-0 text-2xl font-semibold text-[#7aa0ff]">+{f.wins}</span>}
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </Panel>
               <Panel className="xl:col-span-2" label="Plays to try">
-                <p className="t-label">plays for your blockers</p>
+                <PanelTitle icon="spark">Plays for your blockers</PanelTitle>
                 <div className="mt-4 space-y-3">
-                  {(data.moves.length
-                    ? data.moves
-                    : [PLAYS.find((p) => p.area === "web")!]
-                  ).map((p) => (
+                  {(data.moves.length ? data.moves : [PLAYS.find((p) => p.area === "web")!]).map((p) => (
                     <PlayCard key={p.id} play={p} />
                   ))}
                 </div>
@@ -583,13 +553,8 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           {/* ===== MINDS ===== */}
           {view === "minds" && (
             <Panel label="Customer minds">
-              <h2 className="text-3xl" style={DISPLAY}>
-                Customer minds
-              </h2>
-              <p className="mt-1 text-sm text-white/60">
-                Who tests your product. Pick a ready-made mind or build your
-                own.
-              </p>
+              <PanelTitle icon="minds">Customer minds</PanelTitle>
+              <p className="mt-1 text-sm text-white/60">Who tests your product. Pick a ready-made mind or build your own.</p>
               <div className="mt-6">
                 <MindsSection minds={data.minds} />
               </div>
@@ -599,13 +564,8 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           {/* ===== PLAYBOOK ===== */}
           {view === "playbook" && (
             <Panel label="Playbook">
-              <h2 className="text-3xl" style={DISPLAY}>
-                Playbook
-              </h2>
-              <p className="mt-1 text-sm text-white/60">
-                What&apos;s working for apps, games and stores, with the
-                evidence behind each play.
-              </p>
+              <PanelTitle icon="playbook">Playbook</PanelTitle>
+              <p className="mt-1 text-sm text-white/60">What&apos;s working for apps, games and stores, with the evidence behind each play.</p>
               <div className="mt-6">
                 <PlaybookSection trends={data.trends} />
               </div>
@@ -614,100 +574,5 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
         </div>
       </div>
     </div>
-  );
-}
-
-function FixList({ fixes }: { fixes: DashboardData["fixes"] }) {
-  if (!fixes.length)
-    return (
-      <p className="mt-4 text-sm text-white/60">
-        Run a test and your ranked fixes land here.
-      </p>
-    );
-  return (
-    <ol className="mt-4 divide-y divide-white/10">
-      {fixes.map((f, i) => (
-        <li key={f.title} className="flex items-start gap-4 py-4">
-          <span className="w-6 pt-0.5 font-mono text-xs text-white/40">
-            {String(i + 1).padStart(2, "0")}
-          </span>
-          <div className="min-w-0 flex-1">
-            <Link
-              href={`/run/${f.testId}`}
-              className="font-medium hover:underline"
-            >
-              {f.title}
-            </Link>
-            {f.change && (
-              <p className="mt-1 text-sm text-white/60">{f.change}</p>
-            )}
-            <p className="mt-1 font-mono text-[11px] text-white/40">
-              from {f.from}
-            </p>
-          </div>
-          {f.wins > 0 && (
-            <span className="shrink-0 text-2xl" style={DISPLAY}>
-              +{f.wins}
-            </span>
-          )}
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-function TestList({
-  items,
-  compact = false,
-}: {
-  items: Analysis[];
-  compact?: boolean;
-}) {
-  if (!items.length)
-    return (
-      <p className="mt-4 text-sm text-white/60">
-        No tests yet. Your first one is free.
-      </p>
-    );
-  return (
-    <ul className="mt-4 divide-y divide-white/10">
-      {items.map((a) => (
-        <li key={a.id}>
-          <Link
-            href={`/run/${a.id}`}
-            className="group flex items-center gap-4 rounded-lg py-3 hover:bg-white/[0.03]"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-medium">{a.label}</p>
-              <p className="truncate font-mono text-[11px] text-white/40">
-                {date(a.created_at)} · {a.kind}
-                {!compact && a.blocker ? ` · ${a.blocker}` : ""}
-              </p>
-            </div>
-            {a.status === "done" && a.pct !== null ? (
-              <>
-                <div className="hidden w-24 sm:block">
-                  <Bar pct={a.pct} />
-                </div>
-                <span className="w-16 text-right text-2xl" style={DISPLAY}>
-                  {a.score}
-                  <span className="text-sm text-white/40">/{a.total}</span>
-                </span>
-              </>
-            ) : (
-              <span className="font-mono text-xs text-white/50">
-                {a.status === "error" ? "failed · not counted" : "running…"}
-              </span>
-            )}
-            <span
-              className="text-white/30 transition-transform group-hover:translate-x-0.5 group-hover:text-white"
-              aria-hidden
-            >
-              →
-            </span>
-          </Link>
-        </li>
-      ))}
-    </ul>
   );
 }

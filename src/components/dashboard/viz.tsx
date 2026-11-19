@@ -3,6 +3,8 @@
 //   TrendChart  your score over time for the same product
 //   Bar         a thin animated bar (0-100%)
 //   Icon        the sidebar's line icons
+//   Spark       a tiny area chart for a metric tile
+//   Ring        a progress ring around a big number
 // Animations are CSS only, so "reduce motion" and the "Calmer motion" switch turn them off.
 
 export function Crowd({ yes, total, size = "lg" }: { yes: number; total: number; size?: "lg" | "sm" }) {
@@ -87,6 +89,16 @@ const PATHS: Record<string, string> = {
   minds: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0",
   playbook: "M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4zM5 16a4 4 0 0 1 4-4h10",
   plus: "M12 5v14M5 12h14",
+  search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4",
+  bolt: "M13 2L4 14h7l-1 8 9-12h-7z",
+  chart: "M5 20V10M12 20V4M19 20v-7",
+  clock: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2",
+  spark: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z",
+  fix: "M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.5-.5-2.5z",
+  tag: "M20 12l-8 8-9-9V3h8zM7.5 7.5h.01",
+  phone: "M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2",
+  cart: "M3 4h2l2.4 11h10.2L20 7H6.3M9 20h.01M17 20h.01",
+  check: "M5 12l5 5 9-10",
 };
 
 export function Icon({ name, className = "" }: { name: keyof typeof PATHS | string; className?: string }) {
@@ -94,5 +106,49 @@ export function Icon({ name, className = "" }: { name: keyof typeof PATHS | stri
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
       <path d={PATHS[name] ?? ""} />
     </svg>
+  );
+}
+
+// A tiny area chart for a metric tile (values 0-100). Fewer than 2 points = a flat hint line.
+export function Spark({ values, id }: { values: number[]; id: string }) {
+  const W = 160, H = 48;
+  const v = values.length >= 2 ? values : [0, 0];
+  const max = Math.max(...v, 1), min = Math.min(...v, 0);
+  const pts = v.map((x, i) => [(i / (v.length - 1)) * W, H - 4 - ((x - min) / (max - min || 1)) * (H - 10)]);
+  const line = pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-12 w-full" preserveAspectRatio="none" aria-hidden>
+      <defs>
+        <linearGradient id={`sp-${id}`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor="#3d6bff" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#3d6bff" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {values.length >= 2 && <path d={`${line} L${W},${H} L0,${H} Z`} fill={`url(#sp-${id})`} />}
+      <path d={line} fill="none" stroke="#4d7bff" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeOpacity={values.length >= 2 ? 1 : 0.3} />
+    </svg>
+  );
+}
+
+// A progress ring (0-100) with a big number in the middle.
+export function Ring({ pct, label }: { pct: number; label: string }) {
+  const r = 52, c = 2 * Math.PI * r, p = Math.max(0, Math.min(100, pct));
+  return (
+    <div className="relative h-36 w-36 shrink-0" role="img" aria-label={`${Math.round(p)}% ${label}`}>
+      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+        <circle cx="60" cy="60" r={r} fill="none" stroke="rgb(255 255 255 / 0.1)" strokeWidth="9" />
+        <circle cx="60" cy="60" r={r} fill="none" stroke="url(#ring-g)" strokeWidth="9" strokeLinecap="round" strokeDasharray={`${(p / 100) * c} ${c}`} className="ring-draw" />
+        <defs>
+          <linearGradient id="ring-g" x1="0" x2="1">
+            <stop offset="0" stopColor="#2f5bff" />
+            <stop offset="1" stopColor="#7aa0ff" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+        <span className="text-3xl font-semibold tracking-tight">{Math.round(p)}%</span>
+        <span className="mt-1 max-w-[6rem] text-[11px] leading-tight text-white/60">{label}</span>
+      </div>
+    </div>
   );
 }
