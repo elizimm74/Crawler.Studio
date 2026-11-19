@@ -3,7 +3,7 @@
 @import "tailwindcss";
 
 /*
-  CRAWLER DESIGN SYSTEM (v8, "blue + black, clean edges + claw scratches").
+  CRAWLER DESIGN SYSTEM (v9, "glass": navy page, frosted panels, business-professional type).
   One look only (no light/dark modes):
    - The PAGE is the logo blue #1a2aa6 with white text; BLACK panels (.card-blue, .blue-band, the dashboard) mix in.
    - CARDS (.card, .card-raised) and torn PAPER strips (.paper) are white with dark text.
@@ -16,45 +16,34 @@
    - Type: Geist, two weights only (400 text, 500 headlines/buttons). Scale: .t-*
 */
 
-/* ---------- Color tokens: the blue page (with black panels mixed in) ---------- */
+/* ---------- Color tokens (v9 "glass"): a deep navy page with soft blue light ----------
+   Everything (page, cards, paper sheets) uses the SAME light-on-dark tokens, so text is
+   always white-ish and components need no special cases. Surfaces are frosted glass. */
 :root {
   --brand: #1a2aa6;
-  --bg: #1a2aa6;
-  --surface: #ffffff; /* cards are always white */
-  --bg-subtle: #2333b2;
-  --bg-raised: #2d3cbd;
+  --bg: #060b2a; /* deep navy page */
+  --surface: rgb(255 255 255 / 0.06); /* glass */
+  --bg-subtle: rgb(255 255 255 / 0.06);
+  --bg-raised: rgb(255 255 255 / 0.11);
   --fg: #ffffff;
-  --fg-muted: #d6dbff; /* about 7:1 on the blue */
-  --fg-faint: #aeb7f6; /* about 5:1 on the blue (AA) */
-  --line: #3f4dbd;
-  --line-strong: #5b67cc;
-  --accent: #ffffff; /* on blue, the main button is white... */
-  --accent-hover: #e4e8ff;
-  --accent-fg: #1a2aa6; /* ...with blue text */
-  --accent-ink: #ffffff;
+  --fg-muted: #c9cdea; /* about 11:1 on the navy */
+  --fg-faint: #9ea5cf; /* about 7:1 on the navy */
+  --line: rgb(255 255 255 / 0.12);
+  --line-strong: rgb(255 255 255 / 0.22);
+  --accent: #ffffff; /* the main button is white... */
+  --accent-hover: #e6e9ff;
+  --accent-fg: #1a2aa6; /* ...with logo-blue text */
+  --accent-ink: #b9c3ff; /* small accent text on glass */
   --sheen: rgb(26 42 166 / 0.16);
-  --shadow-sm: 0 1px 2px rgb(5 10 60 / 0.25);
-  --shadow: 0 2px 4px rgb(5 10 60 / 0.2), 0 24px 48px -20px rgb(5 10 60 / 0.55);
-  color-scheme: light;
+  --shadow-sm: 0 1px 0 rgb(255 255 255 / 0.08) inset, 0 8px 24px -16px rgb(0 0 0 / 0.6);
+  --shadow: 0 1px 0 rgb(255 255 255 / 0.12) inset, 0 30px 60px -30px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
 }
 
-/* Inside white things, flip to dark-on-white. */
+/* Cards and paper sheets keep the same light-on-dark tokens (they're glass now). */
 .card,
 .card-raised,
 .paper {
-  --bg: #ffffff;
-  --bg-subtle: #f5f5f5;
-  --bg-raised: #eaeaea;
-  --fg: #0a0a0a;
-  --fg-muted: #4a4a4a;
-  --fg-faint: #666666; /* 5.6:1 on white */
-  --line: #e6e6e6;
-  --line-strong: #c8c8c8;
-  --accent: #1a2aa6; /* blue buttons and key numbers inside white things */
-  --accent-hover: #141f85;
-  --accent-fg: #ffffff;
-  --accent-ink: #1a2aa6;
-  --sheen: rgb(255 255 255 / 0.35);
   color: var(--fg);
 }
 
@@ -758,4 +747,151 @@ html[data-calm] *::after {
 }
 .dash .t-h2 {
   font-size: 1.75rem;
+}
+
+
+/* =====================================================================
+   v9 "GLASS" (2026-11-19, founder: "everything glassmorphic, business casual, smart, professional")
+   Frosted panels over a navy page lit by soft blue light. One white main button per screen.
+   Headings switch from heavy display type to calm semibold Geist; the Archivo wordmark stays.
+   ===================================================================== */
+html,
+body {
+  background-color: var(--bg);
+}
+body {
+  background-image:
+    radial-gradient(1100px 760px at 12% -12%, rgb(47 68 232 / 0.55) 0%, transparent 60%),
+    radial-gradient(900px 700px at 105% 18%, rgb(26 42 166 / 0.6) 0%, transparent 62%),
+    radial-gradient(900px 640px at 50% 115%, rgb(18 30 130 / 0.7) 0%, transparent 70%);
+  background-attachment: fixed;
+}
+@layer components {
+  .card,
+  .card-raised,
+  .paper,
+  .glass {
+    background: linear-gradient(160deg, rgb(255 255 255 / 0.11), rgb(255 255 255 / 0.04));
+    border: 1px solid rgb(255 255 255 / 0.16);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
+  }
+  .card-raised {
+    box-shadow: var(--shadow);
+  }
+  /* full-width sheets (the home features, report strips) are a softer pane with no side borders */
+  .paper.bleed {
+    border-radius: 0;
+    border-inline: 0;
+    /* solid navy underneath so whatever scrolls behind (the sticky hero) never shows through */
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.015)), #070d30;
+  }
+  /* the second button style: clear glass with a thin border */
+  .btn-secondary {
+    background: rgb(255 255 255 / 0.1);
+    color: #ffffff;
+    border: 1px solid rgb(255 255 255 / 0.24);
+    box-shadow: none;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.16);
+  }
+  .btn-ghost {
+    background: transparent;
+  }
+  /* inputs are glass too */
+  .field {
+    background: rgb(255 255 255 / 0.07);
+    color: #ffffff;
+    border: 1px solid rgb(255 255 255 / 0.18);
+  }
+  .card .field,
+  .paper .field {
+    border-color: rgb(255 255 255 / 0.2);
+  }
+  .field::placeholder,
+  .field-prefix {
+    color: var(--fg-faint);
+  }
+  .field:hover {
+    border-color: rgb(255 255 255 / 0.32);
+  }
+  .field:focus {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 3px rgb(255 255 255 / 0.18);
+  }
+  .field option {
+    color: #0a0a0a; /* dropdown lists open on a white system menu */
+  }
+}
+/* the features sheet: same white text as everywhere else */
+.features,
+.features .card,
+.features .card-raised {
+  --fg: #ffffff;
+  --fg-muted: #c9cdea;
+  --fg-faint: #9ea5cf;
+  --line: rgb(255 255 255 / 0.12);
+  --line-strong: rgb(255 255 255 / 0.22);
+  --bg-subtle: rgb(255 255 255 / 0.06);
+  --bg-raised: rgb(255 255 255 / 0.11);
+}
+.features .t-chunk {
+  color: #ffffff;
+}
+/* calmer, professional section headings (the "crawler" wordmark keeps its display font) */
+.t-chunk {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+/* "accent" cards: a deeper, darker pane */
+.card-blue {
+  --bg: transparent;
+  --bg-subtle: rgb(255 255 255 / 0.06);
+  --bg-raised: rgb(255 255 255 / 0.1);
+  --line: rgb(255 255 255 / 0.12);
+  --line-strong: rgb(255 255 255 / 0.22);
+  background: linear-gradient(160deg, rgb(4 8 40 / 0.75), rgb(4 8 40 / 0.45));
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+}
+.blue-band {
+  background: linear-gradient(180deg, rgb(4 8 40 / 0.55), rgb(4 8 40 / 0.35));
+  border-block: 1px solid rgb(255 255 255 / 0.1);
+}
+.dash-panel,
+.dash-hero {
+  background-color: transparent;
+  background-image: linear-gradient(160deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.03));
+  border: 1px solid rgb(255 255 255 / 0.14);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--shadow-sm);
+}
+.dash-hero {
+  background-image: radial-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px), linear-gradient(160deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.03));
+  background-size: 18px 18px, auto;
+}
+.dash .card,
+.dash .card-raised {
+  --bg: transparent;
+  --surface: transparent;
+}
+.marquee-word {
+  -webkit-text-stroke-color: rgb(255 255 255 / 0.85);
+}
+.marquee-word.is-solid {
+  color: #ffffff;
+}
+/* browsers without blur: solid navy panes so text stays readable */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card, .card-raised, .paper, .glass, .card-blue, .dash-panel, .dash-hero { background: rgb(14 22 80 / 0.95); }
 }

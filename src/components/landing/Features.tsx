@@ -19,7 +19,7 @@ import UseCases from "./UseCases";
 import { Customers, Compare } from "./Sections";
 import Science from "./Science";
 
-const BLUE = "#1a2aa6";
+const BLUE = "#ffffff"; // claw scratches: white on glass
 
 type Feature = { n: string; title: string; text: string; visual: (blue: boolean) => React.ReactNode };
 

@@ -33,13 +33,14 @@ const date = (iso: string) =>
     day: "numeric",
     timeZone: "UTC",
   });
+// v9: calm, professional semibold (was the heavy Archivo display font)
 const DISPLAY = {
-  fontFamily: "Archivo, var(--font-sans)",
-  fontWeight: 900,
-  letterSpacing: "-0.05em",
+  fontFamily: "var(--font-sans)",
+  fontWeight: 600,
+  letterSpacing: "-0.035em",
 } as const;
 
-// A dark panel. Everything on the dashboard sits in one of these.
+// A glass panel. Everything on the dashboard sits in one of these.
 function Panel({
   children,
   className = "",

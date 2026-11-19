@@ -32,7 +32,7 @@ const ASSUMPTIONS = [
 export default function Science() {
   return (
     <div className="relative">
-      <Claws color="#1a2aa6" className="pointer-events-none absolute -top-16 right-0 h-40 w-32 opacity-[0.14] sm:right-8" />
+      <Claws color="#ffffff" className="pointer-events-none absolute -top-16 right-0 h-40 w-32 opacity-[0.14] sm:right-8" />
       <p className="t-label text-center">the science behind the customers</p>
       <h2 className="t-chunk mt-3 text-center">Consumer models built on research.</h2>
       <p className="t-lead mx-auto mt-4 max-w-2xl text-center">
