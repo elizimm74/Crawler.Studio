@@ -1,20 +1,22 @@
 "use client";
 // The "we're reading it" screen, shared by website and app tests.
-// One compact screen (no scrolling): on the left the title, a live checklist
-// and a real progress bar; on the right the bots animation.
+// One compact screen (no scrolling): on the left the title, a live checklist and a progress
+// bar; on the right a scanner sweeping the page (or phone) and locking onto each part.
 import { useEffect, useState } from "react";
-import BotRush from "./landing/BotRush";
+import ScanPage from "./loading/ScanPage";
 
 export default function Working({
   label, // small line on top, e.g. "rork.com"
   title,
   lines, // the checklist, lit up one by one
   expectSeconds = 25, // how long it usually takes (the bar is an estimate)
+  kind = "page", // "phone" for app and game screenshots
 }: {
   label: string;
   title: string;
   lines: string[];
   expectSeconds?: number;
+  kind?: "page" | "phone";
 }) {
   const [seconds, setSeconds] = useState(0);
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function Working({
           <span className="truncate">{label}</span>
           <span className="shrink-0">· {seconds}s</span>
         </p>
-        <h1 className="t-h2 mt-4">{title}</h1>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
         <p className="mt-2 text-muted">Usually {Math.round(expectSeconds * 0.6)}–{expectSeconds + 5} seconds. You can leave this tab open.</p>
 
         <ol className="mt-8 space-y-4">
@@ -59,12 +61,13 @@ export default function Working({
         </ol>
 
         <div className="mt-8 h-1 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
-          <div className="h-full rounded-full bg-fg transition-[width] duration-1000 ease-out" style={{ width: `${progress * 100}%` }} />
+          <div className="h-full rounded-full bg-accent transition-[width] duration-1000 ease-out" style={{ width: `${progress * 100}%` }} />
         </div>
       </div>
-      {/* the animation: hidden on small phones so the checklist fits on one screen */}
-      <div className="hidden min-w-0 sm:block">
-        <BotRush live={{ progress, label }} />
+      {/* the scanner: hidden on small phones so the checklist fits on one screen */}
+      <div className="dash-panel mx-auto hidden w-full max-w-md rounded-2xl p-6 sm:block">
+        <ScanPage kind={kind} locked={Math.round(((active + 1) / lines.length) * (kind === "phone" ? 5 : 8))} />
+        <p className="mt-3 text-center font-mono text-[11px] text-faint">{kind === "phone" ? "reading your screens" : "reading the page like a first-time visitor"}</p>
       </div>
     </section>
   );

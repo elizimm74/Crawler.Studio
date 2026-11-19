@@ -1,13 +1,11 @@
 "use client";
-// The dashboard (v4, 2026-11-19): the founder's mockup style (sidebar, search bar, electric-blue
-// buttons, a hero line, metric tiles with mini charts, a ring, insight + recent-test lists),
-// filled ONLY with Crawler's real numbers. Nothing here is estimated or invented: every number
-// is counted from the person's own tests (src/lib/dashboard.ts). Empty states say so plainly.
-//
-// Layout
-//   left:  sidebar (logo, the 5 views, a "Run a test" card, your plan). Phones: a tab row.
-//   top:   search your tests (press / or ⌘K), plan pill.
-//   views: Dashboard, Tests, Fixes, Customer minds, Playbook. Press "N" for a new test.
+// The dashboard (v5, 2026-11-19, founder: "minimal, beautiful"). Less on screen, more space:
+//   sidebar  logo, the 5 views, you + your plan (phones: a tab row)
+//   top      search your tests (⌘K or /) + ONE main button: New test
+//   overview a calm greeting line, your latest result (screenshot, score ring, blocker),
+//            3 score tiles, your next fixes, recent tests, a one-line invite strip
+// Every number is counted from your own tests (src/lib/dashboard.ts). Empty states say so.
+// Press "N" anywhere (outside a text box) to start a new test.
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,7 +18,7 @@ import { PLAYS } from "@/lib/playbook";
 import { summarize, type Analysis, type DashboardData } from "@/lib/dashboard";
 
 const VIEWS = [
-  ["overview", "Dashboard"],
+  ["overview", "Overview"],
   ["tests", "Tests"],
   ["fixes", "Fixes"],
   ["minds", "Customer minds"],
@@ -47,52 +45,47 @@ function Panel({ children, className = "", label }: { children: React.ReactNode;
   );
 }
 
-function PanelTitle({ icon, children, action }: { icon: string; children: React.ReactNode; action?: React.ReactNode }) {
+function Title({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <h2 className="flex items-center gap-2.5 font-semibold">
-        <Icon name={icon} className="text-[#6b91ff]" />
-        {children}
-      </h2>
+      <h2 className="text-sm font-medium text-white/70">{children}</h2>
       {action}
     </div>
   );
 }
 
 function Delta({ n, suffix = " pts" }: { n: number | null; suffix?: string }) {
-  if (n === null) return <span className="text-xs text-white/50">first test</span>;
-  if (n === 0) return <span className="text-xs text-white/50">no change</span>;
+  if (n === null) return <span className="text-xs text-faint">first test</span>;
+  if (n === 0) return <span className="text-xs text-faint">no change</span>;
   return (
-    <span className={`text-sm font-medium ${n > 0 ? "text-[#4ade80]" : "text-[#f87171]"}`}>
+    <span className={`text-xs font-medium ${n > 0 ? "text-[#4ade80]" : "text-[#f87171]"}`}>
       {n > 0 ? "↑" : "↓"} {Math.abs(n)}
       {suffix}
     </span>
   );
 }
 
-// A small square "thumbnail" for a test: a real screenshot when we have one, otherwise the
-// site's first letter (or a phone for app and game tests).
-function Thumb({ a, size = "h-12 w-12" }: { a: Analysis; size?: string }) {
+// A thumbnail: the real screenshot when we have one, otherwise a letter (or a phone for apps/games).
+function Thumb({ a, size = "h-11 w-11" }: { a: Analysis; size?: string }) {
   const [broken, setBroken] = useState(false);
   if (a.thumb && !broken) {
     return (
       // eslint-disable-next-line @next/next/no-img-element -- a private signed screenshot, not a static asset
-      <img
-        src={a.thumb}
-        alt=""
-        loading="lazy"
-        onError={() => setBroken(true)}
-        className={`${size} shrink-0 rounded-xl border border-white/10 bg-[#0a1033] object-cover object-top`}
-      />
+      <img src={a.thumb} alt="" loading="lazy" onError={() => setBroken(true)} className={`${size} shrink-0 rounded-xl border border-white/10 bg-[#0c0d12] object-cover object-top`} />
     );
   }
   return (
-    <span
-      className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-[#1b2a7a] to-[#0a1033] text-lg font-semibold`}
-      aria-hidden
-    >
+    <span className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-base font-medium`} aria-hidden>
       {a.kind === "app" || a.kind === "game" ? <Icon name="phone" /> : a.label.charAt(0).toUpperCase()}
     </span>
+  );
+}
+
+function ViewAll({ onClick, children = "View all" }: { onClick: () => void; children?: React.ReactNode }) {
+  return (
+    <button type="button" onClick={onClick} className="text-xs text-faint transition-colors hover:text-fg">
+      {children} →
+    </button>
   );
 }
 
@@ -139,9 +132,8 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
   const sum = summarize(data.analyses);
   const done = data.analyses.filter((a) => a.status === "done");
   const latest: Analysis | undefined = done[0];
-  const topBlocker = data.blockers[0];
   const recent = Math.min(10, done.length);
-  const allPcts = done.map((a) => a.pct!).reverse(); // oldest first, every product
+  const allPcts = done.map((a) => a.pct!).reverse();
   const trendPcts = sum.trend.map((t) => t.pct);
   const trendDelta = trendPcts.length >= 2 ? trendPcts[trendPcts.length - 1] - trendPcts[0] : null;
   const found = useMemo(
@@ -153,55 +145,50 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
   );
   const planLabel = plan.unlimited ? "Admin" : plan.plan === "pack" ? "Test packs" : plan.plan === "free" ? "Free plan" : `${plan.plan} plan`;
   const tiles: [string, string, number | null, number[], string][] = [
-    ["Latest score", latest ? pctOf(latest) : "–", latest?.delta ?? null, trendPcts, `would ${latest?.goal ?? "convert"}`],
-    ["Average score", sum.avgPct === null ? "–" : `${sum.avgPct}%`, null, allPcts, "across finished tests"],
-    ["Best score", sum.bestPct === null ? "–" : `${sum.bestPct}%`, null, allPcts, "your high-water mark"],
+    ["Latest score", latest ? pctOf(latest) : "–", latest?.delta ?? null, trendPcts, "your newest test"],
+    ["Average", sum.avgPct === null ? "–" : `${sum.avgPct}%`, null, allPcts, "across finished tests"],
+    ["Best", sum.bestPct === null ? "–" : `${sum.bestPct}%`, null, allPcts, "your high-water mark"],
   ];
+  const summary = latest
+    ? `${latest.label} ${latest.delta === null ? "scored" : latest.delta > 0 ? "climbed to" : latest.delta < 0 ? "slipped to" : "held at"} ${latest.score} of ${latest.total}.${latest.blocker ? ` Biggest blocker: ${latest.blocker}.` : ""}`
+    : `Your first test is free. ${plan.customers} simulated customers try your app, game, site or store.`;
 
   return (
-    <div className="dash mx-auto max-w-7xl">
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
+    <div className="dash mx-auto max-w-6xl">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[208px_minmax(0,1fr)] lg:gap-10">
         {/* ================= sidebar ================= */}
         <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-          <div className="dash-panel hidden rounded-2xl p-4 lg:block">
-            <p className="flex items-center gap-2 px-1 text-lg font-semibold">
-              <Mark size={26} className="text-[#6b91ff]" /> Crawler
+          <div className="hidden lg:block">
+            <p className="flex items-center gap-2 px-3 text-base font-semibold">
+              <Mark size={22} className="text-white" /> Crawler
             </p>
-            <nav aria-label="Dashboard" className="mt-5 flex flex-col gap-1">
+            <nav aria-label="Dashboard" className="mt-6 flex flex-col gap-0.5">
               {VIEWS.map(([id, label]) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => pick(id)}
                   aria-current={view === id ? "page" : undefined}
-                  className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm transition-colors ${
-                    view === id ? "dash-active text-white" : "text-white/65 hover:bg-white/5 hover:text-white"
+                  className={`flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors ${
+                    view === id ? "dash-active text-white" : "text-white/55 hover:bg-white/[0.04] hover:text-white"
                   }`}
                 >
-                  <Icon name={VIEW_ICON[id]} />
+                  <Icon name={VIEW_ICON[id]} className="h-4 w-4" />
                   {label}
                 </button>
               ))}
             </nav>
-            <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.04] p-4">
-              <Icon name="bolt" className="h-7 w-7 text-[#6b91ff]" />
-              <p className="mt-2 font-semibold leading-snug">Run a test in about a minute</p>
-              <p className="mt-1 text-xs text-white/60">{plan.customers} simulated customers try your app, game, site or store.</p>
-              <Link href="/onboarding" className="btn btn-primary mt-4 h-10 w-full text-sm">
-                Start test <span aria-hidden>→</span>
-              </Link>
-            </div>
-            <div className="mt-6 flex items-center gap-3 border-t border-white/10 px-1 pt-4">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 font-semibold" aria-hidden>
-                {data.name.charAt(0).toUpperCase()}
-              </span>
-              <div className="min-w-0 text-sm">
-                <p className="truncate font-medium">{data.name}</p>
-                <p className="text-xs text-white/55">
-                  {planLabel}
-                  {!plan.unlimited && ` · ${plan.left} test${plan.left === 1 ? "" : "s"} left`}
-                </p>
-              </div>
+            <div className="mt-8 border-t border-white/[0.08] px-3 pt-5 text-sm">
+              <p className="font-medium">{data.name}</p>
+              <p className="mt-0.5 text-xs text-faint">
+                {planLabel}
+                {!plan.unlimited && ` · ${plan.left} test${plan.left === 1 ? "" : "s"} left`}
+              </p>
+              {!plan.unlimited && plan.limit > 0 && (
+                <div className="mt-3">
+                  <Bar pct={(plan.used / plan.limit) * 100} />
+                </div>
+              )}
             </div>
           </div>
           {/* phones: a tab row instead of the sidebar */}
@@ -212,9 +199,8 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                 type="button"
                 onClick={() => pick(id)}
                 aria-current={view === id ? "page" : undefined}
-                className={`flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm ${view === id ? "dash-active text-white" : "text-white/65"}`}
+                className={`flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-sm ${view === id ? "dash-active text-white" : "text-white/55"}`}
               >
-                <Icon name={VIEW_ICON[id]} />
                 {label}
               </button>
             ))}
@@ -223,10 +209,10 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
 
         {/* ================= main ================= */}
         <div className="min-w-0 space-y-6">
-          {/* top bar: search + plan */}
+          {/* top bar: search + the ONE main button */}
           <div className="flex items-center gap-3">
-            <label className="dash-panel flex min-h-12 flex-1 items-center gap-3 rounded-2xl px-4">
-              <Icon name="search" className="shrink-0 text-white/50" />
+            <label className="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4">
+              <Icon name="search" className="h-4 w-4 shrink-0 text-faint" />
               <span className="sr-only">Search your tests</span>
               <input
                 ref={search}
@@ -235,233 +221,253 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                   setQuery(e.target.value);
                   if (e.target.value && view !== "tests") pick("tests");
                 }}
-                placeholder="Search your tests, sites or blockers…"
-                className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-white/45 focus:outline-none"
+                placeholder="Search tests…"
+                className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-faint focus:outline-none"
               />
-              <kbd className="hidden rounded-md border border-white/15 px-1.5 py-0.5 font-mono text-[11px] text-white/50 sm:block">⌘K</kbd>
+              <kbd className="hidden rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px] text-faint sm:block">⌘K</kbd>
             </label>
-            <span className="dash-panel hidden min-h-12 items-center gap-2 rounded-2xl px-4 text-sm sm:flex">
-              <Icon name="spark" className="text-[#6b91ff]" /> {planLabel}
-            </span>
+            <Link href="/onboarding" className="btn btn-primary h-11 shrink-0 px-5 text-sm">
+              <Icon name="plus" className="h-4 w-4" /> New test
+            </Link>
           </div>
 
           {paid && (
-            <div role="status" className="dash-panel rounded-2xl p-4 text-sm">
+            <p role="status" className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 text-sm">
               <span className="font-medium">Payment received. Thank you!</span>{" "}
-              <span className="text-white/70">
+              <span className="text-muted">
                 Your {paid === "studio" ? "Studio" : "Launch"} Pack tests are being added. Refresh in a few seconds if the count hasn&apos;t changed.
               </span>
-            </div>
+            </p>
           )}
 
           {/* ===== OVERVIEW ===== */}
           {view === "overview" && (
             <>
-              {/* hero */}
-              <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-                <div className="relative overflow-hidden rounded-2xl px-1 py-4 sm:py-6">
-                  <div className="dash-orb" aria-hidden>
-                    <Mark size={220} className="text-[#6b91ff]" />
-                  </div>
-                  <p className="t-label relative">
-                    {hello}, {data.name}
-                  </p>
-                  <h1 className="relative mt-3 text-4xl font-semibold tracking-tight sm:text-6xl">
-                    Test. Fix. <span className="text-[#5b86ff]">Launch.</span>
-                  </h1>
-                  <p className="relative mt-4 max-w-xl text-white/75">
-                    {latest
-                      ? `${latest.label} ${latest.delta === null ? "scored" : latest.delta > 0 ? "climbed to" : latest.delta < 0 ? "slipped to" : "held at"} ${latest.score} of ${latest.total}.${latest.blocker ? ` Biggest blocker: ${latest.blocker}.` : ""}`
-                      : `${plan.customers} simulated customers try your product and tell you exactly what to fix before launch.`}
-                  </p>
-                  <div className="relative mt-6 flex flex-wrap gap-3">
-                    <Link href="/onboarding" className="btn btn-primary h-12 px-6">
-                      Run new test <span aria-hidden>→</span>
-                    </Link>
-                    <Link href={latest ? `/run/${latest.id}` : "/example"} className="btn btn-secondary h-12 px-6">
-                      {latest ? "Open latest report" : "View example"}
-                    </Link>
-                  </div>
-                </div>
+              <header className="pt-4">
+                <p className="text-sm text-faint">
+                  {hello}, {data.name}
+                </p>
+                <h1 className="mt-2 max-w-3xl text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">{summary}</h1>
+              </header>
 
-                <Panel label="Customers simulated">
-                  <p className="flex items-center gap-2 text-sm text-[#7aa0ff]">
-                    <span className="h-2 w-2 rounded-full bg-[#4d7bff]" /> Your crowd so far
-                  </p>
-                  <p className="mt-3 text-4xl font-semibold tracking-tight">{sum.customers.toLocaleString("en-US")}</p>
-                  <p className="text-sm text-white/60">
-                    simulated customers across {sum.finished} finished test{sum.finished === 1 ? "" : "s"}
-                  </p>
-                  <div className="mt-3">
-                    <Spark values={allPcts} id="crowd" />
-                  </div>
-                </Panel>
-              </div>
-
-              {/* performance overview + latest test */}
-              <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-                <Panel label="Performance overview">
-                  <PanelTitle icon="chart">Performance overview</PanelTitle>
-                  <div className="mt-5 grid gap-6 sm:grid-cols-3 sm:divide-x sm:divide-white/10">
-                    {tiles.map(([label, value, delta, spark, note], i) => (
-                      <div key={label} className={i ? "sm:pl-6" : ""}>
-                        <p className="text-sm text-white/65">{label}</p>
-                        <p className="mt-2 text-4xl font-semibold tracking-tight">{value}</p>
-                        <div className="mt-1 flex min-h-6 items-center gap-2">
-                          {delta !== null ? <Delta n={delta} /> : <span className="text-xs text-white/50">{note}</span>}
-                        </div>
-                        <div className="mt-2">
-                          <Spark values={spark} id={`m${i}`} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </Panel>
-
-                <Panel label="Latest test">
-                  <PanelTitle icon="spark">Latest test</PanelTitle>
-                  {latest ? (
-                    <div className="mt-4 flex gap-4">
-                      <Thumb a={latest} size="h-24 w-24" />
+              {/* latest result */}
+              {latest ? (
+                <Panel label="Latest result" className="p-0 sm:p-0">
+                  <div className="grid md:grid-cols-[minmax(0,1fr)_auto]">
+                    <div className="flex gap-5 p-5 sm:p-6">
+                      <Thumb a={latest} size="h-28 w-28 sm:h-32 sm:w-32" />
                       <div className="min-w-0">
-                        <p className="truncate font-semibold">{latest.label}</p>
-                        {latest.blocker && (
-                          <span className="mt-1 inline-block rounded-md bg-[#3d6bff]/20 px-2 py-0.5 text-xs text-[#9db7ff]">blocker: {latest.blocker}</span>
-                        )}
-                        <p className="mt-2 text-sm">
-                          {latest.score} of {latest.total} would {latest.goal ?? "convert"}
+                        <p className="text-xs text-faint">
+                          Latest · {date(latest.created_at)} · {latest.kind}
                         </p>
-                        <Delta n={latest.delta} suffix=" pts vs last" />
+                        <p className="mt-1 truncate text-xl font-semibold">{latest.label}</p>
+                        <p className="mt-2 text-sm text-muted">
+                          {latest.score} of {latest.total} simulated customers would {latest.goal ?? "convert"}
+                        </p>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <Delta n={latest.delta} suffix=" pts vs last" />
+                          {latest.blocker && <span className="rounded-md bg-white/[0.06] px-2 py-0.5 text-xs text-muted">blocker: {latest.blocker}</span>}
+                        </div>
+                        <div className="mt-5 flex flex-wrap gap-2">
+                          <Link href={`/run/${latest.id}`} className="btn btn-secondary h-10 px-4 text-sm">
+                            Open report
+                          </Link>
+                          {latest.kind === "website" || latest.kind === "store" ? (
+                            <Link href={`/app?url=${encodeURIComponent(latest.url)}&retest=${latest.id}${latest.kind === "store" ? "&type=store" : ""}`} className="btn btn-text h-10 text-sm">
+                              Re-test
+                            </Link>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    <p className="mt-4 text-sm text-white/60">Your first result lands here.</p>
-                  )}
-                  <Link href={latest ? `/run/${latest.id}` : "/onboarding"} className="btn btn-secondary mt-5 h-10 w-full text-sm">
-                    {latest ? "View details" : "Run my first test"} <span aria-hidden>→</span>
-                  </Link>
-                </Panel>
-              </div>
-
-              {/* result ring, top fixes, recent tests */}
-              <div className="grid gap-6 xl:grid-cols-3">
-                <Panel label="Test result">
-                  <PanelTitle icon="chart">Test result</PanelTitle>
-                  <div className="mt-5 flex flex-wrap items-center gap-6">
-                    <Ring pct={latest?.pct ?? 0} label={latest ? `would ${latest.goal ?? "convert"}` : "no test yet"} />
-                    <ul className="space-y-3 text-sm">
-                      {[`${latest?.total ?? plan.customers} simulated customers`, "Buying intent, not purchases", "A reason for every “no”", "Every number counted in code"].map((t) => (
-                        <li key={t} className="flex items-center gap-2.5">
-                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#3d6bff]">
-                            <Icon name="check" className="h-3 w-3" />
-                          </span>
-                          {t}
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="flex items-center justify-center border-t border-white/[0.06] p-6 md:border-l md:border-t-0">
+                      <Ring pct={latest.pct ?? 0} label={`would ${latest.goal ?? "convert"}`} />
+                    </div>
                   </div>
                 </Panel>
+              ) : (
+                <Panel label="Get started">
+                  <p className="text-lg font-semibold">Run your first test</p>
+                  <p className="mt-1 max-w-lg text-sm text-muted">About a minute. You get a score, the reasons people said no, and fixes ranked by how many customers each wins back.</p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <Link href="/onboarding" className="btn btn-primary h-10 px-5 text-sm">
+                      Start free test
+                    </Link>
+                    <Link href="/example" className="btn btn-text h-10 text-sm">
+                      See an example
+                    </Link>
+                  </div>
+                </Panel>
+              )}
 
-                <Panel label="Top fixes">
-                  <PanelTitle
-                    icon="spark"
-                    action={
-                      <button type="button" onClick={() => pick("fixes")} className="text-sm text-[#7aa0ff] hover:text-white">
-                        View all →
-                      </button>
-                    }
-                  >
-                    Top fixes
-                  </PanelTitle>
+              {/* three score tiles */}
+              <Panel label="Scores" className="p-0 sm:p-0">
+                <div className="grid divide-y divide-white/[0.06] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                  {tiles.map(([label, value, delta, spark, note], i) => (
+                    <div key={label} className="p-5 sm:p-6">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="text-xs text-faint">{label}</p>
+                        {delta !== null ? <Delta n={delta} /> : <span className="text-xs text-faint">{note}</span>}
+                      </div>
+                      <p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{value}</p>
+                      <div className="mt-3">
+                        <Spark values={spark} id={`m${i}`} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+
+              {/* next fixes + recent tests */}
+              <div className="grid gap-6 lg:grid-cols-2">
+                <Panel label="Next fixes">
+                  <Title action={data.fixes.length ? <ViewAll onClick={() => pick("fixes")} /> : undefined}>Next fixes</Title>
                   {data.fixes.length ? (
-                    <ul className="mt-4 divide-y divide-white/10">
+                    <ol className="mt-3 divide-y divide-white/[0.06]">
                       {data.fixes.slice(0, 3).map((f, i) => (
                         <li key={f.title}>
-                          <Link href={`/run/${f.testId}`} className="flex items-center gap-3 py-3 hover:text-white">
-                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#7aa0ff]">
-                              <Icon name={["cart", "phone", "tag"][i] ?? "fix"} />
-                            </span>
-                            <span className="min-w-0 flex-1 text-sm">
-                              {f.title}
-                              {f.wins > 0 && <span className="block text-xs text-white/55">could win back {f.wins} customers</span>}
-                            </span>
-                            <span className="text-white/40" aria-hidden>
-                              ›
-                            </span>
+                          <Link href={`/run/${f.testId}`} className="flex items-center gap-4 py-3.5 transition-colors hover:text-white">
+                            <span className="w-5 font-mono text-xs text-faint">{String(i + 1).padStart(2, "0")}</span>
+                            <span className="min-w-0 flex-1 text-sm">{f.title}</span>
+                            {f.wins > 0 && <span className="shrink-0 text-sm font-medium tabular-nums">+{f.wins}</span>}
                           </Link>
                         </li>
                       ))}
-                    </ul>
+                    </ol>
                   ) : (
-                    <div className="mt-4 space-y-3">
-                      <p className="text-sm text-white/60">Your ranked fixes land here after your first test. Meanwhile:</p>
-                      <PlayCard play={PLAYS.find((p) => p.area === "app")!} />
-                    </div>
+                    <p className="mt-3 text-sm text-faint">Your ranked fixes land here after your first test.</p>
                   )}
                 </Panel>
 
                 <Panel label="Recent tests">
-                  <PanelTitle
-                    icon="clock"
-                    action={
-                      <button type="button" onClick={() => pick("tests")} className="text-sm text-[#7aa0ff] hover:text-white">
-                        View all →
-                      </button>
-                    }
-                  >
-                    Recent tests
-                  </PanelTitle>
+                  <Title action={data.analyses.length ? <ViewAll onClick={() => pick("tests")} /> : undefined}>Recent tests</Title>
                   {data.analyses.length ? (
-                    <ul className="mt-4 space-y-1">
-                      {data.analyses.slice(0, 3).map((a) => (
+                    <ul className="mt-3 divide-y divide-white/[0.06]">
+                      {data.analyses.slice(0, 4).map((a) => (
                         <li key={a.id}>
-                          <Link href={`/run/${a.id}`} className="flex items-center gap-3 rounded-xl py-2 hover:bg-white/[0.03]">
-                            <Thumb a={a} />
+                          <Link href={`/run/${a.id}`} className="flex items-center gap-3 py-2.5 transition-colors hover:text-white">
+                            <Thumb a={a} size="h-9 w-9" />
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate font-medium">{a.label}</span>
-                              <span className="flex items-center gap-2 text-xs text-white/55">
-                                {a.status === "done" ? `${pctOf(a)} would ${a.goal ?? "convert"}` : a.status === "error" ? "failed · not counted" : "running…"}
-                                {a.delta !== null && a.delta !== 0 && <Delta n={a.delta} />}
-                              </span>
+                              <span className="block truncate text-sm">{a.label}</span>
+                              <span className="block text-xs text-faint">{ago(a.created_at)}</span>
                             </span>
-                            <span className="flex flex-col items-end gap-1 text-xs text-white/50">
-                              {ago(a.created_at)}
-                              <span
-                                className={`h-2 w-2 rounded-full ${a.status === "done" ? "bg-[#4ade80]" : a.status === "error" ? "bg-[#f87171]" : "bg-[#facc15]"}`}
-                                aria-hidden
-                              />
+                            <span className="text-sm font-medium tabular-nums">
+                              {a.status === "done" ? pctOf(a) : a.status === "error" ? <span className="text-xs text-faint">failed</span> : <span className="text-xs text-faint">running…</span>}
                             </span>
                           </Link>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="mt-4 text-sm text-white/60">No tests yet. Your first one is free.</p>
+                    <p className="mt-3 text-sm text-faint">No tests yet.</p>
                   )}
                 </Panel>
               </div>
 
-              {/* trend + blockers */}
-              <div className="grid gap-6 xl:grid-cols-3">
-                <Panel className="xl:col-span-2" label="Score trend">
-                  <PanelTitle icon="chart" action={trendDelta !== null ? <Delta n={trendDelta} /> : undefined}>
-                    Trend · {latest ? latest.label : "your product"}
-                  </PanelTitle>
+              {/* invite: one quiet line (the full card lives on the Fixes view) */}
+              {!plan.unlimited && plan.plan === "free" && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.08] px-5 py-4 text-sm">
+                  <span className="text-muted">
+                    Invite {plan.referrals.needed} friends to unlock 100-customer tests · {plan.referrals.count}/{plan.referrals.needed} joined
+                  </span>
+                  <ViewAll onClick={() => pick("fixes")}>Get your invite link</ViewAll>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ===== TESTS ===== */}
+          {view === "tests" && (
+            <div className="space-y-6">
+              <Panel label="All tests">
+                <Title
+                  action={
+                    <Link href="/tests" className="text-xs text-faint hover:text-fg">
+                      Full history →
+                    </Link>
+                  }
+                >
+                  {query ? `Tests matching “${query}”` : "Tests"}
+                </Title>
+                {found.length === 0 ? (
+                  <p className="mt-4 text-sm text-faint">{query ? "Nothing matches that search." : "No tests yet. Your first one is free."}</p>
+                ) : (
+                  <ul className="mt-3 divide-y divide-white/[0.06]">
+                    {found.map((a) => (
+                      <li key={a.id}>
+                        <Link href={`/run/${a.id}`} className="flex items-center gap-4 py-3 transition-colors hover:text-white">
+                          <Thumb a={a} />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate font-medium">{a.label}</span>
+                            <span className="block truncate text-xs text-faint">
+                              {date(a.created_at)} · {a.kind}
+                              {a.blocker ? ` · ${a.blocker}` : ""}
+                            </span>
+                          </span>
+                          {a.status === "done" && a.pct !== null ? (
+                            <>
+                              <span className="hidden w-28 sm:block">
+                                <Bar pct={a.pct} />
+                              </span>
+                              <span className="w-16 text-right text-lg font-semibold tabular-nums">{pctOf(a)}</span>
+                            </>
+                          ) : (
+                            <span className="text-xs text-faint">{a.status === "error" ? "failed · not counted" : "running…"}</span>
+                          )}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Panel>
+              {!query && sum.trend.length >= 2 && (
+                <Panel label="Score trend">
+                  <Title action={<Delta n={trendDelta} />}>Trend · {latest?.label}</Title>
                   <div className="mt-4">
                     <TrendChart points={sum.trend} />
                   </div>
                 </Panel>
-                <Panel label="What keeps blocking people">
-                  <PanelTitle icon="fix">What keeps blocking people</PanelTitle>
-                  {data.blockers.length === 0 ? (
-                    <p className="mt-4 text-sm text-white/60">Your blockers show up here after your first test.</p>
+              )}
+            </div>
+          )}
+
+          {/* ===== FIXES ===== */}
+          {view === "fixes" && (
+            <div className="space-y-6">
+              <div className="grid gap-6 xl:grid-cols-5">
+                <Panel className="xl:col-span-3" label="Fix queue">
+                  <Title>Fix queue · biggest win-back first</Title>
+                  {data.fixes.length === 0 ? (
+                    <p className="mt-4 text-sm text-faint">Run a test and your ranked fixes land here.</p>
                   ) : (
-                    <ul className="mt-5 space-y-5">
+                    <ol className="mt-3 divide-y divide-white/[0.06]">
+                      {data.fixes.map((f, i) => (
+                        <li key={f.title} className="flex items-start gap-4 py-4">
+                          <span className="w-5 pt-0.5 font-mono text-xs text-faint">{String(i + 1).padStart(2, "0")}</span>
+                          <div className="min-w-0 flex-1">
+                            <Link href={`/run/${f.testId}`} className="font-medium hover:underline">
+                              {f.title}
+                            </Link>
+                            {f.change && <p className="mt-1 text-sm text-muted">{f.change}</p>}
+                            <p className="mt-1 text-xs text-faint">from {f.from}</p>
+                          </div>
+                          {f.wins > 0 && <span className="shrink-0 text-lg font-semibold tabular-nums">+{f.wins}</span>}
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </Panel>
+                <Panel className="xl:col-span-2" label="What keeps blocking people">
+                  <Title>What keeps blocking people</Title>
+                  {data.blockers.length === 0 ? (
+                    <p className="mt-4 text-sm text-faint">Your blockers show up here after your first test.</p>
+                  ) : (
+                    <ul className="mt-4 space-y-4">
                       {data.blockers.slice(0, 5).map((b, i) => (
                         <li key={b.category}>
                           <div className="mb-2 flex justify-between gap-4 text-sm">
                             <span className="first-letter:uppercase">{b.category}</span>
-                            <span className="font-mono text-xs text-white/50">
+                            <span className="font-mono text-xs text-faint">
                               {b.tests}/{recent}
                             </span>
                           </div>
@@ -470,106 +476,25 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                       ))}
                     </ul>
                   )}
-                  {topBlocker && <p className="mt-4 text-xs text-white/50">The #1 reason people said no, across your last {recent} tests.</p>}
                 </Panel>
               </div>
-
-              {!plan.unlimited && plan.plan === "free" && <InviteCard plan={plan} />}
-            </>
-          )}
-
-          {/* ===== TESTS ===== */}
-          {view === "tests" && (
-            <Panel label="All tests">
-              <PanelTitle
-                icon="chart"
-                action={
-                  <Link href="/tests" className="text-sm text-[#7aa0ff] hover:text-white">
-                    Full history →
-                  </Link>
-                }
-              >
-                {query ? `Tests matching “${query}”` : "Tests"}
-              </PanelTitle>
-              {found.length === 0 ? (
-                <p className="mt-4 text-sm text-white/60">{query ? "Nothing matches that search." : "No tests yet. Your first one is free."}</p>
-              ) : (
-                <ul className="mt-4 divide-y divide-white/10">
-                  {found.map((a) => (
-                    <li key={a.id}>
-                      <Link href={`/run/${a.id}`} className="flex items-center gap-4 py-3 hover:bg-white/[0.03]">
-                        <Thumb a={a} />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate font-medium">{a.label}</span>
-                          <span className="block truncate font-mono text-[11px] text-white/45">
-                            {date(a.created_at)} · {a.kind}
-                            {a.blocker ? ` · ${a.blocker}` : ""}
-                          </span>
-                        </span>
-                        {a.status === "done" && a.pct !== null ? (
-                          <>
-                            <span className="hidden w-28 sm:block">
-                              <Bar pct={a.pct} />
-                            </span>
-                            <span className="w-20 text-right text-2xl font-semibold tracking-tight">
-                              {a.score}
-                              <span className="text-sm text-white/45">/{a.total}</span>
-                            </span>
-                          </>
-                        ) : (
-                          <span className="font-mono text-xs text-white/50">{a.status === "error" ? "failed · not counted" : "running…"}</span>
-                        )}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Panel>
-          )}
-
-          {/* ===== FIXES ===== */}
-          {view === "fixes" && (
-            <div className="grid gap-6 xl:grid-cols-5">
-              <Panel className="xl:col-span-3" label="Fix queue">
-                <PanelTitle icon="fix">Fix queue</PanelTitle>
-                <p className="mt-1 text-sm text-white/60">From your latest tests, biggest win-back first.</p>
-                {data.fixes.length === 0 ? (
-                  <p className="mt-4 text-sm text-white/60">Run a test and your ranked fixes land here.</p>
-                ) : (
-                  <ol className="mt-4 divide-y divide-white/10">
-                    {data.fixes.map((f, i) => (
-                      <li key={f.title} className="flex items-start gap-4 py-4">
-                        <span className="w-6 pt-0.5 font-mono text-xs text-white/40">{String(i + 1).padStart(2, "0")}</span>
-                        <div className="min-w-0 flex-1">
-                          <Link href={`/run/${f.testId}`} className="font-medium hover:underline">
-                            {f.title}
-                          </Link>
-                          {f.change && <p className="mt-1 text-sm text-white/60">{f.change}</p>}
-                          <p className="mt-1 font-mono text-[11px] text-white/40">from {f.from}</p>
-                        </div>
-                        {f.wins > 0 && <span className="shrink-0 text-2xl font-semibold text-[#7aa0ff]">+{f.wins}</span>}
-                      </li>
-                    ))}
-                  </ol>
-                )}
-              </Panel>
-              <Panel className="xl:col-span-2" label="Plays to try">
-                <PanelTitle icon="spark">Plays for your blockers</PanelTitle>
-                <div className="mt-4 space-y-3">
+              <Panel label="Plays to try">
+                <Title>Plays for your blockers</Title>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
                   {(data.moves.length ? data.moves : [PLAYS.find((p) => p.area === "web")!]).map((p) => (
                     <PlayCard key={p.id} play={p} />
                   ))}
                 </div>
               </Panel>
+              {!plan.unlimited && plan.plan === "free" && <InviteCard plan={plan} />}
             </div>
           )}
 
           {/* ===== MINDS ===== */}
           {view === "minds" && (
             <Panel label="Customer minds">
-              <PanelTitle icon="minds">Customer minds</PanelTitle>
-              <p className="mt-1 text-sm text-white/60">Who tests your product. Pick a ready-made mind or build your own.</p>
-              <div className="mt-6">
+              <Title>Customer minds · who tests your product</Title>
+              <div className="mt-5">
                 <MindsSection minds={data.minds} />
               </div>
             </Panel>
@@ -578,9 +503,8 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           {/* ===== PLAYBOOK ===== */}
           {view === "playbook" && (
             <Panel label="Playbook">
-              <PanelTitle icon="playbook">Playbook</PanelTitle>
-              <p className="mt-1 text-sm text-white/60">What&apos;s working for apps, games and stores, with the evidence behind each play.</p>
-              <div className="mt-6">
+              <Title>Playbook · what&apos;s working, with the evidence</Title>
+              <div className="mt-5">
                 <PlaybookSection trends={data.trends} />
               </div>
             </Panel>

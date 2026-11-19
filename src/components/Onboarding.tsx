@@ -1,8 +1,8 @@
 "use client";
-// The questions asked BEFORE every test (and as first-run onboarding):
-// ONE screen, ONE required answer: website or app (+ the URL). Fewer questions = more people
-// reach their result. What it is, when it launches and who it's for are OPTIONAL (a fold that
-// opens on request); they only make the simulated customers a bit more accurate.
+// The questions asked BEFORE every test (and as first-run onboarding). Two calm steps:
+//   1. What are you launching?  four big tiles; picking one moves on by itself
+//   2. Where is it? (the link, or "you'll add screenshots next") + who it's for (optional)
+// Fewer, bigger questions = more people reach their result. Everything but the link is optional.
 // It's the first thing new visitors see (the home page button), no account needed.
 // The answers are saved on the account (Supabase "user metadata"), which also marks
 // onboarding as done. Signed-out visitors sign up at the end (on the way to the test).
@@ -14,7 +14,6 @@ import { Arrow } from "@/components/landing/UrlForm";
 
 type Kind = "website" | "app" | "game" | "store";
 const needsUrl = (k: Kind) => k === "website" || k === "store";
-const WHEN = ["This week", "This month", "Later", "Already live"];
 const WHO = ["Students", "Founders", "Parents", "Small businesses", "Developers", "Everyone"];
 
 export default function Onboarding({ startUrl, startKind = "website", mind, preset }: { startUrl: string; startKind?: Kind; mind?: string; preset?: string }) {
@@ -22,10 +21,11 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
   const [kind, setKind] = useState<Kind>(startKind);
   const [url, setUrl] = useState(startUrl);
   const [what, setWhat] = useState("");
-  const [when, setWhen] = useState("");
+  const when = ""; // launch timing is no longer asked (fewer questions)
   const [who, setWho] = useState("");
   const [whoText, setWhoText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [step, setStep] = useState<1 | 2>(startUrl ? 2 : 1); // a link from the home page skips to step 2
 
   const audience = whoText.trim() || who; // their own words win over the chip
   const canNext = !needsUrl(kind) || url.trim().length > 3;
@@ -63,93 +63,89 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
     if (canNext) void finish();
   }
 
+  const choose = (k: Kind) => {
+    setKind(k);
+    setStep(2);
+  };
+  const current = KINDS.find((k) => k.id === kind)!;
+
   return (
-    <form onSubmit={next} className="paper mx-auto max-w-lg px-6 py-12 sm:px-10">
-      <p className="t-label">takes about a minute</p>
-      <h1 className="t-h2 mt-2">What are you testing?</h1>
-      <div className="mt-6 grid grid-cols-2 gap-2" role="radiogroup" aria-label="What are you testing?">
-        {(
-          [
-            ["app", "A mobile app", "Onboarding + paywall screenshots"],
-            ["game", "A game", "Roblox or mobile: first minutes + shop"],
-            ["website", "A website", "Landing page, pricing, signup"],
-            ["store", "An online store", "Shopify, clothing, dropshipping (beta)"],
-          ] as const
-        ).map(([k, name, hint]) => (
-          <button
-            key={k}
-            type="button"
-            role="radio"
-            aria-checked={kind === k}
-            onClick={() => setKind(k)}
-            className={`rounded-xl border p-4 text-left transition-colors duration-150 ${
-              kind === k ? "border-accent bg-subtle ring-1 ring-accent" : "border-line hover:border-line-strong"
-            }`}
-          >
-            <span className="block font-medium">{name}</span>
-            <span className="mt-1 block text-sm text-muted">{hint}</span>
-          </button>
+    <div className="mx-auto max-w-3xl">
+      {/* progress: two thin bars */}
+      <div className="mx-auto flex max-w-xs gap-2" aria-label={`Step ${step} of 2`}>
+        {[1, 2].map((i) => (
+          <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= step ? "bg-accent" : "bg-line"}`} />
         ))}
       </div>
 
-      {needsUrl(kind) ? (
-        <>
-          <label htmlFor="ob-url" className="field-label mt-6">
-            {kind === "store" ? "Your store's home page" : "The page people land on"}
-          </label>
-          <div className="relative">
-            <span className="t-label field-prefix pointer-events-none absolute left-4 top-1/2 -translate-y-1/2" aria-hidden>
-              https://
-            </span>
-            <input
-              id="ob-url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder={kind === "store" ? "yourstore.com" : "yourstartup.com"}
-              className="field h-12 pl-20"
-              inputMode="url"
-              autoFocus
-            />
+      {step === 1 ? (
+        <section className="mt-12 text-center" aria-labelledby="ob-q1">
+          <p className="t-label">step 1 of 2 · takes about a minute</p>
+          <h1 id="ob-q1" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
+            What are you launching?
+          </h1>
+          <div className="mt-10 grid grid-cols-2 gap-3 text-left sm:grid-cols-4" role="radiogroup" aria-label="What are you launching?">
+            {KINDS.map((k) => (
+              <button
+                key={k.id}
+                type="button"
+                role="radio"
+                aria-checked={kind === k.id}
+                onClick={() => choose(k.id)}
+                className={`ob-tile group flex min-h-44 flex-col justify-between rounded-2xl border p-5 transition-all duration-200 ${
+                  kind === k.id ? "border-accent bg-white/[0.06]" : "border-line bg-white/[0.025] hover:-translate-y-0.5 hover:border-line-strong hover:bg-white/[0.05]"
+                }`}
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white/[0.04] text-fg">{k.icon}</span>
+                <span>
+                  <span className="block text-lg font-medium">{k.name}</span>
+                  <span className="mt-1 block text-sm text-muted">{k.hint}</span>
+                </span>
+              </button>
+            ))}
           </div>
-        </>
+        </section>
       ) : (
-        <p className="mt-6 text-sm text-muted">
-          {kind === "game"
-            ? "After this you'll drop in screenshots of the first minutes and the shop or game-pass offer, in order. You only upload pictures; Crawler never logs into your game."
-            : "After this you'll drop in screenshots of your onboarding and paywall, in order."}
-        </p>
-      )}
+        <form onSubmit={next} className="mx-auto mt-12 max-w-xl" aria-labelledby="ob-q2">
+          <button type="button" onClick={() => setStep(1)} className="btn btn-text -ml-3 h-10 text-sm">
+            ← {current.name}
+          </button>
+          <p className="t-label mt-4">step 2 of 2</p>
+          <h1 id="ob-q2" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
+            {needsUrl(kind) ? (kind === "store" ? "Where's your store?" : "Where does it live?") : kind === "game" ? "Let's see your game." : "Let's see your app."}
+          </h1>
 
-      {/* optional: makes the simulated customers a little more accurate */}
-      <details className="mt-6 rounded-xl border border-line">
-        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 text-sm font-medium">
-          Add details for a sharper test
-          <span className="text-faint">optional</span>
-        </summary>
-        <div className="space-y-5 border-t border-line p-4">
-          <div>
-            <label htmlFor="ob-what" className="field-label">What is it?</label>
-            <input
-              id="ob-what"
-              value={what}
-              onChange={(e) => setWhat(e.target.value)}
-              placeholder={kind === "app" ? "e.g. a habit tracker for students" : kind === "game" ? "e.g. an obby game for teens" : kind === "store" ? "e.g. a streetwear store" : "e.g. a meal-planning site for busy parents"}
-              className="field"
-            />
-          </div>
-          <div>
-            <p className="field-label">Launching</p>
-            <div className="flex flex-wrap gap-2">
-              {WHEN.map((w) => (
-                <button key={w} type="button" aria-pressed={when === w} onClick={() => setWhen(when === w ? "" : w)} className="chip">
-                  {w}
-                </button>
-              ))}
+          {needsUrl(kind) ? (
+            <div className="relative mt-8">
+              <label htmlFor="ob-url" className="sr-only">
+                {kind === "store" ? "Your store's address" : "Your website's address"}
+              </label>
+              <span className="field-prefix pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 font-mono text-sm" aria-hidden>
+                https://
+              </span>
+              <input
+                id="ob-url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder={kind === "store" ? "yourstore.com" : "yourstartup.com"}
+                className="field h-16 rounded-2xl pl-24 text-lg"
+                inputMode="url"
+                autoFocus
+              />
             </div>
-          </div>
-          <div>
-            <p className="field-label">Who is it for?</p>
-            <div className="flex flex-wrap gap-2">
+          ) : (
+            <p className="mt-6 text-lg text-muted">
+              {kind === "game"
+                ? "Next you'll drop in screenshots of the first minutes and the shop or game-pass offer, in order. Crawler never logs into your game."
+                : "Next you'll drop in screenshots of your onboarding and paywall, in order."}
+            </p>
+          )}
+
+          <fieldset className="mt-10">
+            <legend className="text-sm font-medium">
+              Who is it for? <span className="font-normal text-faint">optional</span>
+            </legend>
+            <div className="mt-3 flex flex-wrap gap-2">
               {WHO.map((w) => (
                 <button key={w} type="button" aria-pressed={who === w} onClick={() => setWho(who === w ? "" : w)} className="chip">
                   {w}
@@ -159,21 +155,38 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
             <input
               value={whoText}
               onChange={(e) => setWhoText(e.target.value)}
-              placeholder="or describe them, e.g. college students who cook on a budget"
+              placeholder="or in your words, e.g. college students who cook on a budget"
               className="field mt-3"
               aria-label="Describe who it is for"
             />
-          </div>
-        </div>
-      </details>
+            <input
+              value={what}
+              onChange={(e) => setWhat(e.target.value)}
+              placeholder={kind === "game" ? "What is it? e.g. an obby game for teens" : kind === "store" ? "What do you sell? e.g. streetwear" : "What is it? e.g. a meal planner for busy parents"}
+              className="field mt-3"
+              aria-label="What is it"
+            />
+          </fieldset>
 
-      <div className="mt-8">
-        <button type="submit" disabled={!canNext || busy} className="btn btn-primary w-full px-6">
-          {busy ? "Starting…" : !needsUrl(kind) ? "Next: add screens" : kind === "store" ? "Analyze my store" : "Analyze my site"}
-          {!busy && <Arrow />}
-        </button>
-        <p className="mt-3 text-center text-xs text-faint">Free first test. Simulated customers, buying intent, not real purchases.</p>
-      </div>
-    </form>
+          <button type="submit" disabled={!canNext || busy} className="btn btn-primary mt-10 h-14 w-full text-base">
+            {busy ? "Starting…" : !needsUrl(kind) ? "Next: add screenshots" : kind === "store" ? "Test my store" : "Test my site"}
+            {!busy && <Arrow />}
+          </button>
+          <p className="mt-4 text-center text-xs text-faint">Free first test · simulated customers show buying intent, not real purchases.</p>
+        </form>
+      )}
+    </div>
   );
 }
+
+const ICON = (d: string) => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d={d} />
+  </svg>
+);
+const KINDS: { id: Kind; name: string; hint: string; icon: React.ReactNode }[] = [
+  { id: "app", name: "Mobile app", hint: "Onboarding + paywall", icon: ICON("M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2") },
+  { id: "game", name: "Game", hint: "Roblox or mobile: first minutes + shop", icon: ICON("M6 9h12a4 4 0 0 1 4 4v1a3 3 0 0 1-5.3 1.9L15 14H9l-1.7 1.9A3 3 0 0 1 2 14v-1a4 4 0 0 1 4-4zM8 11v3M6.5 12.5h3M16 12h.01M18 13.5h.01") },
+  { id: "website", name: "Website", hint: "Landing page, pricing, signup", icon: ICON("M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z") },
+  { id: "store", name: "Online store", hint: "Product page → cart", icon: ICON("M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8zM9 8V6a3 3 0 0 1 6 0v2") },
+];

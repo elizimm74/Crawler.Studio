@@ -143,6 +143,7 @@ export default function AppWizard() {
       {step === 0 &&
         (busy === "uploading" || busy === "reading" ? (
           <Working
+            kind="phone"
             label={busy === "uploading" ? `uploading ${shots.length + shotsB.length} screens` : `reading ${shots.length + shotsB.length} screens`}
             title="Reading your app…"
             expectSeconds={30}

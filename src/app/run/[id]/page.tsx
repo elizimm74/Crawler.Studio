@@ -3,7 +3,7 @@
 // then shows the report.
 import { use, useEffect, useState } from "react";
 import Report from "@/components/Report";
-import BotRush from "@/components/landing/BotRush";
+import CrowdProgress from "@/components/loading/CrowdProgress";
 import JourneyView from "@/components/JourneyView";
 import AppReport from "@/components/app/AppReport";
 import type { AppRun } from "@/lib/app/pipeline";
@@ -87,16 +87,9 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
       );
     }
     return (
-      <div className="mx-auto max-w-2xl space-y-8" aria-live="polite">
-        <div>
-          <p className="t-label flex items-center gap-2">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" aria-hidden />
-            working · {seconds}s
-          </p>
-          <h1 className="t-h1 mt-4">{data.stage}</h1>
-        </div>
-        {/* the bots animation, driven by the real progress */}
-        <BotRush live={{ progress: pct / 100, label: `${data.progress.done} of ${data.progress.total} customers` }} />
+      <div className="mx-auto max-w-5xl space-y-8">
+        {/* a dot per simulated customer, lit by the REAL progress from the worker */}
+        <CrowdProgress stage={data.stage} done={data.progress.done} total={data.progress.total} seconds={seconds} />
         <p className="sr-only" role="status">
           {data.progress.done} of {data.progress.total} customers reviewed, {pct}%.
         </p>
