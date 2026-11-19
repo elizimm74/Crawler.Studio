@@ -25,6 +25,8 @@ const CASES = [
   { name: "prices written like '9,99 €'", dir: "sites/euro", start: "/", pricing: "/preise.html", signup: "/start.html" },
   { name: "cookie wall inside a frame", dir: "sites/consentframe", start: "/", pricing: "/pricing.html", signup: "/signup.html", heroHas: "Notes that understand code" },
   { name: "mega-menu builds links on hover", dir: "sites/megamenu", start: "/", pricing: "/plans.html", signup: "/signup.html" },
+  { name: "STORE: product with a required size -> cart", dir: "sites/store", start: "/", mode: "store", pricing: "/products/astra-hoodie", signup: "/cart", cartFilled: true },
+  { name: "STORE: products only via 'Shop all' -> cart", dir: "sites/store2", start: "/", mode: "store", pricing: "/products/halo-cap", signup: "/cart", cartFilled: true },
   { name: "bot-check page", dir: "sites/blocked", start: "/", blocked: true },
   { name: "page doesn't exist (404)", dir: "sites/blocked", start: "/no-such-page.html", missing: true },
 ];
@@ -53,6 +55,9 @@ function check(c, crawl) {
     }
   }
   if (c.heroHas && !page("hero")?.text.includes(c.heroHas)) problems.push(`hero: text "${c.heroHas}" not captured`);
+  if (c.mode === "store" && crawl.mode !== "store") problems.push("store: crawl not marked as a store crawl");
+  if (c.cartFilled && !/we added one item/i.test(page("signup")?.note || "")) problems.push(`store: the cart wasn't filled (${page("signup")?.note || "no cart"})`);
+  if (c.mode === "store" && /BOUGHT/.test(crawl.pages.map((p) => p.title).join(" "))) problems.push("SAFETY: clicked Buy now");
   return problems;
 }
 
@@ -66,7 +71,7 @@ function check(c, crawl) {
     const t0 = Date.now();
     let problems;
     try {
-      const crawl = await crawlSite(url);
+      const crawl = await crawlSite(url, c.mode ? { mode: c.mode } : {});
       problems = c.blocked || c.missing ? [`expected the crawler to stop with an error, but it crawled the page`] : check(c, crawl);
     } catch (err) {
       const msg = String(err && err.message);

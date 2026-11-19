@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Astra Hoodie | Northline</title></head>
+<body style="font-family:system-ui;padding:24px">
+<a href="/cart">Bag</a>
+<h1>Astra Hoodie</h1>
+<p>$59.00</p>
+<p>Heavyweight cotton. Ships in 5-7 business days.</p>
+<label>Size
+<select id="size"><option value="">Choose a size</option><option>S</option><option>M</option><option disabled>L (sold out)</option></select>
+</label>
+<p id="msg" style="color:#b00"></p>
+<button id="add">Add to cart</button>
+<button id="buy">Buy now</button>
+<script>
+  // Practice store: a size MUST be chosen before "Add to cart" works (a common real-store snag).
+  document.getElementById("buy").onclick = function () { document.title = "BOUGHT (the crawler must never click this)"; };
+  document.getElementById("add").onclick = function () {
+    var s = document.getElementById("size").value;
+    if (!s) { document.getElementById("msg").textContent = "Please choose a size."; return; }
+    var b = JSON.parse(localStorage.getItem("bag") || "[]");
+    b.push({ name: "Astra Hoodie", size: s, price: 59 });
+    localStorage.setItem("bag", JSON.stringify(b));
+    document.getElementById("msg").textContent = "Added to your bag.";
+  };
+</script>
+</body>
+</html>

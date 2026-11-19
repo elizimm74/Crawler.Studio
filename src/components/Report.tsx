@@ -26,7 +26,11 @@ const STEP_NAMES: Record<string, string> = {
   converted: "converted",
 };
 
+// Online-store tests visit a product page and the cart instead of pricing and signup.
+const STORE_STEP_NAMES: Record<string, string> = { ...STEP_NAMES, pricing: "the product page", signup: "the cart" };
+
 export default function Report({ run, demo = false }: { run: Run & { filesPrefix: string }; demo?: boolean }) {
+  const stepNames = run.profile?.productType === "store" ? STORE_STEP_NAMES : STEP_NAMES;
   const stats = run.stats!;
   const advice = run.advice!;
   const goal = run.profile?.goal ?? "buy";
@@ -124,7 +128,7 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
         <Fact label="Liked it least" value={worst ? worst.value : "-"} detail={worst ? `${worst.dimension} · ${pct(worst.buyRate)} would ${goal}` : "Not enough data"} />
         <Fact
           label="Most people left at"
-          value={worstStep && worstStep.lost > 0 ? STEP_NAMES[worstStep.step] : "-"}
+          value={worstStep && worstStep.lost > 0 ? stepNames[worstStep.step] : "-"}
           detail={worstStep && worstStep.lost > 0 ? `${worstStep.lost} of ${stats.total} gave up there` : ""}
         />
       </section>
@@ -154,12 +158,12 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
           </div>
         </Fold>
 
-        <Fold title="Where they dropped off" hint={worstStep ? `most at ${STEP_NAMES[worstStep.step]}` : ""}>
+        <Fold title="Where they dropped off" hint={worstStep ? `most at ${stepNames[worstStep.step]}` : ""}>
           <div className="space-y-4">
             {stats.funnel.map((f) => (
               <div key={f.step}>
                 <div className="flex justify-between gap-4 text-sm">
-                  <span className="first-letter:uppercase">{f.step === "converted" ? `Would ${goal}` : STEP_NAMES[f.step]}</span>
+                  <span className="first-letter:uppercase">{f.step === "converted" ? `Would ${goal}` : stepNames[f.step]}</span>
                   <span className="tabular-nums text-muted">
                     {f.reached}
                     {f.lost ? ` · ${f.lost} left` : ""}

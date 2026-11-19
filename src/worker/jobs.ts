@@ -48,7 +48,9 @@ export async function analyzeJob(job: Job, ctx: Ctx) {
 
   let crawl: Crawl;
   try {
-    crawl = await crawlSite(row.url, { id: job.ref_id, store: ctx.store, prefix: `${job.user_id}/crawls/${job.ref_id}` });
+    // A store crawl (migration 0009 saves the kind) goes product page -> cart.
+    const mode = (row.data as { input?: { kind?: string } } | null)?.input?.kind === "store" ? "store" : "website";
+    crawl = await crawlSite(row.url, { id: job.ref_id, store: ctx.store, prefix: `${job.user_id}/crawls/${job.ref_id}`, mode });
   } catch (err) {
     // A site that's missing or blocks bots: a clear message, not a retry.
     if (err instanceof BlockedError || err instanceof MissingPageError) {

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Your bag</title></head>
+<body style="font-family:system-ui;padding:24px">
+<h1>Your bag</h1>
+<div id="c"></div>
+<script>
+  // Practice store cart: lists what was added (saved in this browser), or says it's empty.
+  var b = JSON.parse(localStorage.getItem("bag") || "[]");
+  var c = document.getElementById("c");
+  if (!b.length) {
+    c.innerHTML = "<p>Your bag is empty.</p>";
+  } else {
+    var total = 0, html = "";
+    for (var i = 0; i < b.length; i++) { html += "<p>" + b[i].name + " (" + b[i].size + ") $" + b[i].price + ".00</p>"; total += b[i].price; }
+    c.innerHTML = html + "<p>Subtotal: $" + total + ".00</p><p>Shipping calculated at checkout.</p><button>Checkout</button>";
+  }
+</script>
+</body>
+</html>

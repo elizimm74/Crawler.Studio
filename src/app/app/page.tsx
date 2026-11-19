@@ -89,7 +89,7 @@ function Wizard() {
       const res = await fetch("/api/crawls", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: target }),
+        body: JSON.stringify({ url: target, kind: params.get("type") === "store" ? "store" : "website" }),
       });
       const started = await res.json();
       if (!res.ok) throw new Error(started.error);
@@ -228,7 +228,7 @@ function Wizard() {
                     <div className="flex aspect-[16/10] items-center justify-center border-b border-line bg-subtle text-xs text-faint">not found</div>
                   )}
                   <figcaption className="flex items-center justify-between gap-2 p-2 sm:px-4">
-                    <span className="truncate text-sm">{s === "hero" ? "Landing" : s === "pricing" ? "Pricing" : "Signup"}</span>
+                    <span className="truncate text-sm">{s === "hero" ? "Landing" : params.get("type") === "store" ? (s === "pricing" ? "Product page" : "Cart") : s === "pricing" ? "Pricing" : "Signup"}</span>
                     <span className={`pill hidden sm:inline-flex ${p ? "" : "pill-no"}`}>{p ? "found" : "missing"}</span>
                   </figcaption>
                 </figure>

@@ -49,7 +49,7 @@ export class BlockedError extends Error {}
 // worker passes Supabase Storage; benches use a local folder by default.
 export async function crawlSite(
   url: string,
-  options: { id?: string; store?: BlobStore; prefix?: string } = {},
+  options: { id?: string; store?: BlobStore; prefix?: string; mode?: "website" | "store" } = {},
 ): Promise<Crawl> {
   const id = options.id ?? newId();
   const files: FileTarget = { store: options.store ?? new LocalBlobStore(), prefix: options.prefix ?? `local/crawls/${id}` };
@@ -73,6 +73,15 @@ export async function crawlSite(
     const heroUrl = page.url(); // after any redirects
     // The phone screenshot happens in the background while we explore (faster).
     const phoneShot = capturePhone(browser, heroUrl, files);
+
+    // STORE mode: product page -> add one item -> cart. Never checkout, never pay.
+    if (options.mode === "store") {
+      const { product, cart } = await crawlStore(page, files, heroUrl);
+      if (product) pages.push(product);
+      if (cart) pages.push(cart);
+      hero.mobileScreenshotFile = await phoneShot;
+      return { id, url, createdAt: new Date().toISOString(), pages, costs, filesPrefix: files.prefix, mode: "store" };
+    }
 
     // 2) What would a visitor click?
     const clickables = await listClickables(page);
@@ -741,4 +750,175 @@ async function scrollToAnchor(page: Page, href: string): Promise<string | null> 
     .catch(() => null);
   await page.waitForTimeout(500);
   return text;
+}
+
+// ---------- STORE MODE (online stores: Shopify, clothing, dropshipping) ----------
+// What a shopper does: open a product, pick an option, add it to the cart, look at the cart.
+// SAFETY: we only ever click "Add to cart / bag / basket". Never "Buy now", never checkout,
+// never any payment step, and we type nothing.
+
+// Product pages usually live at /products/<name>, /product/<name>, /p/<name> or /item/<name>.
+const PRODUCT_PATH = /\/(products?|p|items?)\/[^/?#]+/i;
+
+async function productLinks(page: Page): Promise<string[]> {
+  return page.evaluate((src) => {
+    const re = new RegExp(src, "i");
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const a of Array.from(document.querySelectorAll("a[href]"))) {
+      const href = (a as HTMLAnchorElement).href;
+      if (!href.startsWith(location.origin)) continue;
+      const path = new URL(href).pathname;
+      if (re.test(path) && !/gift-?card|e-?gift/i.test(path) && !seen.has(path)) {
+        seen.add(path);
+        out.push(href);
+      }
+    }
+    return out.slice(0, 10);
+  }, PRODUCT_PATH.source);
+}
+
+async function crawlStore(page: Page, files: FileTarget, heroUrl: string): Promise<{ product: CrawledPage | null; cart: CrawledPage | null }> {
+  const origin = new URL(heroUrl).origin;
+  // 1) Find a product: on the home page, else via a "Shop" / collection page, else common addresses.
+  let links = await productLinks(page);
+  if (!links.length) {
+    const shop = await page.evaluate(() => {
+      const a = Array.from(document.querySelectorAll("a[href]")).find((x) => {
+        const href = (x as HTMLAnchorElement).href;
+        if (!href.startsWith(location.origin)) return false;
+        const path = new URL(href).pathname;
+        const text = (x.textContent || "").trim();
+        return /\/(collections?|shop|catalog|store|all)(\/|$)/i.test(path) || /^(shop|shop all|shop now|new arrivals|all products|best ?sellers)$/i.test(text);
+      });
+      return a ? (a as HTMLAnchorElement).href : null;
+    });
+    for (const target of [shop, `${origin}/collections/all`, `${origin}/shop`].filter(Boolean) as string[]) {
+      const ok = await safely(async () => {
+        const r = await visit(page, target);
+        if (!r || r.status() >= 400) return null;
+        await prepare(page);
+        return (links = await productLinks(page)).length ? true : null;
+      });
+      if (ok) break;
+    }
+  }
+  if (!links.length) return { product: null, cart: null };
+
+  const product = await safely(async () => {
+    await visit(page, links[0]);
+    await prepare(page);
+    return capture(page, files, "pricing", { tiles: 2, note: "Product page (store test): the first product we found." });
+  });
+  if (!product) return { product: null, cart: null };
+
+  // 2) Add it to the cart, choosing the first available option if one is required.
+  const clicked = await safely(() => addToCart(page));
+
+  // 3) The cart: a cart link if there is one, otherwise /cart. (Never the checkout.)
+  const cart = await safely(async () => {
+    const cartHref = await page.evaluate(() => {
+      const a = Array.from(document.querySelectorAll("a[href]")).find((x) => {
+        const href = (x as HTMLAnchorElement).href;
+        return href.startsWith(location.origin) && /\/(cart|bag|basket)(\.html)?(\/|$|\?)/i.test(new URL(href).pathname);
+      });
+      return a ? (a as HTMLAnchorElement).href : null;
+    });
+    await visit(page, cartHref ?? `${origin}/cart`);
+    await prepare(page);
+    const text = await page.evaluate(() => document.body?.innerText ?? "");
+    // Shopify stores answer /cart.js with the real item count (a read-only lookup, like the cart icon does).
+    const count = await page.evaluate(async () => {
+      try {
+        const r = await fetch("/cart.js", { headers: { accept: "application/json" } });
+        if (!r.ok) return null;
+        const j = await r.json();
+        return typeof j.item_count === "number" ? (j.item_count as number) : null;
+      } catch {
+        return null;
+      }
+    });
+    const textSaysItem = /subtotal|order total|\btotal\b/i.test(text) && !/(cart|bag|basket) is empty|no items in your/i.test(text);
+    const hasItem = count !== null ? count > 0 : textSaysItem;
+    const drawerOnly = hasItem && !textSaysItem; // the item is there, but this store shows its cart in a pop-out drawer
+    const note = hasItem
+      ? drawerOnly
+        ? "Cart (store test): we added one item. This store shows its cart in a pop-out drawer, so this screenshot shows the page behind it. Crawler never checks out or pays."
+        : "Cart (store test): we added one item. Crawler never checks out or pays."
+      : clicked
+        ? "Cart (store test): we clicked 'Add to cart' but the cart still looks empty. Real shoppers may hit the same problem."
+        : "Cart (store test): we couldn't add the item automatically (for example a required choice we couldn't make), so the cart is empty.";
+    return capture(page, files, "signup", { tiles: 1, note });
+  });
+  return { product, cart };
+}
+
+// Picks the first available choice for anything required (dropdowns, size/color radio groups),
+// then clicks the VISIBLE main "Add to cart/bag/basket" button. Real stores hide extra add buttons
+// in pop-out drawers, so hidden ones are ignored, and the store's own product form wins.
+async function addToCart(page: Page): Promise<true | null> {
+  await page.evaluate(() => {
+    const visible = (el: Element) => !!((el as HTMLElement).offsetWidth || (el as HTMLElement).offsetHeight || el.getClientRects().length);
+    // dropdowns with no real choice yet
+    for (const el of Array.from(document.querySelectorAll("select"))) {
+      const sel = el as HTMLSelectElement;
+      const current = sel.options[sel.selectedIndex];
+      if (current && current.value && !current.disabled) continue;
+      const i = Array.from(sel.options).findIndex((o) => o.value && !o.disabled);
+      if (i >= 0) {
+        sel.selectedIndex = i;
+        sel.dispatchEvent(new Event("input", { bubbles: true }));
+        sel.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+    // radio groups (sizes, colors) with nothing chosen: click the first available one
+    const groups = new Map<string, HTMLInputElement[]>();
+    for (const el of Array.from(document.querySelectorAll('input[type="radio"]'))) {
+      const r = el as HTMLInputElement;
+      if (!r.name) continue;
+      groups.set(r.name, [...(groups.get(r.name) ?? []), r]);
+    }
+    for (const radios of groups.values()) {
+      if (radios.some((r) => r.checked)) continue;
+      const pick = radios.find((r) => !r.disabled && !/sold ?out|unavailable/i.test(r.closest("label")?.textContent ?? ""));
+      if (!pick) continue;
+      const label = pick.id ? document.querySelector(`label[for="${CSS.escape(pick.id)}"]`) : pick.closest("label");
+      (label && visible(label) ? (label as HTMLElement) : pick).click();
+    }
+  });
+  // Size buttons (many stores use plain buttons like "S", "M", "10.5" instead of radios):
+  // if none looks chosen, click the first available one.
+  await page.evaluate(() => {
+    const SIZE = /^(xxs|xs|s|m|l|xl|xxl|\d{1,2}(\.5)?|one size)$/i;
+    const buttons = Array.from(document.querySelectorAll("button")).filter((b) => SIZE.test((b.textContent || "").trim()) && (b.offsetWidth || b.offsetHeight));
+    if (!buttons.length) return;
+    const chosen = buttons.some((b) => b.getAttribute("aria-pressed") === "true" || b.getAttribute("aria-checked") === "true" || /selected|active/i.test(b.className));
+    if (chosen) return;
+    const pick = buttons.find((b) => !b.disabled && b.getAttribute("aria-disabled") !== "true" && !/sold|unavailable|disabled/i.test(b.className));
+    pick?.click();
+  });
+  await page.waitForTimeout(400);
+  const ADD = /add to (cart|bag|basket)/i;
+  const candidates = [
+    page.locator('form[action*="/cart/add"] button[type="submit"]:visible, form[action*="/cart/add"] input[type="submit"]:visible, button[name="add"]:visible'),
+    page.locator('button:visible, input[type="submit"]:visible, input[type="button"]:visible, a[role="button"]:visible').filter({ hasText: ADD }),
+    page.locator('input[type="submit"][value*="add to" i]:visible, input[type="button"][value*="add to" i]:visible'),
+  ];
+  for (const list of candidates) {
+    const button = list.first();
+    if (!(await button.count())) continue;
+    const label = ((await button.innerText().catch(() => "")) || (await button.getAttribute("value")) || (await button.getAttribute("aria-label")) || "").trim();
+    if (/buy now|checkout|check out|pay\b|purchase|place order|shop pay/i.test(label)) continue; // safety net
+    if (await button.isDisabled().catch(() => false)) continue;
+    // A newsletter pop-up can sit on top of the button: close it (Escape) and try again,
+    // and as a last resort press the button directly.
+    const clicked =
+      (await button.click({ timeout: 4_000 }).then(() => true).catch(() => false)) ||
+      (await page.keyboard.press("Escape").then(() => button.click({ timeout: 3_000 })).then(() => true).catch(() => false)) ||
+      (await button.evaluate((el) => (el as HTMLElement).click()).then(() => true).catch(() => false));
+    if (!clicked) continue;
+    await page.waitForTimeout(2_000);
+    return true;
+  }
+  return null;
 }

@@ -82,6 +82,9 @@ export type Crawl = {
   pages: CrawledPage[];
   costs: CallCost[]; // AI calls made while crawling (choosing what to click)
   filesPrefix: string; // where this crawl's screenshots are, e.g. "{userId}/crawls/{id}"
+  // "store": an online-store crawl. Then the "pricing" page is a PRODUCT page and the
+  // "signup" page is the CART (see crawlStore in crawl.ts).
+  mode?: "store";
 };
 
 // What the product IS, written by Haiku after the crawl. The founder can

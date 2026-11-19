@@ -35,7 +35,8 @@ const LENS: Partial<Record<ProductType, string>> = {
     "is the product clear from the photos, price and size info; are shipping cost and delivery time easy to see before checkout; " +
     "are returns, contact details and reviews easy to find; does it feel trustworthy or like a throwaway shop; does it work well on a phone. " +
     "Extra costs that only show at checkout and slow or unclear delivery are common reasons shoppers leave. " +
-    "Fake urgency (countdown timers, 'only 2 left') makes careful shoppers distrust a store, so never recommend it.",
+    "Fake urgency (countdown timers, 'only 2 left') makes careful shoppers distrust a store, so never recommend it. " +
+    "In this store test the 'pricing' page is a PRODUCT page and the 'signup' page is the CART (one item was added; nobody checks out or pays): lost_at pricing = left at the product page, signup = left at the cart.",
 };
 
 export function lensFor(t: unknown): string {
