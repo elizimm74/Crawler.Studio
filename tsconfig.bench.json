@@ -23,6 +23,7 @@
     "src/lib/suggest.ts",
     "src/lib/mind.ts",
     "src/lib/quality.ts",
+    "src/lib/stripe.ts",
     "src/lib/personas.ts"
   ]
 }

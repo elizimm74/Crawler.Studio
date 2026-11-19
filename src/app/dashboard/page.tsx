@@ -9,7 +9,8 @@ import { analyses, fixQueue, nextMoves, recurringBlockers, type DashboardData, t
 
 export const metadata = { title: "crawler: dashboard", robots: { index: false } };
 
-export default async function Dashboard() {
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ paid?: string }> }) {
+  const { paid } = await searchParams;
   if (!AUTH_ENABLED) {
     return (
       <div className="paper mx-auto max-w-3xl px-6 py-12 sm:px-10">
@@ -56,5 +57,5 @@ export default async function Dashboard() {
     plan,
     trends: (trendsRes.data as Trends | null) ?? null,
   };
-  return <DashboardView data={data} />;
+  return <DashboardView data={data} paid={paid === "launch" || paid === "studio" ? paid : undefined} />;
 }

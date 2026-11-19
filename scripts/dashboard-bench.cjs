@@ -125,5 +125,42 @@ test("answer check: copy-paste crowds get flagged", () => {
   return q.flags.length === 3 && q.uniqueQuotesPct === 5 ? null : JSON.stringify(q);
 });
 
+// ---------- payments: Stripe signature + what counts as a paid checkout ----------
+const crypto = require("crypto");
+const { verifyStripeSignature, readPaidCheckout, checkoutForm, paidPlan } = require(path.join(lib, "stripe.js"));
+const SECRET = "whsec_bench_only";
+const sign = (payload, t, secret = SECRET) => `t=${t},v1=${crypto.createHmac("sha256", secret).update(`${t}.${payload}`).digest("hex")}`;
+const NOW = 1_800_000_000;
+test("a real Stripe signature passes", () => (verifyStripeSignature('{"a":1}', sign('{"a":1}', NOW), SECRET, NOW) ? null : "rejected"));
+test("a changed payload, wrong secret, missing or old signature all fail", () => {
+  const bad = [
+    verifyStripeSignature('{"a":2}', sign('{"a":1}', NOW), SECRET, NOW),
+    verifyStripeSignature('{"a":1}', sign('{"a":1}', NOW, "whsec_other"), SECRET, NOW),
+    verifyStripeSignature('{"a":1}', null, SECRET, NOW),
+    verifyStripeSignature('{"a":1}', sign('{"a":1}', NOW - 3600), SECRET, NOW),
+    verifyStripeSignature('{"a":1}', "t=abc,v1=zz", SECRET, NOW),
+  ];
+  return bad.some(Boolean) ? "something bad passed: " + JSON.stringify(bad) : null;
+});
+test("any one of several v1 signatures may match (Stripe secret rotation)", () => {
+  const good = sign('{"a":1}', NOW).split(",")[1];
+  return verifyStripeSignature('{"a":1}', `t=${NOW},v1=${"0".repeat(64)},${good}`, SECRET, NOW) ? null : "rejected";
+});
+const UID = "11111111-2222-3333-4444-555555555555";
+const ev = (o, type = "checkout.session.completed") => ({ type, data: { object: { id: "cs_test_abcdefgh123", payment_status: "paid", amount_total: 1900, currency: "usd", metadata: { user_id: UID, plan_id: "launch" }, ...o } } });
+test("a paid Launch Pack checkout adds 5 tests (tests come from OUR plans, not Stripe)", () => {
+  const p = readPaidCheckout(ev({}));
+  return p && p.plan.tests === 5 && p.userId === UID && p.amountCents === 1900 ? null : JSON.stringify(p);
+});
+test("unpaid, unknown pack, bad user id, overpaid amount or other events add nothing", () => {
+  const cases = [ev({ payment_status: "unpaid" }), ev({ metadata: { user_id: UID, plan_id: "free" } }), ev({ metadata: { user_id: "x", plan_id: "launch" } }), ev({ amount_total: 99999 }), ev({}, "invoice.paid")];
+  const got = cases.map(readPaidCheckout);
+  return got.every((x) => x === null) ? null : JSON.stringify(got);
+});
+test("checkout price and pack come from the server's plans", () => {
+  const f = checkoutForm(paidPlan("studio"), { id: UID, email: "a@b.co" }, "https://crawler.test");
+  return eq([f.get("line_items[0][price_data][unit_amount]"), f.get("metadata[plan_id]"), f.get("mode"), f.get("client_reference_id"), paidPlan("free"), paidPlan("x")], ["4900", "studio", "payment", UID, null, null], "form");
+});
+
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);

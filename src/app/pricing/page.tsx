@@ -1,14 +1,19 @@
 // /pricing: the plans from src/lib/plans.ts. One-time packs, no subscriptions.
-// Paid packs say "Coming soon" until Stripe is connected (the next step).
+// Paid packs open Stripe Checkout (BuyButton -> /api/checkout). Signed-out visitors sign up first.
+// Without the Stripe keys in the environment, they say "Coming soon".
 import Link from "next/link";
 import { currentUser } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { PLANS, perTestLabel, priceLabel } from "@/lib/plans";
+import { stripeEnabled } from "@/lib/stripe";
+import BuyButton from "@/components/BuyButton";
 
 export const metadata = { title: "crawler: pricing" };
 
-export default async function Pricing() {
+export default async function Pricing({ searchParams }: { searchParams: Promise<{ cancelled?: string }> }) {
+  const { cancelled } = await searchParams;
   const user = await currentUser();
+  const payments = stripeEnabled();
   const signedIn = Boolean(user) || !AUTH_ENABLED;
 
   return (
@@ -18,6 +23,12 @@ export default async function Pricing() {
       <p className="t-lead mt-4 max-w-xl">
         Buy tests once. They never expire, so they&apos;re there whenever you have something new to launch.
       </p>
+
+      {cancelled && (
+        <p role="status" className="card mt-8 p-4 text-sm">
+          Checkout cancelled. Nothing was charged.
+        </p>
+      )}
 
       <div className="mt-12 grid gap-4 md:grid-cols-3">
         {PLANS.map((p) => {
@@ -46,10 +57,16 @@ export default async function Pricing() {
                 <Link href={signedIn ? "/app" : "/signup"} className="btn btn-primary mt-8 w-full">
                   Start free
                 </Link>
-              ) : (
+              ) : !payments ? (
                 <span className="btn btn-ghost mt-8 w-full cursor-default text-faint" aria-disabled>
                   Coming soon
                 </span>
+              ) : user || !AUTH_ENABLED ? (
+                <BuyButton planId={p.id as "launch" | "studio"} label={`Buy ${p.name} · ${priceLabel(p)}`} primary={p.id === "launch"} />
+              ) : (
+                <Link href="/signup?next=/pricing" className={`btn mt-8 w-full ${p.id === "launch" ? "btn-primary" : "btn-secondary"}`}>
+                  Sign up to buy
+                </Link>
               )}
             </div>
           );
@@ -57,7 +74,7 @@ export default async function Pricing() {
       </div>
 
       <p className="t-label mt-8">
-        every test: simulated customers · buying intent, not real purchases · no subscription
+        every test: simulated customers · buying intent, not real purchases · one-time, no subscription · secure checkout by Stripe
       </p>
     </div>
   );

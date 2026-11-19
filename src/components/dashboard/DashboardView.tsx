@@ -81,7 +81,7 @@ function Delta({ n }: { n: number | null }) {
   );
 }
 
-export default function DashboardView({ data }: { data: DashboardData }) {
+export default function DashboardView({ data, paid }: { data: DashboardData; paid?: "launch" | "studio" }) {
   const router = useRouter();
   const [view, setView] = useState<ViewId>("overview");
   const [hello, setHello] = useState("Welcome back");
@@ -188,7 +188,7 @@ export default function DashboardView({ data }: { data: DashboardData }) {
 
           <div className="dash-panel mt-6 hidden rounded-2xl p-4 lg:block">
             <p className="t-label">
-              {plan.unlimited ? "admin" : `${plan.plan} plan`}
+              {plan.unlimited ? "admin" : plan.plan === "pack" ? "test packs" : `${plan.plan} plan`}
             </p>
             <p className="mt-2 text-2xl" style={DISPLAY}>
               {plan.unlimited
@@ -243,6 +243,15 @@ export default function DashboardView({ data }: { data: DashboardData }) {
               </Link>
             </div>
           </header>
+
+          {paid && (
+            <div role="status" className="dash-panel rounded-2xl p-4 text-sm">
+              <span className="font-medium">Payment received. Thank you!</span>{" "}
+              <span className="text-white/70">
+                Your {paid === "studio" ? "Studio" : "Launch"} Pack tests are being added. It can take a few seconds; refresh if the count hasn&apos;t changed.
+              </span>
+            </div>
+          )}
 
           {/* ===== OVERVIEW ===== */}
           {view === "overview" && (
