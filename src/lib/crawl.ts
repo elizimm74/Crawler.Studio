@@ -90,7 +90,7 @@ export async function crawlSite(
     const [pricing, signupFromHero] = await Promise.all([
       (async () =>
         (await safely(() => findStep(page, files, "pricing", choice.pricing, heroUrl))) ??
-        (await safely(() => guessAddresses(page, files, "pricing", heroUrl))))(),
+        (await safely(() => guessAddresses(page, files, "pricing", heroUrl, url))))(),
       safely(async () => {
         await visit(signupTab, heroUrl);
         await prepare(signupTab);
@@ -109,7 +109,7 @@ export async function crawlSite(
         return findStep(signupTab, files, "signup", rankByWords(await listClickables(signupTab)).signup, pricing.url);
       });
     }
-    signup ??= await safely(() => guessAddresses(signupTab, files, "signup", heroUrl));
+    signup ??= await safely(() => guessAddresses(signupTab, files, "signup", heroUrl, url));
     if (signup) pages.push(signup);
     hero.mobileScreenshotFile = await phoneShot;
 
@@ -218,13 +218,15 @@ async function captureResult(
 }
 
 // Last resort: many sites have /pricing or /signup even without a visible link.
-async function guessAddresses(page: Page, files: FileTarget, step: Step, heroUrl: string): Promise<CrawledPage | null> {
+// startUrl = the address the founder typed. Some sites redirect the home page somewhere else
+// (spotify.com -> open.spotify.com, the web player), so we try BOTH sites' addresses.
+async function guessAddresses(page: Page, files: FileTarget, step: Step, heroUrl: string, startUrl = heroUrl): Promise<CrawledPage | null> {
   const paths =
     step === "pricing"
       ? ["/pricing", "/plans", "/price", "/pricing-plans"]
       : ["/signup", "/sign-up", "/register", "/join", "/get-started", "/waitlist"];
-  const origin = new URL(heroUrl).origin;
-  for (const p of paths) {
+  const origins = [...new Set([new URL(heroUrl).origin, new URL(startUrl).origin])];
+  for (const [origin, p] of origins.flatMap((o) => paths.map((x) => [o, x] as const))) {
     const response = await page.goto(origin + p, { waitUntil: "domcontentloaded", timeout: 15_000 }).catch(() => null);
     if (!response || response.status() >= 400) continue;
     await waitForContent(page);
