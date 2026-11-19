@@ -1,6 +1,7 @@
 "use client";
 // Giant type that drifts sideways forever. Scroll and it speeds up; scroll the other way
 // and it turns around. Alternating words are outlined and solid. Stops when off screen.
+import { LOGO_PATHS, LOGO_TRANSFORM } from "../../Mark";
 import { useEffect, useRef } from "react";
 
 const COPIES = 3;
@@ -59,10 +60,10 @@ export default function ScrollMarquee({ items, label }: { items: string[]; label
             <span key={`${c}-${i}`} className="flex items-center">
               <span className={`marquee-word ${i % 2 ? "is-solid" : ""}`}>{word}</span>
               <svg className="mx-[3vw] h-[6vw] w-[6vw] shrink-0 text-accent" viewBox="0 0 120 120" fill="currentColor">
-                <g transform="rotate(14 60 60)">
-                  <path d="M22 10 C 36 40, 40 74, 30 108 C 56 76, 52 38, 22 10 Z" />
-                  <path d="M52 4 C 68 38, 72 76, 62 114 C 90 78, 86 36, 52 4 Z" />
-                  <path d="M82 14 C 96 42, 98 72, 90 102 C 114 74, 110 42, 82 14 Z" />
+                <g transform={LOGO_TRANSFORM}>
+                  {LOGO_PATHS.map((d) => (
+                    <path key={d} d={d} />
+                  ))}
                 </g>
               </svg>
             </span>
