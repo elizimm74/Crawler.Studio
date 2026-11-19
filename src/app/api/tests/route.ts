@@ -23,6 +23,7 @@ export async function POST(req: Request) {
     credentials?: Credentials;
     ownsProduct?: boolean;
     app?: Partial<AppSettings>; // app tests: the confirmed screens + paywall facts
+    retestOf?: string; // re-test: repeat this earlier test with the same customers
   } | null;
   if (!body?.crawlId || !body.audience || !body.profile) return jsonError("Missing the analysis, audience or product profile.");
   // Only a known product type is kept (it selects a fixed prompt sentence; never raw text).
@@ -71,7 +72,19 @@ export async function POST(req: Request) {
     };
   }
 
-  const settings = { profile: body.profile, audience: body.audience, explore, count: PERSONA_COUNT };
+  // A re-test: same audience + same seed as the test it repeats, so the SAME customers come back.
+  let retest: { seed: number; compareTo: string } | null = null;
+  if (body.retestOf) {
+    const { data: prev } = await auth.supabase.from("tests").select("id, status, data").eq("id", body.retestOf).maybeSingle();
+    const prevRun = prev?.data as { seed?: number; audience?: Audience; kind?: string } | null;
+    if (!prev || prev.status !== "done" || !prevRun?.audience || typeof prevRun.seed !== "number" || prevRun.kind === "app") {
+      return jsonError("That earlier test can't be repeated. Start a normal test instead.");
+    }
+    body.audience = prevRun.audience;
+    retest = { seed: prevRun.seed, compareTo: prev.id };
+  }
+
+  const settings = { profile: body.profile, audience: body.audience, explore, count: PERSONA_COUNT, ...(retest ?? {}) };
   return startTest(auth.supabase, body.crawlId, settings, secret);
 }
 

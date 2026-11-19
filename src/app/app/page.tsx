@@ -142,6 +142,8 @@ function Wizard() {
           explore,
           credentials: explore.enabled && explore.access === "account" ? credentials : undefined,
           ownsProduct,
+          // re-test: the server reuses the earlier test's audience + seed (same customers)
+          retestOf: params.get("retest") ?? undefined,
         }),
       });
       const data = await res.json();
@@ -156,6 +158,12 @@ function Wizard() {
   return (
     <div className="mx-auto max-w-3xl space-y-12">
       <Stepper step={step} canGoTo={(i) => i === 0 || Boolean(crawl)} onGo={setStep} />
+      {params.get("retest") && (
+        <p role="status" className="card p-4 text-sm">
+          <span className="font-medium">Re-test:</span> the same simulated customers as your last test come back, so you can see exactly who changed their
+          mind. (Their audience is kept the same; any audience changes here are ignored.)
+        </p>
+      )}
 
       {/* ---------- 1. Site ---------- */}
       {step === 0 &&

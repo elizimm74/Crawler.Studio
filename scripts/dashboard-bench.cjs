@@ -162,5 +162,31 @@ test("checkout price and pack come from the server's plans", () => {
   return eq([f.get("line_items[0][price_data][unit_amount]"), f.get("metadata[plan_id]"), f.get("mode"), f.get("client_reference_id"), paidPlan("free"), paidPlan("x")], ["4900", "studio", "payment", UID, null, null], "form");
 });
 
+// ---------- re-tests: before / after with the same customers ----------
+const { compareRuns } = require(path.join(lib, "compare.js"));
+const prevSide = { personas: generatePersonas(aud, 10, 99), verdicts: [] };
+const nextSide = { personas: generatePersonas(aud, 10, 99), verdicts: [] };
+const V = (id, verdict) => ({ personaId: id, verdict, lostAt: "hero", objectionCategory: "price", objection: "too pricey", wouldChangeMind: "", quote: "q " + id });
+prevSide.personas.forEach((p, i) => prevSide.verdicts.push(V(p.id, i < 2 ? "buy" : i < 5 ? "maybe" : "no")));
+nextSide.personas.forEach((p, i) => nextSide.verdicts.push(V(p.id, i < 4 ? "buy" : i < 6 ? "maybe" : i === 9 ? "maybe" : "no")));
+test("same seed + audience = the same customers come back", () => (prevSide.personas.every((p, i) => JSON.stringify(p) === JSON.stringify(nextSide.personas[i])) ? null : "crowd differs"));
+test("before/after counts and who changed their mind", () => {
+  const c = compareRuns(prevSide, nextSide);
+  // before: 2 buy, 3 maybe, 5 no. after: 4 buy, 3 maybe (4,5,9), 3 no.
+  return eq([c.matched, c.before.buy, c.after.buy, c.delta, c.won.length, c.lost.length, c.sameCrowd], [10, 2, 4, 2, 4, 0, true], "compare");
+});
+test("biggest moves are listed first (no -> buy before maybe -> buy)", () => {
+  const p2 = { personas: prevSide.personas, verdicts: prevSide.personas.map((p, i) => V(p.id, i === 0 ? "maybe" : "no")) };
+  const n2 = { personas: prevSide.personas, verdicts: prevSide.personas.map((p, i) => V(p.id, i === 0 || i === 1 ? "buy" : "no")) };
+  const c = compareRuns(p2, n2);
+  return eq(c.won.map((f) => [f.from, f.to]), [["no", "buy"], ["maybe", "buy"]], "order");
+});
+test("a different crowd is NOT compared person by person", () => {
+  const other = { personas: generatePersonas(aud, 10, 12345), verdicts: [] };
+  other.personas.forEach((p) => other.verdicts.push(V(p.id, "buy")));
+  const c = compareRuns(prevSide, other);
+  return c.sameCrowd === false && c.matched < 10 ? null : JSON.stringify([c.sameCrowd, c.matched]);
+});
+
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);

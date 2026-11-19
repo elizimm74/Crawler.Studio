@@ -37,6 +37,7 @@ export type Run = {
   audience: Audience;
   explore?: ExploreSettings; // never includes the test-account details
   seed: number;
+  compareTo?: string; // a re-test: the id of the test it repeats (same customers)
   status: "queued" | "running" | "done" | "error";
   stage: string; // human-readable, shown on the progress screen
   progress: { done: number; total: number };
@@ -61,7 +62,8 @@ export type RunInput = {
   count: number;
   explore?: ExploreSettings;
   credentials?: Credentials | null; // kept in memory only, never in the Run
-  seed?: number; // same seed = same personas (for before/after re-runs later)
+  seed?: number; // same seed = same personas (for before/after re-runs)
+  compareTo?: string; // re-test of this test id
 };
 
 export type RunHooks = {
@@ -82,6 +84,7 @@ export async function runTest(input: RunInput, hooks: RunHooks): Promise<Run> {
     audience: input.audience,
     explore: input.explore?.enabled ? input.explore : undefined,
     seed,
+    compareTo: input.compareTo,
     status: "running",
     stage: "Creating personas",
     progress: { done: 0, total: input.count },

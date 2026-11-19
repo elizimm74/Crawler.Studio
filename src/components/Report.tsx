@@ -7,6 +7,8 @@
 // Every number comes from run.stats (calculated in code); the advice text
 // comes from run.advice (written by Sonnet).
 import QualityNote from "./QualityNote";
+import CompareBox from "./CompareBox";
+import Link from "next/link";
 import { useState } from "react";
 import type { Run } from "@/lib/pipeline";
 import type { QuoteItem, SegmentRow } from "@/lib/aggregate";
@@ -74,6 +76,19 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
           <VerdictBar buy={stats.buy} maybe={stats.maybe} no={stats.no} goal={goal} />
         </div>
       </section>
+
+      {/* a re-test: before / after with the same customers */}
+      {!demo && run.compareTo && <CompareBox run={run} />}
+      {!demo && (
+        <div className="card flex flex-wrap items-center justify-between gap-4 p-5">
+          <p className="text-sm">
+            <span className="font-medium">Fixed something?</span> <span className="text-muted">Re-test with the same simulated customers and see exactly who changed their mind.</span>
+          </p>
+          <Link href={`/app?url=${encodeURIComponent(run.url)}&retest=${run.id}`} className="btn btn-primary h-11 px-5">
+            Re-test this page
+          </Link>
+        </div>
+      )}
 
       {/* ---------- 2. Fix these first ---------- */}
       <section>

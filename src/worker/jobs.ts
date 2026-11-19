@@ -33,6 +33,8 @@ export type TestSettings = {
   audience: Audience;
   explore?: ExploreSettings;
   count?: number;
+  seed?: number; // re-tests reuse the seed of the test they repeat (same customers)
+  compareTo?: string; // re-test of this test id
   kind?: "website" | "app";
   app?: AppSettings; // only for app tests
 };
@@ -146,6 +148,8 @@ export async function runJob(job: Job, ctx: Ctx) {
       count: settings.count ?? 100,
       explore: settings.explore,
       credentials,
+      seed: settings.seed,
+      compareTo: settings.compareTo,
     },
     { store: ctx.store, testPrefix: `${job.user_id}/tests/${job.ref_id}`, onChange: saveProgress },
   );
