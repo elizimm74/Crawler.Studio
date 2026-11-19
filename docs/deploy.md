@@ -2,6 +2,10 @@
 
 Crawler is two programs that share one database (Supabase):
 
+> **Not GitHub Pages.** GitHub Pages only shows static files (that's why it showed the README).
+> Crawler needs a server (sign-in, tests, Stripe), so the website goes on **Vercel**.
+> Turn Pages off: GitHub repo → Settings → Pages → Source: **None**.
+
 | Part | What it does | Where it runs |
 |------|--------------|---------------|
 | **Web** (Next.js) | pages, sign-in, the API, the "Ask about this test" chat | Vercel |
@@ -16,7 +20,8 @@ The database, logins and screenshot storage are already live on Supabase (projec
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (public)
    - `NEXT_PUBLIC_SITE_URL` = your real address, e.g. `https://crawler.app`
    - `ANTHROPIC_API_KEY` (the chat needs it) and `CREDENTIALS_KEY` (same value as the worker)
-   - **Never** add `SUPABASE_SECRET_KEY` here. It is for the worker only.
+   - `SUPABASE_SECRET_KEY`: needed ONLY by the Stripe webhook route (to add bought tests). Keep it out of every other route.
+   - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (see `docs/payments.md`).
 4. Deploy. Then **Settings → Domains** to add your own domain.
 5. Supabase dashboard → **Authentication → URL Configuration**: set *Site URL* to your address and add `https://YOUR-ADDRESS/auth/callback` to *Redirect URLs* (Google and Apple sign-in need it).
 6. Apple/Google sign-in: add the same address to the provider's allowed redirect list.
@@ -47,4 +52,4 @@ The database, logins and screenshot storage are already live on Supabase (projec
 - **Fairness**: a user can have at most 4 unfinished jobs (database rule), so one person can't flood the queue.
 - **Anthropic limits**: requests per minute rise with how much you spend. If you see 429 errors in worker logs, lower `WORKER_CONCURRENCY` or ask Anthropic for a higher tier.
 - **Storage**: screenshots live in the private `screenshots` bucket. The free Supabase plan has 1 GB; upgrade the plan (or delete old crawls) when it fills.
-- **Payments**: when Stripe is connected, the webhook calls `grant_tests(user, n)` (service key only) to add tests. The database already supports it.
+- **Payments**: the Stripe webhook calls `record_purchase(...)` (service key only), which records the purchase once and adds the tests. See `docs/payments.md`.
