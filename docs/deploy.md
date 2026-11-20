@@ -2,9 +2,14 @@
 
 Crawler is two programs that share one database (Supabase):
 
-> **Not GitHub Pages.** GitHub Pages only shows static files (that's why it showed the README).
-> Crawler needs a server (sign-in, tests, Stripe), so the website goes on **Vercel**.
-> Turn Pages off: GitHub repo → Settings → Pages → Source: **None**.
+> **Two sites, two jobs.** GitHub Pages only shows static files, so it can't run Crawler (sign-in, tests,
+> Stripe need a server). KEEP Pages ON: it serves the simple front door + waitlist (`index.html`,
+> `overview.html`, `unsubscribe.html`). The real app goes on **Vercel**. When the app is live, point the
+> front page's buttons at it (and use the Vercel address for Stripe's webhook).
+>
+> **Branch gotcha:** the app code is on the branch `claude/milestone-1-prototype`, not `main`. In Vercel
+> (Settings > Git > Production Branch) pick that branch, or merge it into `main` first. A repo whose
+> default branch has no Next.js app will "not show up" or fail to build.
 
 | Part | What it does | Where it runs |
 |------|--------------|---------------|
