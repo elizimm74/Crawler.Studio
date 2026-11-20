@@ -21,8 +21,8 @@ import { checkPaywall } from "@/lib/app/checks";
 import { APP_SOURCES, SCREEN_TYPES, type AppScreen, type AppSource, type PaywallFacts } from "@/lib/app/types";
 import type { Audience, ProductProfile } from "@/lib/types";
 
-const MAX_A = 15;
-const MAX_B = 5;
+import { MAX_SCREENS_A as MAX_A, MAX_SCREENS_B as MAX_B } from "@/lib/app/chunks";
+const BIG_FLOW = 25; // longer flows get smaller pictures so the whole upload stays small
 type Shot = { id: string; file: File; preview: string };
 type Screen = AppScreen & { image: string };
 
@@ -57,7 +57,7 @@ export default function AppWizard() {
       if (!data.user) throw new Error("Please sign in first.");
       const batch = randomId();
       const upload = async (shot: Shot, name: string) => {
-        const jpeg = await shrink(shot.file);
+        const jpeg = await shrink(shot.file, shots.length + shotsB.length > BIG_FLOW);
         const { error: e } = await supabase.storage
           .from("screenshots")
           .upload(`${data.user!.id}/uploads/${batch}/${name}`, jpeg, { contentType: "image/jpeg", upsert: true });
@@ -338,13 +338,16 @@ export default function AppWizard() {
 function Dropzone({ shots, onChange, max, label }: { shots: Shot[]; onChange: (s: Shot[]) => void; max: number; label: string }) {
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
+  const [cut, setCut] = useState(0); // how many screens didn't fit (shown, never silent)
   const add = (files: FileList | null) => {
     if (!files) return;
     const images = [...files]
       .filter((f) => f.type.startsWith("image/"))
       .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })); // "2.png" before "10.png"
     const added = images.map((file) => ({ id: randomId(), file, preview: URL.createObjectURL(file) }));
-    onChange([...shots, ...added].slice(0, max));
+    const all = [...shots, ...added];
+    setCut(all.length > max ? all.length - max : 0);
+    onChange(all.slice(0, max));
   };
   const move = (i: number, d: -1 | 1) => {
     const j = i + d;
@@ -367,8 +370,13 @@ function Dropzone({ shots, onChange, max, label }: { shots: Shot[]; onChange: (s
         } disabled:opacity-50`}
       >
         <span className="font-medium">{shots.length >= max ? `That's the max (${max})` : `Drop ${label.toLowerCase()} screenshots here`}</span>
-        <span className="text-sm text-muted">or click to choose · PNG or JPG · up to {max}</span>
+        <span className="text-sm text-muted">or click to choose · PNG or JPG · up to {max} screens</span>
       </button>
+      {cut > 0 && (
+        <p role="alert" className="mt-2 text-sm text-muted">
+          {cut} screen{cut === 1 ? "" : "s"} didn&apos;t fit: the limit is {max}. Remove screens you don&apos;t need, such as repeats, and add them again.
+        </p>
+      )}
       <input ref={input} type="file" accept="image/*" multiple className="sr-only" onChange={(e) => (add(e.target.files), (e.target.value = ""))} />
       {shots.length > 0 && (
         <ol className="mt-4 flex gap-2 overflow-x-auto pb-2">
@@ -399,14 +407,15 @@ function Dropzone({ shots, onChange, max, label }: { shots: Shot[]; onChange: (s
 // ---------- helpers ----------
 
 // Shrink to max 1568px on the long side, as JPEG. The AI doesn't use more.
-async function shrink(file: File): Promise<Blob> {
+// Flows over 25 screens use 1100px / lower quality: 100 big pictures would be too much for one AI request.
+async function shrink(file: File, long = false): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 1568 / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(1, (long ? 1100 : 1568) / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
   canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Couldn't read an image."))), "image/jpeg", 0.85));
+  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Couldn't read an image."))), "image/jpeg", long ? 0.75 : 0.85));
 }
 
 function randomId() {

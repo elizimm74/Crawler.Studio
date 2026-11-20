@@ -178,5 +178,22 @@ test("game checks are never labelled as app-store rules", () => {
   return game.length === app.length ? null : "check count changed";
 });
 
+// ---------- long onboarding flows (30+ screens) ----------
+const chunks = require(path.join(build, "chunks.js"));
+test("a 40-screen flow is read in chunks of 12, in order, nothing lost", () => {
+  const files = Array.from({ length: 40 }, (_, i) => `${i + 1}.jpg`);
+  const c = chunks.chunkList(files);
+  return eq([c.map((x) => x.length), c.flat()], [[12, 12, 12, 4], files], "chunks");
+});
+test("the profile sample keeps order, has no repeats and includes the first and last screen", () => {
+  const files = Array.from({ length: 90 }, (_, i) => i);
+  const s = chunks.sampleSpread(files);
+  const sorted = [...s].sort((a, b) => a - b);
+  if (JSON.stringify(s) !== JSON.stringify(sorted) || new Set(s).size !== s.length) return "not ordered/unique";
+  return s.length === 14 && s[0] === 0 && s[s.length - 1] === 89 ? null : `${s.length} items, ends ${s[0]}..${s[s.length - 1]}`;
+});
+test("a short list is not sampled", () => eq(chunks.sampleSpread([1, 2, 3]), [1, 2, 3], "sample"));
+test("limits: 95 for version A + 5 for B stay within the AI's 100-image limit", () => eq([chunks.MAX_SCREENS_A + chunks.MAX_SCREENS_B, chunks.MAX_SCREENS_A], [100, 95], "limits"));
+
 console.log(`\nApp bench: ${pass}/${total}`);
 if (pass < total) process.exit(1)

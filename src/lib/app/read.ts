@@ -17,6 +17,7 @@ import { AudienceFields, AUDIENCE_INSTRUCTIONS, toAudience } from "../suggest";
 import type { BlobStore } from "../blobs";
 import type { Audience, CallCost, ProductProfile } from "../types";
 import { CLOSE_BUTTON, PERIODS, SCREEN_TYPES, type AppInput, type AppScreen, type PaywallFacts } from "./types";
+import { chunkList, sampleSpread, SINGLE_CALL_MAX } from "./chunks";
 
 const ScreenFields = z.object({
   file: z.string(),
@@ -40,6 +41,13 @@ const ScreensSchema = z.object({
   // suggested audience
   ...AudienceFields,
 });
+
+// Long flows: one call labels a chunk of screens; another call reads the profile from a sample.
+const LabelsSchema = z.object({ screens: z.array(ScreenFields) });
+const { screens: _s, screensB: _sb, ...ProfileFields } = ScreensSchema.shape;
+void _s;
+void _sb;
+const ProfileSchema = z.object(ProfileFields);
 
 const PaywallSchema = z.object({
   found: z.boolean(),
@@ -85,42 +93,68 @@ export async function readApp(input: AppInput, files: Files): Promise<AppReading
   }
   const costs: CallCost[] = [];
 
-  // ---------- 1. Label every screen (Haiku) ----------
-  const content: Anthropic.ContentBlockParam[] = [];
-  input.screens.forEach((f, i) => content.push(label(`Screen ${i + 1} (file "${f}")`), image(images.get(f)!)));
-  input.screensB.forEach((f, i) =>
-    content.push(label(`VERSION B, screen ${i + 1} (file "${f}"): an alternative paywall the founder wants to compare`), image(images.get(f)!)),
-  );
-  content.push({
-    type: "text",
-    text:
-      `These are screenshots of a mobile app's onboarding, in the order a new user sees them after installing it.\n\n` +
-      `PART 1: For EVERY screen (same order, exact file names), return:\n` +
-      `- type: welcome (intro / splash), value (explains a benefit), question (asks about the user: goals, age, preferences), ` +
-      `permission (asks to allow notifications / tracking / location / camera...), signup (create account / log in), ` +
-      `paywall (shows prices or asks to subscribe / start a trial), other.\n` +
-      `- title: the main headline, copied exactly ("" if none).\n` +
-      `- summary: one plain sentence: what the screen says or asks.\n` +
-      `- asks: what it asks the user to give, e.g. "notifications", "email", "age", "payment" (empty if nothing).\n` +
-      `- cta: the main button text, copied exactly.\n` +
-      `- canSkip: true only if there is a visible Skip / Not now / Later / close (X).\n` +
-      `Put Version B screens in screensB (empty list if there are none).\n\n` +
-      `PART 2: Product profile, only from what the screens show. whatItIs and whoItsFor: one plain sentence each. ` +
-      `mainPromise: the main benefit claimed. proof: ratings, reviews, user counts shown (empty if none). ` +
-      `friction: things that slow a new user down or add doubt, e.g. "account required before seeing the app", ` +
-      `"8 questions before any value", "no close button on the paywall".\n\n` +
-      `PART 3: Most likely target customer. Fill in every field.\n${AUDIENCE_INSTRUCTIONS}`,
-  });
-  const res = await anthropic.messages.parse({
-    model: HAIKU,
-    max_tokens: 8000,
-    output_config: { effort: "low", format: zodOutputFormat(ScreensSchema) },
-    messages: [{ role: "user", content }],
-  });
-  costs.push(costOfCall("read screens", res.model, res.usage));
-  assertNotRefused(res.stop_reason, "read screens");
-  const s = res.parsed_output;
-  if (!s) throw new Error("The screen reading came back in the wrong format.");
+  // ---------- 1. Label every screen + read the profile (Haiku) ----------
+  const total = input.screens.length + input.screensB.length;
+  let s: { screens: AppScreen[]; screensB: AppScreen[] } & z.infer<typeof ProfileSchema>;
+  if (total <= SINGLE_CALL_MAX) {
+    // Short flow: everything in one call (as before).
+    const content: Anthropic.ContentBlockParam[] = [];
+    input.screens.forEach((f, i) => content.push(label(`Screen ${i + 1} (file "${f}")`), image(images.get(f)!)));
+    input.screensB.forEach((f, i) =>
+      content.push(label(`VERSION B, screen ${i + 1} (file "${f}"): an alternative paywall the founder wants to compare`), image(images.get(f)!)),
+    );
+    content.push({ type: "text", text: LABEL_RULES + "\nPut Version B screens in screensB (empty list if there are none).\n\n" + PROFILE_RULES });
+    const res = await anthropic.messages.parse({
+      model: HAIKU,
+      max_tokens: 8000,
+      output_config: { effort: "low", format: zodOutputFormat(ScreensSchema) },
+      messages: [{ role: "user", content }],
+    });
+    costs.push(costOfCall("read screens", res.model, res.usage));
+    assertNotRefused(res.stop_reason, "read screens");
+    if (!res.parsed_output) throw new Error("The screen reading came back in the wrong format.");
+    s = res.parsed_output;
+  } else {
+    // Long flow (30+ screens): label chunks in parallel, read the profile from a spread-out sample.
+    const labelChunk = async (files: string[], startAt: number, versionB: boolean, tag: string) => {
+      const content: Anthropic.ContentBlockParam[] = [];
+      files.forEach((f, i) => content.push(label(`${versionB ? "VERSION B, screen" : "Screen"} ${startAt + i + 1} of the flow (file "${f}")`), image(images.get(f)!)));
+      content.push({ type: "text", text: `These are ${files.length} consecutive screens from a longer mobile app onboarding (${input.screens.length} screens in total).\n\n` + LABEL_RULES });
+      const r = await anthropic.messages.parse({
+        model: HAIKU,
+        max_tokens: 6000,
+        output_config: { effort: "low", format: zodOutputFormat(LabelsSchema) },
+        messages: [{ role: "user", content }],
+      });
+      costs.push(costOfCall(tag, r.model, r.usage));
+      assertNotRefused(r.stop_reason, tag);
+      return r.parsed_output?.screens ?? [];
+    };
+    const chunks = chunkList(input.screens);
+    const labelled = await Promise.all([
+      ...chunks.map((files, i) => labelChunk(files, i * (chunks[0]?.length ?? 1), false, `label screens ${i + 1}`)),
+      ...(input.screensB.length ? [labelChunk(input.screensB, 0, true, "label version B")] : []),
+    ]);
+    const sample = sampleSpread(input.screens);
+    const content: Anthropic.ContentBlockParam[] = [];
+    sample.forEach((f) => content.push(label(`Screen ${input.screens.indexOf(f) + 1} of ${input.screens.length} (file "${f}")`), image(images.get(f)!)));
+    content.push({ type: "text", text: `These ${sample.length} screens are a spread-out sample (start, middle, end) of a ${input.screens.length}-screen mobile app onboarding, in order.\n\n` + PROFILE_RULES });
+    const res = await anthropic.messages.parse({
+      model: HAIKU,
+      max_tokens: 4000,
+      output_config: { effort: "low", format: zodOutputFormat(ProfileSchema) },
+      messages: [{ role: "user", content }],
+    });
+    costs.push(costOfCall("read profile", res.model, res.usage));
+    assertNotRefused(res.stop_reason, "read profile");
+    if (!res.parsed_output) throw new Error("The screen reading came back in the wrong format.");
+    const hasB = input.screensB.length > 0;
+    s = {
+      ...res.parsed_output,
+      screens: labelled.slice(0, chunks.length).flat(),
+      screensB: hasB ? labelled[chunks.length] : [],
+    };
+  }
 
   // Trust OUR file order, not the AI's: match by file name, fill gaps.
   const screens = alignScreens(input.screens, s.screens);
@@ -149,6 +183,24 @@ export async function readApp(input: AppInput, files: Files): Promise<AppReading
   };
   return { screens, screensB, paywall, paywallB: b?.facts ?? null, profile, audience: toAudience(s), costs };
 }
+
+const LABEL_RULES =
+  `For EVERY screen (same order, exact file names), return:\n` +
+  `- type: welcome (intro / splash), value (explains a benefit), question (asks about the user: goals, age, preferences), ` +
+  `permission (asks to allow notifications / tracking / location / camera...), signup (create account / log in), ` +
+  `paywall (shows prices or asks to subscribe / start a trial), other.\n` +
+  `- title: the main headline, copied exactly ("" if none).\n` +
+  `- summary: one plain sentence: what the screen says or asks.\n` +
+  `- asks: what it asks the user to give, e.g. "notifications", "email", "age", "payment" (empty if nothing).\n` +
+  `- cta: the main button text, copied exactly.\n` +
+  `- canSkip: true only if there is a visible Skip / Not now / Later / close (X).\n`;
+
+const PROFILE_RULES =
+  `Product profile, only from what the screens show. whatItIs and whoItsFor: one plain sentence each. ` +
+  `mainPromise: the main benefit claimed. proof: ratings, reviews, user counts shown (empty if none). ` +
+  `friction: things that slow a new user down or add doubt, e.g. "account required before seeing the app", ` +
+  `"8 questions before any value", "no close button on the paywall".\n\n` +
+  `Then the most likely target customer. Fill in every field.\n${AUDIENCE_INSTRUCTIONS}`;
 
 async function readPaywall(fileList: string[], images: Map<string, string>, tag: string) {
   const content: Anthropic.ContentBlockParam[] = [];
