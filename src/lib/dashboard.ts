@@ -22,7 +22,7 @@ export type Analysis = {
   id: string;
   url: string; // used for "test again"
   label: string; // "mealmate.app", "App onboarding + paywall" or "Game first session + shop"
-  kind: "website" | "app" | "game" | "store";
+  kind: "website" | "app" | "game" | "store" | "video";
   thumb: string | null; // screenshot for the thumbnail, if we have one
   status: string;
   pct: number | null; // score as a percent of customers
@@ -35,10 +35,13 @@ export type Analysis = {
 };
 
 export const isApp = (r: TestRow) => r.kind === "app" || r.url.startsWith("app://");
+export const isVideo = (r: TestRow) => r.kind === "video" || r.url.startsWith("video://");
 export const kindOf = (r: TestRow): Analysis["kind"] =>
-  isApp(r) ? (r.ptype === "game" ? "game" : "app") : r.ptype === "store" ? "store" : "website";
+  isVideo(r) ? "video" : isApp(r) ? (r.ptype === "game" ? "game" : "app") : r.ptype === "store" ? "store" : "website";
 export const labelOf = (r: TestRow) =>
-  isApp(r)
+  isVideo(r)
+    ? "Video / ad test"
+    : isApp(r)
     ? r.ptype === "game"
       ? "Game first session + shop"
       : "App onboarding + paywall"

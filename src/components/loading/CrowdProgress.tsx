@@ -4,6 +4,7 @@
 const STAGES = [
   ["Creating", "Building your simulated customers"],
   ["Customers", "Customers are reviewing"],
+  ["Viewers", "Viewers are watching"],
   ["The explorer", "Trying the product"],
   ["Crunching", "Counting the answers"],
   ["Writing", "Writing your fixes"],
@@ -16,7 +17,8 @@ export default function CrowdProgress({ stage, done, total, seconds }: { stage: 
   const pct = Math.round((done / Math.max(1, total)) * 100);
   // which stage are we in (by the worker's own stage text)
   const at = Math.max(0, STAGES.findIndex(([key]) => stage.startsWith(key) || stage.includes(key.toLowerCase())));
-  const steps = STAGES.filter(([key]) => key !== "The explorer" || stage.startsWith("The explorer"));
+  const video = stage.startsWith("Viewers");
+  const steps = STAGES.filter(([key]) => (key !== "The explorer" || stage.startsWith("The explorer")) && (video ? key !== "Customers" : key !== "Viewers"));
 
   return (
     <section className="grid items-center gap-10 md:grid-cols-[1fr_1fr]" aria-live="polite">
@@ -28,7 +30,7 @@ export default function CrowdProgress({ stage, done, total, seconds }: { stage: 
         <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">{stage}</h1>
         <p className="mt-6 flex items-baseline gap-3">
           <span className="text-7xl font-semibold tracking-tight tabular-nums">{done}</span>
-          <span className="text-xl text-faint tabular-nums">/ {total} customers</span>
+          <span className="text-xl text-faint tabular-nums">/ {total} {video ? "viewers" : "customers"}</span>
         </p>
         <div className="mt-4 h-1 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
           <div className="h-full rounded-full bg-accent transition-[width] duration-700 ease-out" style={{ width: `${pct}%` }} />

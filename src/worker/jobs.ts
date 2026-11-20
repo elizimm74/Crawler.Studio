@@ -11,6 +11,9 @@ import type { Audience, Crawl, Credentials, ExploreSettings, ProductProfile } fr
 import { readApp } from "../lib/app/read";
 import { runAppTest, type AppRun } from "../lib/app/pipeline";
 import type { AppAnalysis, AppInput, AppSettings } from "../lib/app/types";
+import { readVideo } from "../lib/video/read";
+import { runVideoTest, type VideoRun } from "../lib/video/pipeline";
+import type { VideoAnalysis, VideoInput, VideoSettings } from "../lib/video/types";
 
 export type Job = {
   id: number;
@@ -35,8 +38,9 @@ export type TestSettings = {
   count?: number;
   seed?: number; // re-tests reuse the seed of the test they repeat (same customers)
   compareTo?: string; // re-test of this test id
-  kind?: "website" | "app";
+  kind?: "website" | "app" | "video";
   app?: AppSettings; // only for app tests
+  video?: VideoSettings; // only for video tests
 };
 
 // ---------- analyze: crawl the site, then understand it ----------
@@ -45,6 +49,7 @@ export async function analyzeJob(job: Job, ctx: Ctx) {
   if (error || !row) throw new Error(`crawl ${job.ref_id} not found`);
   await ctx.db.from("crawls").update({ status: "running", updated_at: now() }).eq("id", job.ref_id);
   if (row.url.startsWith("app://")) return analyzeAppJob(job, ctx, (row.data as { input: AppInput }).input);
+  if (row.url.startsWith("video://")) return analyzeVideoJob(job, ctx, (row.data as { input: VideoInput }).input);
 
   let crawl: Crawl;
   try {
@@ -111,6 +116,7 @@ export async function runJob(job: Job, ctx: Ctx) {
   if (error || !test) throw new Error(`test ${job.ref_id} not found`);
   const settings = (test.data as { settings: TestSettings }).settings;
   if (settings.kind === "app") return runAppJob(job, ctx, test.crawl_id, settings);
+  if (settings.kind === "video") return runVideoJob(job, ctx, test.crawl_id, settings);
   const { data: crawlRow } = await ctx.db.from("crawls").select("data").eq("id", test.crawl_id).single();
   const crawl = (crawlRow?.data as CrawlData | undefined)?.crawl;
   if (!crawl) throw new Error(`crawl ${test.crawl_id} has no data`);
@@ -229,6 +235,85 @@ async function runAppJob(job: Job, ctx: Ctx, crawlId: string, settings: TestSett
     .eq("id", job.ref_id);
   if (saveError) throw new Error(`couldn't save test: ${saveError.message}`);
   ctx.log("app test finished", { test: job.ref_id, status: run.status, score: middle, costUsd: run.totalCostUsd });
+}
+
+// ---------- analyze (video): read the frames ----------
+async function analyzeVideoJob(job: Job, ctx: Ctx, input: VideoInput) {
+  const filesPrefix = `${job.user_id}/uploads/${input.batch}`;
+  let data: VideoAnalysis;
+  try {
+    const r = await readVideo(input, { store: ctx.store, prefix: filesPrefix });
+    logRunCost(`analyze video ${job.ref_id}`, r.costs);
+    data = { kind: "video", input, filesPrefix, beats: r.beats, hook: r.hook, productFirstSeen: r.productFirstSeen, profile: r.profile, audience: r.audience };
+  } catch (err) {
+    // Still let the founder describe the frames by hand.
+    data = {
+      kind: "video",
+      input,
+      filesPrefix,
+      beats: input.frames.map((file, i) => ({ file, t: input.times[i] ?? 0, shows: "", text: "" })),
+      hook: "",
+      productFirstSeen: -1,
+      profile: { ...EMPTY_PROFILE, goal: "sign up" },
+      audience: null,
+      suggestError: (err as Error).message,
+    };
+  }
+  const { error } = await ctx.db.from("crawls").update({ status: "done", data, updated_at: now() }).eq("id", job.ref_id);
+  if (error) throw new Error(`couldn't save video analysis: ${error.message}`);
+}
+
+// ---------- run (video) ----------
+async function runVideoJob(job: Job, ctx: Ctx, crawlId: string, settings: TestSettings) {
+  const { data: crawlRow } = await ctx.db.from("crawls").select("url, data").eq("id", crawlId).single();
+  const analysis = crawlRow?.data as VideoAnalysis | undefined;
+  if (!analysis || !settings.video) throw new Error(`video analysis ${crawlId} has no data`);
+  let lastSave = 0;
+  let lastStage = "";
+  let pending: Promise<unknown> = Promise.resolve();
+  const saveProgress = (run: VideoRun) => {
+    const t = Date.now();
+    if (run.stage === lastStage && t - lastSave < 1000) return;
+    lastSave = t;
+    lastStage = run.stage;
+    const update = { status: "running", stage: run.stage, progress: { done: run.progress.done, total: run.progress.total }, updated_at: now() };
+    pending = pending.then(() => ctx.db.from("tests").update(update).eq("id", job.ref_id));
+  };
+  const run = await runVideoTest(
+    {
+      id: job.ref_id,
+      userId: job.user_id,
+      crawlId,
+      url: crawlRow!.url,
+      framesPrefix: analysis.filesPrefix,
+      settings: settings.video,
+      profile: settings.profile,
+      audience: settings.audience,
+      perSample: settings.count ?? 100,
+    },
+    { store: ctx.store, onChange: saveProgress },
+  );
+  await pending;
+  if (run.error) ctx.log("video test error", { test: job.ref_id, error: run.error });
+  // The headline: how many of a crowd (middle of the 3) would tap through to the product.
+  const perSample = run.stats?.perSample ?? settings.count ?? 100;
+  const score = run.stats ? Math.round(run.stats.tap.mid * perSample) : null;
+  const { error: saveError } = await ctx.db
+    .from("tests")
+    .update({
+      status: run.status,
+      stage: run.stage,
+      error: run.error ? "Something went wrong on our side while running this test. It didn't use up your plan; please try again." : null,
+      score,
+      total: perSample,
+      cost_usd: run.totalCostUsd ?? null,
+      progress: null,
+      data: run,
+      updated_at: now(),
+    })
+    .eq("id", job.ref_id);
+  if (saveError) throw new Error(`couldn't save test: ${saveError.message}`);
+  ctx.log("video test finished", { test: job.ref_id, status: run.status, score, costUsd: run.totalCostUsd });
 }
 
 // When a job can't be finished: tell the user on their crawl / test.

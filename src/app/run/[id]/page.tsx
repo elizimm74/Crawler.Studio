@@ -7,6 +7,8 @@ import CrowdProgress from "@/components/loading/CrowdProgress";
 import JourneyView from "@/components/JourneyView";
 import AppReport from "@/components/app/AppReport";
 import type { AppRun } from "@/lib/app/pipeline";
+import VideoReport from "@/components/video/VideoReport";
+import type { VideoRun } from "@/lib/video/pipeline";
 import type { Run } from "@/lib/pipeline";
 import type { Journey } from "@/lib/types";
 
@@ -18,7 +20,7 @@ type Progress = {
   filesPrefix: string; // where this test's screenshots are
 };
 
-type Done = (Run & { filesPrefix: string; kind?: undefined }) | (AppRun & { filesPrefix: string });
+type Done = (Run & { filesPrefix: string; kind?: undefined }) | (AppRun & { filesPrefix: string }) | (VideoRun & { filesPrefix: string });
 
 export default function RunPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -93,6 +95,11 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
         <p className="sr-only" role="status">
           {data.progress.done} of {data.progress.total} customers reviewed, {pct}%.
         </p>
+        {data.stage.startsWith("Viewers are scrolling") && (
+          <p className="text-sm text-muted">
+            3 different crowds scroll into your video frame by frame and decide when to swipe, so the report can show an honest range.
+          </p>
+        )}
         {data.stage.startsWith("Customers are going") && (
           <p className="text-sm text-muted">
             3 different crowds go through your screens one by one, so the report can show an honest range.
@@ -120,5 +127,6 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
     );
   }
 
+  if (data.kind === "video") return <VideoReport run={data} />;
   return data.kind === "app" ? <AppReport run={data} /> : <Report run={data} />;
 }

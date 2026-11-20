@@ -9,6 +9,8 @@ import { normalizeUrl } from "@/lib/urls";
 import type { Audience, Credentials, ExploreSettings, ProductProfile } from "@/lib/types";
 import type { AppAnalysis, AppSettings } from "@/lib/app/types";
 import { cleanAppSettings } from "@/lib/app/validate";
+import type { VideoAnalysis, VideoSettings } from "@/lib/video/types";
+import { cleanVideoSettings } from "@/lib/video/validate";
 
 const PERSONA_COUNT = 100; // only a request: start_test() decides the real size (25 starter / 100 full) for this account
 
@@ -23,6 +25,7 @@ export async function POST(req: Request) {
     credentials?: Credentials;
     ownsProduct?: boolean;
     app?: Partial<AppSettings>; // app tests: the confirmed screens + paywall facts
+    video?: Partial<VideoSettings>; // video tests: the confirmed frames, placement, account stats
     retestOf?: string; // re-test: repeat this earlier test with the same customers
   } | null;
   if (!body?.crawlId || !body.audience || !body.profile) return jsonError("Missing the analysis, audience or product profile.");
@@ -38,6 +41,16 @@ export async function POST(req: Request) {
     const app = cleanAppSettings(body.app, analysis.input.screens, analysis.input.screensB);
     if (!app.sources.length) return jsonError("Pick at least one place people find your app.");
     const settings = { kind: "app", profile: body.profile, audience: body.audience, app, count: PERSONA_COUNT };
+    return startTest(auth.supabase, body.crawlId, settings, null);
+  }
+
+  // ---------- Video test ----------
+  if (body.video) {
+    const { data: row } = await auth.supabase.from("crawls").select("data").eq("id", body.crawlId).maybeSingle();
+    const analysis = row?.data as VideoAnalysis | undefined;
+    if (analysis?.kind !== "video") return jsonError("That video analysis was not found. Upload your video again.");
+    const video = cleanVideoSettings(body.video, analysis.input);
+    const settings = { kind: "video", profile: body.profile, audience: body.audience, video, count: PERSONA_COUNT };
     return startTest(auth.supabase, body.crawlId, settings, null);
   }
 
@@ -77,7 +90,7 @@ export async function POST(req: Request) {
   if (body.retestOf) {
     const { data: prev } = await auth.supabase.from("tests").select("id, status, data").eq("id", body.retestOf).maybeSingle();
     const prevRun = prev?.data as { seed?: number; audience?: Audience; kind?: string } | null;
-    if (!prev || prev.status !== "done" || !prevRun?.audience || typeof prevRun.seed !== "number" || prevRun.kind === "app") {
+    if (!prev || prev.status !== "done" || !prevRun?.audience || typeof prevRun.seed !== "number" || prevRun.kind === "app" || prevRun.kind === "video") {
       return jsonError("That earlier test can't be repeated. Start a normal test instead.");
     }
     body.audience = prevRun.audience;

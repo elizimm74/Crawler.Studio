@@ -99,6 +99,7 @@ const PATHS: Record<string, string> = {
   phone: "M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2",
   cart: "M3 4h2l2.4 11h10.2L20 7H6.3M9 20h.01M17 20h.01",
   check: "M5 12l5 5 9-10",
+  play: "M7 4.5v15l12-7.5z",
 };
 
 export function Icon({ name, className = "" }: { name: keyof typeof PATHS | string; className?: string }) {

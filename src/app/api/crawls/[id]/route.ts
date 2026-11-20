@@ -5,6 +5,7 @@ import { requireUser, jsonError } from "@/lib/supabase/api";
 import { fileUrl } from "@/lib/urls";
 import type { CrawlData } from "@/worker/jobs";
 import type { AppAnalysis } from "@/lib/app/types";
+import type { VideoAnalysis } from "@/lib/video/types";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireUser();
@@ -29,6 +30,23 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       profile: a.profile,
       audience: a.audience,
       suggestError: a.suggestError,
+    });
+  }
+  // Video test: the frames with links to the images, + what we read off them.
+  if ((row.data as { kind?: string }).kind === "video") {
+    const v = row.data as VideoAnalysis;
+    return NextResponse.json({
+      status: "done",
+      kind: "video",
+      id,
+      beats: v.beats.map((b) => ({ ...b, image: fileUrl(v.filesPrefix, b.file) })),
+      hook: v.hook,
+      productFirstSeen: v.productFirstSeen,
+      duration: v.input.duration,
+      platform: v.input.platform,
+      profile: v.profile,
+      audience: v.audience,
+      suggestError: v.suggestError,
     });
   }
   const d = row.data as CrawlData;

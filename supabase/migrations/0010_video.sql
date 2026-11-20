@@ -57,3 +57,23 @@ end $$;
 
 revoke all on function public.start_video_analyze(text, jsonb, jsonb) from public, anon;
 grant execute on function public.start_video_analyze(text, jsonb, jsonb) to authenticated;
+
+-- The public scorecard knows about videos: kind 'video', no host, the goal is "tap through",
+-- and the range is the tap-through range across the 3 crowds. Still headline numbers only.
+create or replace function public.get_shared_test(p_token text) returns jsonb
+language sql stable security definer set search_path = '' as $$
+  select jsonb_build_object(
+    'kind', case when t.data ->> 'kind' in ('app', 'video') then t.data ->> 'kind' else 'website' end,
+    'host', case when t.url like 'app://%' or t.url like 'video://%' then null
+                 else split_part(regexp_replace(t.url, '^https?://(www\.)?', ''), '/', 1) end,
+    'goal', case when t.data ->> 'kind' = 'video' then 'tap through' else t.goal end,
+    'score', t.score,
+    'total', t.total,
+    'blocker', t.data -> 'stats' -> 'objections' -> 0 ->> 'category',
+    'low', coalesce(t.data -> 'stats' -> 'convert' ->> 'low', t.data -> 'stats' -> 'tap' ->> 'low')::numeric,
+    'high', coalesce(t.data -> 'stats' -> 'convert' ->> 'high', t.data -> 'stats' -> 'tap' ->> 'high')::numeric,
+    'created_at', t.created_at
+  )
+  from public.tests t
+  where t.share_token = p_token and t.status = 'done' and length(p_token) >= 16
+$$;

@@ -76,7 +76,7 @@ function Thumb({ a, size = "h-11 w-11" }: { a: Analysis; size?: string }) {
   }
   return (
     <span className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-base font-medium`} aria-hidden>
-      {a.kind === "app" || a.kind === "game" ? <Icon name="phone" /> : a.label.charAt(0).toUpperCase()}
+      {a.kind === "app" || a.kind === "game" || a.kind === "video" ? <Icon name={a.kind === "video" ? "play" : "phone"} /> : a.label.charAt(0).toUpperCase()}
     </span>
   );
 }
@@ -262,7 +262,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                         </p>
                         <p className="mt-1 truncate text-xl font-semibold">{latest.label}</p>
                         <p className="mt-2 text-sm text-muted">
-                          {latest.score} of {latest.total} simulated customers would {latest.goal ?? "convert"}
+                          {latest.kind === "video" ? `${latest.score} of ${latest.total} simulated viewers would tap through` : `${latest.score} of ${latest.total} simulated customers would ${latest.goal ?? "convert"}`}
                         </p>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
                           <Delta n={latest.delta} suffix=" pts vs last" />
@@ -281,7 +281,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                       </div>
                     </div>
                     <div className="flex items-center justify-center border-t border-white/[0.06] p-6 md:border-l md:border-t-0">
-                      <Ring pct={latest.pct ?? 0} label={`would ${latest.goal ?? "convert"}`} />
+                      <Ring pct={latest.pct ?? 0} label={latest.kind === "video" ? "would tap through" : `would ${latest.goal ?? "convert"}`} />
                     </div>
                   </div>
                 </Panel>

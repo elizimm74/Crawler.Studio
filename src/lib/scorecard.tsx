@@ -5,7 +5,7 @@
 import { ImageResponse } from "next/og";
 
 export type Shared = {
-  kind: "website" | "app";
+  kind: "website" | "app" | "video";
   host: string | null; // "mealmate.app" (null for apps)
   goal: string | null;
   score: number | null;
@@ -78,8 +78,8 @@ function Frame({ children }: { children: React.ReactNode }) {
 
 export async function scorecardImage(s: Shared) {
   const pct = (x: number) => Math.round(x * 100);
-  const range = s.kind === "app" && s.low !== null && s.high !== null && pct(s.low) !== pct(s.high) ? `range ${pct(s.low)}–${pct(s.high)}%` : null;
-  const what = s.kind === "app" ? "app onboarding + paywall" : (s.host ?? "a website");
+  const range = s.kind !== "website" && s.low !== null && s.high !== null && pct(s.low) !== pct(s.high) ? `range ${pct(s.low)}–${pct(s.high)}%` : null;
+  const what = s.kind === "video" ? "a short video" : s.kind === "app" ? "app onboarding + paywall" : (s.host ?? "a website");
   const goal = s.goal ? `would ${s.goal}` : "would convert";
   return new ImageResponse(
     (

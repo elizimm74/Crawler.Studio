@@ -28,7 +28,7 @@ export default async function SharedScorecard({ params }: Props) {
   const { token } = await params;
   const s = await getShared(token);
   if (!s) notFound();
-  const what = s.kind === "app" ? "App onboarding + paywall" : (s.host ?? "A website");
+  const what = s.kind === "video" ? "A short video" : s.kind === "app" ? "App onboarding + paywall" : (s.host ?? "A website");
   const pct = (x: number) => Math.round(x * 100);
 
   return (

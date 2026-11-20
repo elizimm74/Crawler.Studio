@@ -16,10 +16,10 @@ export const PRESET_HINT: Record<string, string> = {
 
 // ---------- pieces ----------
 
-export function Stepper({ step, canGoTo, onGo }: { step: number; canGoTo: (i: number) => boolean; onGo: (i: number) => void }) {
+export function Stepper({ step, canGoTo, onGo, labels = STEP_LABELS }: { step: number; canGoTo: (i: number) => boolean; onGo: (i: number) => void; labels?: readonly string[] }) {
   return (
     <nav aria-label="Steps" className="grid grid-cols-4 gap-2">
-      {STEP_LABELS.map((label, i) => (
+      {labels.map((label, i) => (
         <button
           key={label}
           type="button"

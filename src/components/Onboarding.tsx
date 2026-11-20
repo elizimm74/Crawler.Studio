@@ -12,7 +12,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { Arrow } from "@/components/landing/UrlForm";
 
-type Kind = "website" | "app" | "game" | "store";
+type Kind = "website" | "app" | "game" | "store" | "video";
 const needsUrl = (k: Kind) => k === "website" || k === "store";
 const WHO = ["Students", "Founders", "Parents", "Small businesses", "Developers", "Everyone"];
 
@@ -49,7 +49,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
     }
     // Website: the analysis starts right away. App: next you upload screenshots.
     const params = new URLSearchParams(
-      kind === "app" ? { kind: "app" } : kind === "game" ? { kind: "app", type: "game" } : kind === "store" ? { url: url.trim(), type: "store" } : { url: url.trim() },
+      kind === "video" ? { kind: "video" } : kind === "app" ? { kind: "app" } : kind === "game" ? { kind: "app", type: "game" } : kind === "store" ? { url: url.trim(), type: "store" } : { url: url.trim() },
     );
     if (audience) params.set("for", audience);
     if (what.trim()) params.set("what", what.trim());
@@ -70,7 +70,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
   const current = KINDS.find((k) => k.id === kind)!;
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       {/* progress: two thin bars */}
       <div className="mx-auto flex max-w-xs gap-2" aria-label={`Step ${step} of 2`}>
         {[1, 2].map((i) => (
@@ -84,7 +84,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
           <h1 id="ob-q1" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
             What are you launching?
           </h1>
-          <div className="mt-10 grid grid-cols-2 gap-3 text-left sm:grid-cols-4" role="radiogroup" aria-label="What are you launching?">
+          <div className="mt-10 grid grid-cols-2 gap-3 text-left sm:grid-cols-3 lg:grid-cols-5" role="radiogroup" aria-label="What are you launching?">
             {KINDS.map((k) => (
               <button
                 key={k.id}
@@ -99,7 +99,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white/[0.04] text-fg">{k.icon}</span>
                 <span>
                   <span className="block text-lg font-medium">{k.name}</span>
-                  <span className="mt-1 block text-sm text-muted">{k.hint}</span>
+                  <span className="mt-1 block min-h-10 text-sm text-muted">{k.hint}</span>
                 </span>
               </button>
             ))}
@@ -112,7 +112,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
           </button>
           <p className="t-label mt-4">step 2 of 2</p>
           <h1 id="ob-q2" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-            {needsUrl(kind) ? (kind === "store" ? "Where's your store?" : "Where does it live?") : kind === "game" ? "Let's see your game." : "Let's see your app."}
+            {needsUrl(kind) ? (kind === "store" ? "Where's your store?" : "Where does it live?") : kind === "video" ? "Let's see your video." : kind === "game" ? "Let's see your game." : "Let's see your app."}
           </h1>
 
           {needsUrl(kind) ? (
@@ -135,7 +135,9 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
             </div>
           ) : (
             <p className="mt-6 text-lg text-muted">
-              {kind === "game"
+              {kind === "video"
+                ? "Next you'll drop in your TikTok, Reel, Short or ad. Simulated viewers decide when they'd swipe, and whether they'd tap through to your product."
+                : kind === "game"
                 ? "Next you'll drop in screenshots of the first minutes and the shop or game-pass offer, in order. Crawler never logs into your game."
                 : "Next you'll drop in screenshots of your onboarding and paywall, in order."}
             </p>
@@ -169,7 +171,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
           </fieldset>
 
           <button type="submit" disabled={!canNext || busy} className="btn btn-primary mt-10 h-14 w-full text-base">
-            {busy ? "Starting…" : !needsUrl(kind) ? "Next: add screenshots" : kind === "store" ? "Test my store" : "Test my site"}
+            {busy ? "Starting…" : kind === "video" ? "Next: add the video" : !needsUrl(kind) ? "Next: add screenshots" : kind === "store" ? "Test my store" : "Test my site"}
             {!busy && <Arrow />}
           </button>
           <p className="mt-4 text-center text-xs text-faint">Free first test · simulated customers show buying intent, not real purchases.</p>
@@ -189,4 +191,5 @@ const KINDS: { id: Kind; name: string; hint: string; icon: React.ReactNode }[] =
   { id: "game", name: "Game", hint: "Roblox or mobile: first minutes + shop", icon: ICON("M6 9h12a4 4 0 0 1 4 4v1a3 3 0 0 1-5.3 1.9L15 14H9l-1.7 1.9A3 3 0 0 1 2 14v-1a4 4 0 0 1 4-4zM8 11v3M6.5 12.5h3M16 12h.01M18 13.5h.01") },
   { id: "website", name: "Website", hint: "Landing page, pricing, signup", icon: ICON("M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z") },
   { id: "store", name: "Online store", hint: "Product page → cart", icon: ICON("M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8zM9 8V6a3 3 0 0 1 6 0v2") },
+  { id: "video", name: "Video or ad", hint: "TikTok, Reels, Shorts, creator deals", icon: ICON("M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM10 9v6l5-3z") },
 ];

@@ -16,6 +16,7 @@ import Onboarding from "@/components/Onboarding";
 import { MyMindsCards, SaveMind } from "@/components/dashboard/minds";
 import { StarterNote, usePlan } from "@/components/dashboard/usePlan";
 import AppWizard from "@/components/app/AppWizard";
+import VideoWizard from "@/components/video/VideoWizard";
 import { Chevron, ErrorNote, Heading, Nav, PRESET_HINT, PresetCard, Stepper, Summary, waitForCrawl } from "@/components/wizard";
 import { Arrow } from "@/components/landing/UrlForm";
 import { DEFAULT_AUDIENCE, PRESETS } from "@/lib/presets";
@@ -57,6 +58,7 @@ function Entry() {
   }, []);
 
   if (params.get("kind") === "app") return <AppWizard key={params.toString()} />;
+  if (params.get("kind") === "video") return <VideoWizard key={params.toString()} />;
   if (params.get("url")) return <Wizard key={params.toString()} />;
   return <Onboarding startUrl="" />;
 }

@@ -25,6 +25,9 @@
     "src/lib/quality.ts",
     "src/lib/stripe.ts",
     "src/lib/compare.ts",
-    "src/lib/personas.ts"
+    "src/lib/personas.ts",
+    "src/lib/video/aggregate.ts",
+    "src/lib/video/frames.ts",
+    "src/lib/video/validate.ts"
   ]
 }

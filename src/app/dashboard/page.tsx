@@ -42,12 +42,12 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   if (crawlIds.length && user) {
     const { data: crawls } = await supabase
       .from("crawls")
-      .select("id, hero:data->crawl->pages->0->screenshotFiles->>0, batch:data->input->>batch, first:data->input->screens->>0")
+      .select("id, hero:data->crawl->pages->0->screenshotFiles->>0, batch:data->input->>batch, first:data->input->screens->>0, frame:data->input->frames->>0")
       .in("id", crawlIds);
     const thumbs = new Map(
-      ((crawls ?? []) as { id: string; hero: string | null; batch: string | null; first: string | null }[]).map((c) => [
+      ((crawls ?? []) as { id: string; hero: string | null; batch: string | null; first: string | null; frame: string | null }[]).map((c) => [
         c.id,
-        c.hero ? `/api/files/${user.id}/crawls/${c.id}/${c.hero}` : c.batch && c.first ? `/api/files/${user.id}/uploads/${c.batch}/${c.first}` : null,
+        c.hero ? `/api/files/${user.id}/crawls/${c.id}/${c.hero}` : c.batch && (c.first || c.frame) ? `/api/files/${user.id}/uploads/${c.batch}/${c.first || c.frame}` : null,
       ]),
     );
     for (const r of rows) r.thumb = r.crawl_id ? (thumbs.get(r.crawl_id) ?? null) : null;
