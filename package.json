@@ -12,6 +12,7 @@
     "worker:build": "tsc -p tsconfig.worker.json",
     "worker": "node .worker-build/worker/main.js",
     "worker:dev": "npm run worker:build && node --env-file=.env.local .worker-build/worker/main.js",
+    "waitlist:send": "node --env-file=.env.local scripts/send-launch-email.cjs",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.worker.json --noEmit"
   },
   "dependencies": {

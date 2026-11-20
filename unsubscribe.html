@@ -1,0 +1,61 @@
+<!doctype html>
+<!--
+  Crawler: the unsubscribe page that every launch email links to: unsubscribe.html?t=<secret token>.
+  It shows a button first (not an automatic unsubscribe) so email scanners that open links can't
+  unsubscribe people by accident. Calls unsubscribe_waitlist() in Supabase (see 0012_waitlist.sql).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>crawler: unsubscribe</title>
+<link rel="icon" href="src/app/icon.svg" type="image/svg+xml" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { min-height: 100vh; display: grid; place-items: center; padding: 20px; background: #08090d; color: #f5f6f8; font-family: Geist, system-ui, sans-serif; line-height: 1.6; }
+  .box { width: 100%; max-width: 440px; padding: 32px; border-radius: 20px; border: 1px solid rgb(255 255 255 / .12); background: linear-gradient(135deg, rgb(255 255 255 / .075), rgb(255 255 255 / .02)); }
+  h1 { font-size: 26px; font-weight: 600; letter-spacing: -.03em; }
+  p { margin-top: 10px; color: #b4b8c6; }
+  button, a.btn { display: inline-flex; align-items: center; justify-content: center; margin-top: 22px; min-height: 48px; padding: 0 24px; border-radius: 12px; border: 0; background: #2f45e6; color: #fff; font: 600 16px Geist, system-ui, sans-serif; cursor: pointer; text-decoration: none; }
+  button:disabled { opacity: .6; }
+  a.plain { color: #b4b8c6; display: inline-block; margin-top: 22px; }
+  :focus-visible { outline: 2px solid #f5f6f8; outline-offset: 3px; }
+</style>
+</head>
+<body>
+<main class="box">
+  <h1 id="title">Unsubscribe from Crawler emails?</h1>
+  <p id="text">You&rsquo;ll stop getting the launch email and product updates. You can join the list again any time.</p>
+  <button id="go" type="button">Yes, unsubscribe me</button>
+  <p id="status" role="status" aria-live="polite"></p>
+  <a class="plain" href="index.html">Back to Crawler</a>
+</main>
+<script>
+(function () {
+  var token = new URLSearchParams(location.search).get("t") || "";
+  var go = document.getElementById("go"), title = document.getElementById("title"), text = document.getElementById("text"), status = document.getElementById("status");
+  if (!/^[0-9a-f-]{36}$/i.test(token)) {
+    title.textContent = "This link doesn't look right";
+    text.textContent = "Open the unsubscribe link from the bottom of the email again. If it still doesn't work, reply to the email and we'll remove you by hand.";
+    go.hidden = true; return;
+  }
+  go.addEventListener("click", function () {
+    go.disabled = true; status.textContent = "One moment…";
+    fetch("https://txoimqedwfsuxoqiguop.supabase.co/rest/v1/rpc/unsubscribe_waitlist", {
+      method: "POST",
+      headers: { apikey: "sb_publishable_Qx4jian5THX3pU0Ocizymw_0NC4X9yo", "Content-Type": "application/json" },
+      body: JSON.stringify({ p_token: token })
+    }).then(function (r) { return r.json().catch(function () { return null; }).then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (res.ok && res.d === true) { title.textContent = "You're unsubscribed"; text.textContent = "We won't email you again. Sorry to see you go."; go.hidden = true; status.textContent = ""; }
+        else if (res.ok) { title.textContent = "Already removed"; text.textContent = "We couldn't find that address on the list, so there's nothing more to do."; go.hidden = true; status.textContent = ""; }
+        else { throw new Error(); }
+      })
+      .catch(function () { status.textContent = "Something went wrong. Please try again in a minute."; go.disabled = false; });
+  });
+})();
+</script>
+</body>
+</html>
