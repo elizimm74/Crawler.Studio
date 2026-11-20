@@ -194,5 +194,26 @@ test("game and store tests get their own kind and label; old rows unchanged", ()
 });
 test("thumbnails pass through (none = null, never invented)", () => eq(analyses([{ ...ROWS[0], thumb: "/api/files/u/crawls/x/hero-1.jpg" }, ROWS[3]]).map((a) => a.thumb), ["/api/files/u/crawls/x/hero-1.jpg", null], "thumbs"));
 
+// ---------- revenue what-if ----------
+const R = require(path.join(__dirname, "..", ".bench-build", "lib", "revenue.js"));
+test("1,000 people x 40% yes x 10% follow-through x $20 = $800 a month (low $400, high $1,200)", () => {
+  const r = R.projectRevenue({ people: 1000, price: 20, intentPct: 40 });
+  return eq([r.rate, r.customersPerMonth, r.monthly], [0.04, 40, { low: 400, likely: 800, high: 1200 }], "projection");
+});
+test("fixes that win back 20 points add $400 a month", () => {
+  const r = R.projectRevenue({ people: 1000, price: 20, intentPct: 40, fixPct: 20 });
+  return eq([r.withFixes, r.upsidePerMonth], [1200, 400], "fixes");
+});
+test("12-month totals: fixes ship after month 2 (2 x 800 + 10 x 1,200)", () => {
+  const r = R.projectRevenue({ people: 1000, price: 20, intentPct: 40, fixPct: 20 });
+  return eq([r.asIs.length, r.yearAsIs, r.yearFixed, r.asIs[2], r.fixed[2]], [13, 9600, 13600, 1600, 1600], "series");
+});
+test("no people, no price or junk input = zeros, never NaN", () => {
+  const r = R.projectRevenue({ people: NaN, price: -5, intentPct: 40 });
+  return eq([r.monthly.likely, r.yearFixed, Number.isNaN(r.rate)], [0, 0, false], "zeros");
+});
+test("the rate can never pass 100% (yes 100 + fixes 50, follow-through 100%)", () => eq(R.projectRevenue({ people: 100, price: 10, intentPct: 100, realShare: 1, fixPct: 50 }).withFixes, 1000, "cap"));
+test("money formatting", () => eq([R.money(840), R.money(12400), R.money(240000), R.money(1500000)], ["$840", "$12.4k", "$240k", "$1.5M"], "format"));
+
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);

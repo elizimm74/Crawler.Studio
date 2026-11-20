@@ -1,9 +1,14 @@
 "use client";
-// The dashboard (v5, 2026-11-19, founder: "minimal, beautiful"). Less on screen, more space:
-//   sidebar  logo, the 5 views, you + your plan (phones: a tab row)
+// The dashboard (v6, 2026-11-20, founder: "pages to the far left, projected revenue and more,
+// super fancy and premium, animations and glass UI"):
+//   rail     a full-height glass sidebar flush with the left edge: you, the 5 views (a pill glides
+//            between them), quick actions, your plan (phones: a tab row)
 //   top      search your tests (⌘K or /) + ONE main button: New test
-//   overview a calm greeting line, your latest result (screenshot, score ring, blocker),
-//            3 score tiles, your next fixes, recent tests, a one-line invite strip
+//   overview greeting + your latest result with its 100-dot crowd, 4 count-up tiles, the REVENUE
+//            WHAT-IF (RevenuePanel: your test x your numbers x an assumption, labelled), next
+//            fixes, what keeps blocking people, recent tests
+// Glass panels follow your cursor with a soft spotlight; everything animates in and respects
+// reduced motion / "Calmer motion".
 // Every number is counted from your own tests (src/lib/dashboard.ts). Empty states say so.
 // Press "N" anywhere (outside a text box) to start a new test.
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -12,8 +17,10 @@ import { useRouter } from "next/navigation";
 import MindsSection from "./MindsSection";
 import PlaybookSection, { PlayCard } from "./PlaybookSection";
 import InviteCard from "./InviteCard";
-import { Bar, Icon, Ring, Spark, TrendChart } from "./viz";
-import Mark from "@/components/Mark";
+import RevenuePanel, { useRevenue } from "./RevenuePanel";
+import { useTween } from "./useTween";
+import { Bar, Crowd, Icon, Spark, TrendChart } from "./viz";
+import { money } from "@/lib/revenue";
 import { PLAYS } from "@/lib/playbook";
 import { summarize, type Analysis, type DashboardData } from "@/lib/dashboard";
 
@@ -37,11 +44,39 @@ function ago(iso: string) {
 }
 const pctOf = (a: Analysis) => (a.pct === null ? "–" : `${a.pct}%`);
 
-function Panel({ children, className = "", label }: { children: React.ReactNode; className?: string; label?: string }) {
+// A glass panel. A soft blue spotlight follows the cursor over it (CSS variables --mx / --my).
+function Panel({ children, className = "", label, i = 0 }: { children: React.ReactNode; className?: string; label?: string; i?: number }) {
+  const ref = useRef<HTMLElement>(null);
   return (
-    <section className={`dash-panel rounded-2xl p-5 sm:p-6 ${className}`} aria-label={label}>
+    <section
+      ref={ref}
+      aria-label={label}
+      onPointerMove={(e) => {
+        const r = ref.current?.getBoundingClientRect();
+        if (!r) return;
+        ref.current!.style.setProperty("--mx", `${e.clientX - r.left}px`);
+        ref.current!.style.setProperty("--my", `${e.clientY - r.top}px`);
+      }}
+      style={{ animationDelay: `${i * 70}ms` }}
+      className={`gpanel dash-rise p-5 sm:p-6 ${className}`}
+    >
       {children}
     </section>
+  );
+}
+
+// A headline number tile: counts up when it appears, with a little chart under it.
+function Kpi({ label, value, format, sub, spark, id, i }: { label: string; value: number | null; format: (n: number) => string; sub: React.ReactNode; spark: number[]; id: string; i: number }) {
+  const n = useTween(value ?? 0, 1000);
+  return (
+    <Panel i={i} className="gkpi">
+      <p className="text-xs text-faint">{label}</p>
+      <p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums sm:text-4xl">{value === null ? "–" : format(n)}</p>
+      <p className="mt-1 min-h-4 text-xs text-faint">{sub}</p>
+      <div className="mt-3">
+        <Spark values={spark} id={id} />
+      </div>
+    </Panel>
   );
 }
 
@@ -144,55 +179,85 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
     [query, data.analyses],
   );
   const planLabel = plan.unlimited ? "Admin" : plan.plan === "pack" ? "Test packs" : plan.plan === "free" ? "Free plan" : `${plan.plan} plan`;
-  const tiles: [string, string, number | null, number[], string][] = [
-    ["Latest score", latest ? pctOf(latest) : "–", latest?.delta ?? null, trendPcts, "your newest test"],
-    ["Average", sum.avgPct === null ? "–" : `${sum.avgPct}%`, null, allPcts, "across finished tests"],
-    ["Best", sum.bestPct === null ? "–" : `${sum.bestPct}%`, null, allPcts, "your high-water mark"],
-  ];
   const summary = latest
     ? `${latest.label} ${latest.delta === null ? "scored" : latest.delta > 0 ? "climbed to" : latest.delta < 0 ? "slipped to" : "held at"} ${latest.score} of ${latest.total}.${latest.blocker ? ` Biggest blocker: ${latest.blocker}.` : ""}`
     : `Your first test is free. ${plan.customers} simulated customers try your app, game, site or store.`;
 
+  const rev = useRevenue(latest, data.fixes);
+  const idx = Math.max(0, VIEWS.findIndex(([id]) => id === view));
+  const initial = (data.name || "?").charAt(0).toUpperCase();
+
   return (
-    <div className="dash mx-auto max-w-6xl">
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[208px_minmax(0,1fr)] lg:gap-10">
-        {/* ================= sidebar ================= */}
-        <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-          <div className="hidden lg:block">
-            <p className="flex items-center gap-2 px-3 text-base font-semibold">
-              <Mark size={22} className="text-white" /> Crawler
-            </p>
-            <nav aria-label="Dashboard" className="mt-6 flex flex-col gap-0.5">
+    // The wrapper breaks out of the page's centered column so the rail sits on the far left of the screen.
+    <div className="dash dash-stage -mt-12 sm:-mt-16 -mb-24 lg:relative lg:left-1/2 lg:w-screen lg:-translate-x-1/2">
+      <div className="grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[272px_minmax(0,1fr)]">
+        {/* ================= the rail: far left, full height, glass ================= */}
+        <aside className="dash-rail min-w-0 px-4 pt-6 sm:px-6 lg:sticky lg:top-16 lg:h-[calc(100dvh-4rem)] lg:overflow-y-auto lg:px-4 lg:py-6">
+          <div className="hidden h-full flex-col lg:flex">
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2f45e6] text-base font-semibold text-white shadow-[0_8px_24px_-8px_#2f45e6]">{initial}</span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-medium">{data.name}</span>
+                <span className="block truncate text-xs text-faint">{planLabel}</span>
+              </span>
+            </div>
+
+            <p className="mt-7 px-3 text-[11px] uppercase tracking-[0.14em] text-faint">Workspace</p>
+            <nav aria-label="Dashboard" className="relative mt-2">
+              {/* the pill that glides to the selected view (each item is 44px + 4px gap) */}
+              <span aria-hidden className="dash-pill" style={{ transform: `translateY(${idx * 48}px)` }} />
               {VIEWS.map(([id, label]) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => pick(id)}
                   aria-current={view === id ? "page" : undefined}
-                  className={`flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors ${
-                    view === id ? "dash-active text-white" : "text-white/55 hover:bg-white/[0.04] hover:text-white"
-                  }`}
+                  className={`relative z-10 mb-1 flex h-11 w-full items-center gap-3 rounded-xl px-3 text-sm transition-colors duration-200 ${view === id ? "text-white" : "text-white/55 hover:text-white"}`}
                 >
                   <Icon name={VIEW_ICON[id]} className="h-4 w-4" />
                   {label}
                 </button>
               ))}
             </nav>
-            <div className="mt-8 border-t border-white/[0.08] px-3 pt-5 text-sm">
-              <p className="font-medium">{data.name}</p>
-              <p className="mt-0.5 text-xs text-faint">
-                {planLabel}
-                {!plan.unlimited && ` · ${plan.left} test${plan.left === 1 ? "" : "s"} left`}
-              </p>
-              {!plan.unlimited && plan.limit > 0 && (
-                <div className="mt-3">
-                  <Bar pct={(plan.used / plan.limit) * 100} />
+
+            <p className="mt-7 px-3 text-[11px] uppercase tracking-[0.14em] text-faint">Quick actions</p>
+            <div className="mt-2 space-y-1">
+              <Link href="/onboarding" className="dash-quick">
+                <Icon name="plus" className="h-4 w-4" /> New test <kbd className="ml-auto font-mono text-[10px] text-faint">N</kbd>
+              </Link>
+              <Link href="/onboarding?kind=video" className="dash-quick">
+                <Icon name="play" className="h-4 w-4" /> Test a video or ad
+              </Link>
+              <Link href="/pricing" className="dash-quick">
+                <Icon name="spark" className="h-4 w-4" /> Get more tests
+              </Link>
+            </div>
+
+            <div className="mt-auto pt-8">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur">
+                <div className="flex items-baseline justify-between text-sm">
+                  <span className="font-medium">{plan.unlimited ? "Unlimited tests" : "Tests"}</span>
+                  {!plan.unlimited && (
+                    <span className="text-xs tabular-nums text-faint">
+                      {plan.left} left
+                    </span>
+                  )}
                 </div>
-              )}
+                {!plan.unlimited && plan.limit > 0 && (
+                  <div className="mt-3">
+                    <Bar pct={(plan.used / plan.limit) * 100} />
+                  </div>
+                )}
+                {!plan.unlimited && plan.plan === "free" && (
+                  <button type="button" onClick={() => pick("fixes")} className="mt-3 text-xs text-faint transition-colors hover:text-fg">
+                    Invite {plan.referrals.needed} friends: {plan.referrals.count}/{plan.referrals.needed} →
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-          {/* phones: a tab row instead of the sidebar */}
-          <nav aria-label="Dashboard views" className="-mx-4 flex gap-1 overflow-x-auto px-4 lg:hidden">
+          {/* phones: a tab row instead of the rail */}
+          <nav aria-label="Dashboard views" className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 lg:hidden">
             {VIEWS.map(([id, label]) => (
               <button
                 key={id}
@@ -208,10 +273,10 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
         </aside>
 
         {/* ================= main ================= */}
-        <div className="min-w-0 space-y-6">
+        <div className="min-w-0 space-y-6 px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pt-8 [&>*]:mx-auto [&>*]:max-w-[1180px]">
           {/* top bar: search + the ONE main button */}
           <div className="flex items-center gap-3">
-            <label className="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4">
+            <label className="gsearch flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl px-4">
               <Icon name="search" className="h-4 w-4 shrink-0 text-faint" />
               <span className="sr-only">Search your tests</span>
               <input
@@ -232,7 +297,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           </div>
 
           {paid && (
-            <p role="status" className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 text-sm">
+            <p role="status" className="gpanel p-4 text-sm">
               <span className="font-medium">Payment received. Thank you!</span>{" "}
               <span className="text-muted">
                 Your {paid === "studio" ? "Studio" : "Launch"} Pack tests are being added. Refresh in a few seconds if the count hasn&apos;t changed.
@@ -243,93 +308,87 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           {/* ===== OVERVIEW ===== */}
           {view === "overview" && (
             <>
-              <header className="pt-4">
-                <p className="text-sm text-faint">
-                  {hello}, {data.name}
-                </p>
-                <h1 className="mt-2 max-w-3xl text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">{summary}</h1>
-              </header>
-
-              {/* latest result */}
-              {latest ? (
-                <Panel label="Latest result" className="p-0 sm:p-0">
-                  <div className="grid md:grid-cols-[minmax(0,1fr)_auto]">
-                    <div className="flex gap-5 p-5 sm:p-6">
-                      <Thumb a={latest} size="h-28 w-28 sm:h-32 sm:w-32" />
-                      <div className="min-w-0">
-                        <p className="text-xs text-faint">
-                          Latest · {date(latest.created_at)} · {latest.kind}
-                        </p>
-                        <p className="mt-1 truncate text-xl font-semibold">{latest.label}</p>
-                        <p className="mt-2 text-sm text-muted">
-                          {latest.kind === "video" ? `${latest.score} of ${latest.total} simulated viewers would tap through` : `${latest.score} of ${latest.total} simulated customers would ${latest.goal ?? "convert"}`}
-                        </p>
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <Delta n={latest.delta} suffix=" pts vs last" />
-                          {latest.blocker && <span className="rounded-md bg-white/[0.06] px-2 py-0.5 text-xs text-muted">blocker: {latest.blocker}</span>}
-                        </div>
-                        <div className="mt-5 flex flex-wrap gap-2">
-                          <Link href={`/run/${latest.id}`} className="btn btn-secondary h-10 px-4 text-sm">
+              {/* hero: greeting + sentence on the left, the latest test's 100 simulated customers on the right */}
+              <Panel label="Latest result" className="dash-hero-glass overflow-hidden p-6 sm:p-8">
+                <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+                  <div className="min-w-0">
+                    <p className="text-sm text-faint">
+                      {hello}, {data.name}
+                    </p>
+                    <h1 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{summary}</h1>
+                    <div className="mt-6 flex flex-wrap items-center gap-2">
+                      {latest ? (
+                        <>
+                          <Link href={`/run/${latest.id}`} className="btn btn-secondary h-11 px-5 text-sm">
                             Open report
                           </Link>
                           {latest.kind === "website" || latest.kind === "store" ? (
-                            <Link href={`/app?url=${encodeURIComponent(latest.url)}&retest=${latest.id}${latest.kind === "store" ? "&type=store" : ""}`} className="btn btn-text h-10 text-sm">
+                            <Link href={`/app?url=${encodeURIComponent(latest.url)}&retest=${latest.id}${latest.kind === "store" ? "&type=store" : ""}`} className="btn btn-text h-11 text-sm">
                               Re-test
                             </Link>
                           ) : null}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-center border-t border-white/[0.06] p-6 md:border-l md:border-t-0">
-                      <Ring pct={latest.pct ?? 0} label={latest.kind === "video" ? "would tap through" : `would ${latest.goal ?? "convert"}`} />
+                          <Delta n={latest.delta} suffix=" pts vs last test" />
+                          {latest.blocker && <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-muted">blocker: {latest.blocker}</span>}
+                        </>
+                      ) : (
+                        <>
+                          <Link href="/onboarding" className="btn btn-primary h-11 px-5 text-sm">
+                            Start free test
+                          </Link>
+                          <Link href="/example" className="btn btn-text h-11 text-sm">
+                            See an example
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </div>
-                </Panel>
-              ) : (
-                <Panel label="Get started">
-                  <p className="text-lg font-semibold">Run your first test</p>
-                  <p className="mt-1 max-w-lg text-sm text-muted">About a minute. You get a score, the reasons people said no, and fixes ranked by how many customers each wins back.</p>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    <Link href="/onboarding" className="btn btn-primary h-10 px-5 text-sm">
-                      Start free test
-                    </Link>
-                    <Link href="/example" className="btn btn-text h-10 text-sm">
-                      See an example
-                    </Link>
+                  <div className="mx-auto w-full max-w-[300px]">
+                    {latest ? (
+                      <>
+                        <Crowd yes={latest.score ?? 0} total={latest.total ?? 100} />
+                        <p className="mt-3 flex items-center gap-2 text-xs text-faint">
+                          <span className="pulse-dot" aria-hidden />
+                          {latest.score} of {latest.total} simulated {latest.kind === "video" ? "viewers" : "customers"} · {latest.label}
+                        </p>
+                      </>
+                    ) : (
+                      <Crowd yes={0} total={100} />
+                    )}
                   </div>
-                </Panel>
-              )}
-
-              {/* three score tiles */}
-              <Panel label="Scores" className="p-0 sm:p-0">
-                <div className="grid divide-y divide-white/[0.06] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                  {tiles.map(([label, value, delta, spark, note], i) => (
-                    <div key={label} className="p-5 sm:p-6">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <p className="text-xs text-faint">{label}</p>
-                        {delta !== null ? <Delta n={delta} /> : <span className="text-xs text-faint">{note}</span>}
-                      </div>
-                      <p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{value}</p>
-                      <div className="mt-3">
-                        <Spark values={spark} id={`m${i}`} />
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </Panel>
 
-              {/* next fixes + recent tests */}
-              <div className="grid gap-6 lg:grid-cols-2">
-                <Panel label="Next fixes">
+              {/* four count-up tiles */}
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <Kpi
+                  i={1}
+                  id="k0"
+                  label="Projected revenue / month"
+                  value={rev.projection ? rev.projection.monthly.likely : null}
+                  format={money}
+                  sub={rev.projection ? (rev.touched ? "what-if, see below" : "example numbers, edit below") : "after your first test"}
+                  spark={rev.projection ? rev.projection.fixed.slice(1) : []}
+                />
+                <Kpi i={2} id="k1" label="Latest score" value={latest?.pct ?? null} format={(n) => `${Math.round(n)}%`} sub={latest ? <Delta n={latest.delta} /> : "no tests yet"} spark={trendPcts} />
+                <Kpi i={3} id="k2" label="Customers simulated" value={sum.customers} format={(n) => Math.round(n).toLocaleString("en-US")} sub={`across ${sum.finished} finished test${sum.finished === 1 ? "" : "s"}`} spark={allPcts} />
+                <Kpi i={4} id="k3" label="Best score" value={sum.bestPct} format={(n) => `${Math.round(n)}%`} sub={sum.avgPct === null ? "your high-water mark" : `average ${sum.avgPct}%`} spark={allPcts} />
+              </div>
+
+              {/* the revenue what-if */}
+              <RevenuePanel latest={latest} rev={rev} />
+
+              {/* next fixes + blockers + recent tests */}
+              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                <Panel label="Next fixes" i={5}>
                   <Title action={data.fixes.length ? <ViewAll onClick={() => pick("fixes")} /> : undefined}>Next fixes</Title>
                   {data.fixes.length ? (
                     <ol className="mt-3 divide-y divide-white/[0.06]">
                       {data.fixes.slice(0, 3).map((f, i) => (
                         <li key={f.title}>
-                          <Link href={`/run/${f.testId}`} className="flex items-center gap-4 py-3.5 transition-colors hover:text-white">
+                          <Link href={`/run/${f.testId}`} className="group flex items-center gap-3 py-3.5 transition-colors hover:text-white">
                             <span className="w-5 font-mono text-xs text-faint">{String(i + 1).padStart(2, "0")}</span>
                             <span className="min-w-0 flex-1 text-sm">{f.title}</span>
-                            {f.wins > 0 && <span className="shrink-0 text-sm font-medium tabular-nums">+{f.wins}</span>}
+                            {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#2f45e6]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
                           </Link>
                         </li>
                       ))}
@@ -339,7 +398,28 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                   )}
                 </Panel>
 
-                <Panel label="Recent tests">
+                <Panel label="What keeps blocking people" i={6}>
+                  <Title action={data.blockers.length ? <ViewAll onClick={() => pick("fixes")} /> : undefined}>What keeps blocking people</Title>
+                  {data.blockers.length ? (
+                    <ul className="mt-4 space-y-4">
+                      {data.blockers.slice(0, 4).map((b, i) => (
+                        <li key={b.category}>
+                          <div className="mb-2 flex justify-between gap-4 text-sm">
+                            <span className="first-letter:uppercase">{b.category}</span>
+                            <span className="font-mono text-xs text-faint">
+                              {b.tests}/{recent}
+                            </span>
+                          </div>
+                          <Bar pct={b.share * 100} delay={i * 120} />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-3 text-sm text-faint">Your blockers show up here after your first test.</p>
+                  )}
+                </Panel>
+
+                <Panel label="Recent tests" i={7} className="lg:col-span-2 xl:col-span-1">
                   <Title action={data.analyses.length ? <ViewAll onClick={() => pick("tests")} /> : undefined}>Recent tests</Title>
                   {data.analyses.length ? (
                     <ul className="mt-3 divide-y divide-white/[0.06]">
@@ -366,7 +446,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
 
               {/* invite: one quiet line (the full card lives on the Fixes view) */}
               {!plan.unlimited && plan.plan === "free" && (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.08] px-5 py-4 text-sm">
+                <div className="gpanel flex flex-wrap items-center justify-between gap-3 px-5 py-4 text-sm">
                   <span className="text-muted">
                     Invite {plan.referrals.needed} friends to unlock 100-customer tests · {plan.referrals.count}/{plan.referrals.needed} joined
                   </span>
