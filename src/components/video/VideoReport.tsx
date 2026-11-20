@@ -8,6 +8,9 @@
 import { useMemo, useState } from "react";
 import QualityNote from "@/components/QualityNote";
 import ShareBox from "@/components/ShareBox";
+import ReportShell from "@/components/report/ReportShell";
+import ReportRevenue from "@/components/report/ReportRevenue";
+import NextSteps from "@/components/report/NextSteps";
 import { fileUrl } from "@/lib/urls";
 import type { VideoRun } from "@/lib/video/pipeline";
 import { dealCheck, REAL_TAP_SHARE, SIGNAL_WEIGHTS, TYPICAL_SIGNAL, type Range } from "@/lib/video/aggregate";
@@ -28,11 +31,19 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
   const [target, setTarget] = useState(10);
   const deal = useMemo(() => dealCheck(s.price, run.views ?? null, stats, target), [s.price, run.views, stats, target]);
   const beatFile = (n: number) => s.beats[n - 1]?.file;
+  const fixWins = advice.fixes.slice(0, 3).reduce((n, f) => n + f.couldWin, 0);
+  const sections = [
+    { id: "answer", label: "Answer" },
+    { id: "curve", label: "Watch curve" },
+    { id: "views", label: "Views + deal" },
+    { id: "fixes", label: "Fixes" },
+    ...(demo ? [] : [{ id: "revenue", label: "Revenue" }, { id: "next", label: "Next steps" }, { id: "share", label: "Share" }]),
+  ];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-16">
+    <ReportShell wide sections={sections}>
       {/* ---------- 1. The answer ---------- */}
-      <section className="dash-panel dash-hero relative overflow-hidden rounded-3xl p-6 sm:p-10">
+      <section id="answer" className="gpanel dash-hero-glass dash-rise relative scroll-mt-32 overflow-hidden rounded-3xl p-6 sm:p-10">
         <div className="relative grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_240px]">
           <div className="min-w-0">
             <p className="t-label">
@@ -64,16 +75,16 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
       </section>
 
       {/* ---------- 3. The watch curve ---------- */}
-      <section>
+      <section id="curve" className="scroll-mt-32">
         <Head label="the watch curve" title="Where they swiped away" sub="Share of all viewers still watching after each frame." />
-        <div className="dash-panel mt-6 rounded-2xl p-4 sm:p-6">
+        <div className="gpanel mt-6 rounded-2xl p-4 sm:p-6">
           <WatchCurve run={run} img={img} />
         </div>
       </section>
 
       {/* ---------- 4. Views + deal ---------- */}
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="dash-panel rounded-2xl p-6">
+      <section id="views" className="grid scroll-mt-32 gap-4 md:grid-cols-2">
+        <div className="gpanel rounded-2xl p-6">
           <p className="t-label">estimated views</p>
           {run.views ? (
             <>
@@ -101,7 +112,7 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
           </p>
         </div>
 
-        <div className="dash-panel rounded-2xl p-6">
+        <div className="gpanel rounded-2xl p-6">
           <p className="t-label">deal check</p>
           {deal ? (
             <>
@@ -146,7 +157,7 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
       </section>
 
       {/* ---------- 6. Fixes ---------- */}
-      <section>
+      <section id="fixes" className="scroll-mt-32">
         <Head label="edit these first" title="Ranked fixes" sub="Ordered by how many simulated viewers each could win back." />
         <ol className="mt-6 space-y-3">
           {advice.fixes.map((f, i) => (
@@ -177,7 +188,7 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
 
       {/* ---------- 7. New hooks ---------- */}
       <section className="grid gap-4 md:grid-cols-[1.4fr_1fr]">
-        <div className="dash-panel rounded-2xl p-6">
+        <div className="gpanel rounded-2xl p-6">
           <p className="t-label">new hooks · first 2 seconds</p>
           <ol className="mt-4 space-y-3">
             {advice.hooks.map((h, i) => (
@@ -185,7 +196,7 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
             ))}
           </ol>
         </div>
-        <div className="dash-panel rounded-2xl p-6">
+        <div className="gpanel rounded-2xl p-6">
           <p className="t-label">captions</p>
           <ol className="mt-4 space-y-3">
             {advice.captions.map((c, i) => (
@@ -255,16 +266,27 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
       <QualityNote quality={run.quality} />
 
       {!demo && (
-        <div id="share">
+        <>
+          <ReportRevenue
+            testId={run.id}
+            url={run.url}
+            kind="video"
+            yes={taps}
+            total={stats.perSample}
+            goal="tap through"
+            fixes={advice.fixes.map((f) => ({ title: f.title, wins: f.couldWin }))}
+            createdAt={run.createdAt}
+          />
+          <NextSteps kind="video" fixWins={fixWins} retestHref="/onboarding?kind=video" newVersionHref="/onboarding?kind=video" />
           <ShareBox testId={run.id} headline={`${taps} of ${stats.perSample} simulated viewers would tap through from my ${s.platform} video`} />
-        </div>
+        </>
       )}
       <p className="text-xs leading-relaxed text-faint">
         Simulated viewers saw {s.beats.length} still frames{s.script ? " plus the words you typed" : ""}, not the moving video or its sound. Treat this as a
         pre-post gut check: it compares versions well, but real feeds decide real views.
         {run.totalCostUsd ? ` Cost of this test: $${run.totalCostUsd.toFixed(3)}.` : ""}
       </p>
-    </div>
+    </ReportShell>
   );
 }
 
@@ -282,7 +304,7 @@ function Head({ label, title, sub }: { label: string; title: string; sub: string
 
 function Tile({ label, value, sub, bar }: { label: string; value: string; sub: string; bar: number }) {
   return (
-    <div className="dash-panel rounded-2xl p-5">
+    <div className="gpanel rounded-2xl p-5">
       <p className="t-label">{label}</p>
       <p className="mt-3 text-4xl font-semibold tracking-tight tabular-nums">{value}</p>
       <p className="mt-1 text-xs text-faint">{sub}</p>
@@ -408,7 +430,7 @@ function RangeBar({ low, likely, high, usual }: { low: number; likely: number; h
 
 function Reasons({ title, items, mark }: { title: string; items: string[]; mark: string }) {
   return (
-    <div className="dash-panel rounded-2xl p-6">
+    <div className="gpanel rounded-2xl p-6">
       <p className="t-label">{title}</p>
       <ul className="mt-4 space-y-3">
         {items.map((t, i) => (
@@ -447,7 +469,7 @@ function CopyLine({ text, big = false }: { text: string; big?: boolean }) {
 function SegmentList({ title, items }: { title: string; items: { name: string; viewers: number; tapRate: number }[] }) {
   const max = Math.max(0.01, ...items.map((s) => s.tapRate));
   return (
-    <div className="dash-panel rounded-2xl p-6">
+    <div className="gpanel rounded-2xl p-6">
       <p className="t-label">{title}</p>
       <ul className="mt-4 space-y-3">
         {items.map((s) => (

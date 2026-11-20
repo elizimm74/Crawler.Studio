@@ -32,7 +32,7 @@ export default function ShareBox({ testId, headline }: { testId: string; headlin
 
   return (
     // id="share": the "Send this score" button at the top of the report scrolls here
-    <section id="share" className="card scroll-mt-24 p-6 sm:p-8" aria-labelledby="share-title">
+    <section id="share" className="card scroll-mt-32 p-6 sm:p-8" aria-labelledby="share-title">
       <h2 id="share-title" className="t-h3">
         Send your score
       </h2>

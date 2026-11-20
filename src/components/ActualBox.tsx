@@ -29,7 +29,7 @@ export default function ActualBox({ testId, kind }: { testId: string; kind: "web
   }
 
   return (
-    <section className="card p-6 sm:p-8" aria-labelledby="actual-title">
+    <section id="actual" className="card scroll-mt-32 p-6 sm:p-8" aria-labelledby="actual-title">
       <h2 id="actual-title" className="t-h3">
         Launched it? Tell us what really happened
       </h2>

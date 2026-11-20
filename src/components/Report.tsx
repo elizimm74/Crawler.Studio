@@ -16,6 +16,11 @@ import JourneyView from "@/components/JourneyView";
 import AskBox from "@/components/AskBox";
 import ShareBox from "@/components/ShareBox";
 import ActualBox from "@/components/ActualBox";
+import ReportShell from "@/components/report/ReportShell";
+import ReportHero from "@/components/report/ReportHero";
+import ReportRevenue from "@/components/report/ReportRevenue";
+import NextSteps from "@/components/report/NextSteps";
+import FixCard from "@/components/report/FixCard";
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 const STEP_NAMES: Record<string, string> = {
@@ -41,80 +46,64 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
   const fixes = advice.fixes.filter((f) => f.couldFlip > 0);
   const shownFixes = moreFixes ? fixes : fixes.slice(0, 3);
 
+  const retestHref = `/app?url=${encodeURIComponent(run.url)}&retest=${run.id}${run.profile?.productType === "store" ? "&type=store" : ""}`;
+  const fixWins = fixes.slice(0, 3).reduce((n, f) => n + f.likelyFlip, 0);
+  const sections = [
+    { id: "answer", label: "Answer" },
+    { id: "fixes", label: "Fixes" },
+    { id: "details", label: "Details" },
+    ...(demo ? [] : [{ id: "revenue", label: "Revenue" }, { id: "next", label: "Next steps" }, { id: "share", label: "Share" }]),
+  ];
+
   return (
-    <div className="mx-auto max-w-4xl space-y-12">
-      {/* ---------- 1. The answer, on a full-width torn paper strip ---------- */}
-      <section className="paper bleed py-12 sm:py-16">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <div className="flex items-center justify-between gap-4">
-            <span className="t-label truncate">{run.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}</span>
-            <span className="t-label shrink-0">report</span>
-          </div>
-          <div className="mt-8 grid gap-8 md:grid-cols-[auto_1fr] md:items-end md:gap-12">
-            <div>
-              <p className="flex items-end gap-2">
-                <span className="t-number text-8xl text-accent sm:text-9xl">{stats.buy}</span>
-                <span className="t-number pb-2 text-3xl text-faint sm:text-4xl">/{stats.total}</span>
-              </p>
-              <p className="mt-2 text-lg font-medium">would {goal}</p>
-            </div>
-            <div className="space-y-4">
-              <p className="t-lead text-fg">{firstSentence(advice.summary)}</p>
-              <div className="flex flex-wrap gap-2">
-                {top && (
-                  <span className="pill">
-                    Biggest blocker: {top.category} · {pct(top.pctOfNonBuyers)}
-                  </span>
-                )}
-                {run.journey && run.journey.steps.length > 0 && (
-                  <span className="pill">Product test: {run.journey.status === "completed" ? "worked" : run.journey.status}</span>
-                )}
-              </div>
-              {!demo && (
-                <a href="#share" className="btn btn-primary h-11 px-5 text-sm">
-                  Send this score
-                </a>
-              )}
-            </div>
-          </div>
-          <VerdictBar buy={stats.buy} maybe={stats.maybe} no={stats.no} goal={goal} />
-        </div>
-      </section>
+    <ReportShell sections={sections}>
+      {/* ---------- 1. The answer ---------- */}
+      <ReportHero
+        label={run.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+        tag={run.profile?.productType === "store" ? "store report" : "report"}
+        value={stats.buy}
+        total={stats.total}
+        headline={`would ${goal}`}
+        summary={firstSentence(advice.summary)}
+        pills={[
+          ...(top ? [{ text: `Biggest blocker: ${top.category} · ${pct(top.pctOfNonBuyers)}`, warn: true }] : []),
+          ...(run.journey && run.journey.steps.length > 0 ? [{ text: `Product test: ${run.journey.status === "completed" ? "worked" : run.journey.status}` }] : []),
+        ]}
+        yes={stats.buy}
+        crowdTotal={stats.total}
+        crowdCaption={`one dot = one simulated customer · ${stats.buy} said yes, ${stats.maybe} maybe`}
+        actions={
+          !demo ? (
+            <>
+              <a href="#share" className="btn btn-primary h-11 px-5 text-sm">
+                Send this score
+              </a>
+              <Link href={retestHref} className="btn btn-secondary h-11 px-5 text-sm">
+                Fix it, then re-test
+              </Link>
+            </>
+          ) : undefined
+        }
+      >
+        <VerdictBar buy={stats.buy} maybe={stats.maybe} no={stats.no} goal={goal} />
+      </ReportHero>
 
       {/* a re-test: before / after with the same customers */}
       {!demo && run.compareTo && <CompareBox run={run} />}
-      {!demo && (
-        <div className="card flex flex-wrap items-center justify-between gap-4 p-5">
-          <p className="text-sm">
-            <span className="font-medium">Fixed something?</span> <span className="text-muted">Re-test with the same simulated customers and see exactly who changed their mind.</span>
-          </p>
-          <Link href={`/app?url=${encodeURIComponent(run.url)}&retest=${run.id}`} className="btn btn-primary h-11 px-5">
-            Re-test this page
-          </Link>
-        </div>
-      )}
-
       {/* ---------- 2. Fix these first ---------- */}
-      <section>
+      <section id="fixes" className="scroll-mt-32">
         <div className="flex items-baseline justify-between gap-4">
-          <h2 className="t-h2">Fix these first</h2>
+          <div>
+            <p className="t-label">edit these first</p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight">Fix these first</h2>
+          </div>
           <span className="t-label hidden sm:inline">ranked by people won back</span>
         </div>
-        <ol className="mt-6 border-b border-line">
+        <div className="mt-6 space-y-3" role="list">
           {shownFixes.map((f, i) => (
-            <li key={i} className="grid grid-cols-[2rem_1fr_auto] gap-4 border-t border-line py-6">
-              <span className="t-label pt-1">0{i + 1}</span>
-              <div className="min-w-0">
-                <p className="t-h3">{f.title}</p>
-                <p className="mt-1 text-muted">{f.change}</p>
-              </div>
-              <p className="text-right">
-                <span className="t-number block text-3xl text-accent-ink">+{f.likelyFlip}</span>
-                <span className="text-xs text-faint">of {stats.maybe} maybes</span>
-              </p>
-            </li>
+            <FixCard key={i} n={i + 1} title={f.title} change={f.change} win={f.likelyFlip} winLabel={`of ${stats.maybe} maybes`} />
           ))}
-        </ol>
+        </div>
         {fixes.length > 3 && (
           <button onClick={() => setMoreFixes(!moreFixes)} className="btn btn-text mt-2 -ml-3">
             {moreFixes ? "Show fewer" : `Show ${fixes.length - 3} more fix${fixes.length - 3 === 1 ? "" : "es"}`}
@@ -134,7 +123,7 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
       </section>
 
       {/* ---------- 4. Details, folded away ---------- */}
-      <section className="border-t border-line">
+      <section id="details" className="gpanel scroll-mt-32 px-5 sm:px-8">
         {run.journey && run.journey.steps.length > 0 && (
           <Fold title="Product test" hint={`${run.journey.steps.length} steps · ${run.journey.status}`}>
             <JourneyView filesPrefix={run.filesPrefix} journey={run.journey} />
@@ -241,6 +230,17 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
       {/* free follow-up questions (and "something's wrong" fixes) */}
       {!demo && (
         <>
+          <ReportRevenue
+            testId={run.id}
+            url={run.url}
+            kind={run.profile?.productType === "store" ? "store" : "website"}
+            yes={stats.buy}
+            total={stats.total}
+            goal={goal}
+            fixes={fixes.map((f) => ({ title: f.title, wins: f.likelyFlip }))}
+            createdAt={run.createdAt}
+          />
+          <NextSteps kind={run.profile?.productType === "store" ? "store" : "website"} fixWins={fixWins} retestHref={retestHref} newVersionHref={retestHref} />
           <ShareBox testId={run.id} headline={`${stats.buy} of ${stats.total} simulated customers would ${goal} on ${run.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/.*$/, "")}`} />
           <AskBox testId={run.id} rerunHref={`/app?url=${encodeURIComponent(run.url)}`} />
           <ActualBox testId={run.id} kind="website" />
@@ -249,7 +249,7 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
 
       <QualityNote quality={run.quality} />
       {run.totalCostUsd !== undefined && <p className="t-label">run cost ${run.totalCostUsd.toFixed(4)}</p>}
-    </div>
+    </ReportShell>
   );
 }
 

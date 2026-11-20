@@ -15,6 +15,11 @@ import { fileUrl } from "@/lib/urls";
 import AskBox from "@/components/AskBox";
 import ShareBox from "@/components/ShareBox";
 import ActualBox from "@/components/ActualBox";
+import ReportShell from "@/components/report/ReportShell";
+import ReportHero from "@/components/report/ReportHero";
+import ReportRevenue from "@/components/report/ReportRevenue";
+import NextSteps from "@/components/report/NextSteps";
+import FixCard from "@/components/report/FixCard";
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 const rangeText = (r: Range) => (Math.round(r.low * 100) === Math.round(r.high * 100) ? pct(r.mid) : `${pct(r.low)}–${pct(r.high)}`);
@@ -29,80 +34,80 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
   const [allQuotes, setAllQuotes] = useState(false);
   const fixes = advice.fixes;
 
+  const isGame = run.profile?.productType === "game";
+  const kind = isGame ? "game" : "app";
+  const newVersionHref = isGame ? "/onboarding?kind=game" : "/onboarding?kind=app";
+  const fixWins = fixes.slice(0, 3).reduce((n, f) => n + (f.atPaywall || f.couldWin), 0);
+  const sections = [
+    { id: "answer", label: "Answer" },
+    { id: "fixes", label: "Fixes" },
+    { id: "screens", label: "Screens" },
+    { id: "why", label: "Why" },
+    ...(demo ? [] : [{ id: "revenue", label: "Revenue" }, { id: "next", label: "Next steps" }, { id: "share", label: "Share" }]),
+  ];
+
   return (
-    <div className="mx-auto max-w-4xl space-y-12">
+    <ReportShell sections={sections}>
       {/* ---------- 1. The answer ---------- */}
-      <section className="paper bleed py-12 sm:py-16">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <div className="flex items-center justify-between gap-4">
-            <span className="t-label truncate">app test · {stats.samples} samples of {stats.perSample}</span>
-            <span className="t-label shrink-0">report</span>
-          </div>
-          <div className="mt-8 grid gap-8 md:grid-cols-[auto_1fr] md:items-end md:gap-12">
-            <div>
-              <p className="flex items-end gap-2">
-                <span className="t-number text-8xl text-accent sm:text-9xl">{middle}</span>
-                <span className="t-number pb-2 text-3xl text-faint sm:text-4xl">/{stats.perSample}</span>
-              </p>
-              <p className="mt-2 text-lg font-medium">would {goal}</p>
-              <p className="mt-1 text-sm text-muted">range across 3 crowds: {rangeText(stats.convert)}</p>
-            </div>
-            <div className="space-y-4">
-              <p className="t-lead text-fg">{advice.summary}</p>
-              <div className="flex flex-wrap gap-2">
-                {worst?.quit > 0 && (
-                  <span className="pill">
-                    Most quit at screen {worst.n} ({worst.type}) · {pct(worst.quitPct)}
-                  </span>
-                )}
-                {stats.hasPaywall && <span className="pill">Reached the paywall: {rangeText(stats.reachedPaywall)}</span>}
-                {failed.some((c) => c.kind === "store rule") && <span className="pill pill-no">Store rules may be flagged</span>}
-              </div>
-              {!demo && (
-                <a href="#share" className="btn btn-primary h-11 px-5 text-sm">
-                  Send this score
-                </a>
-              )}
-            </div>
-          </div>
-          {stats.benchmark && (
-            <p className="mt-8 border-t border-line pt-4 text-sm text-muted">
-              <span className="font-medium text-fg">Reality check: </span>
-              {stats.benchmark.note} <span className="text-faint">Source: {stats.benchmark.source}.</span>
-            </p>
-          )}
+      <ReportHero
+        label={isGame ? "game first session + shop" : "app onboarding + paywall"}
+        tag={`${stats.samples} crowds of ${stats.perSample}`}
+        value={middle}
+        total={stats.perSample}
+        headline={`would ${goal}`}
+        sub={`range across 3 crowds: ${rangeText(stats.convert)}`}
+        summary={advice.summary}
+        pills={[
+          ...(worst?.quit > 0 ? [{ text: `Most quit at screen ${worst.n} (${worst.type}) · ${pct(worst.quitPct)}`, warn: true }] : []),
+          ...(stats.hasPaywall ? [{ text: `Reached the paywall: ${rangeText(stats.reachedPaywall)}` }] : []),
+          ...(failed.some((c) => c.kind === "store rule") ? [{ text: "Store rules may be flagged", warn: true }] : []),
+        ]}
+        yes={middle}
+        crowdTotal={stats.perSample}
+        crowdCaption={`one dot = one simulated customer · the middle of 3 crowds`}
+        actions={
+          !demo ? (
+            <>
+              <a href="#share" className="btn btn-primary h-11 px-5 text-sm">
+                Send this score
+              </a>
+              <a href="#fixes" className="btn btn-secondary h-11 px-5 text-sm">
+                See what to fix
+              </a>
+            </>
+          ) : undefined
+        }
+      >
+        {stats.benchmark && (
+          <p className="mt-8 border-t border-white/10 pt-4 text-sm text-muted">
+            <span className="font-medium text-fg">Reality check: </span>
+            {stats.benchmark.note} <span className="text-faint">Source: {stats.benchmark.source}.</span>
+          </p>
+        )}
+      </ReportHero>
+
+      {/* ---------- 2. Fixes ---------- */}
+      <section id="fixes" className="scroll-mt-32">
+        <p className="t-label">edit these first</p>
+        <h2 className="mt-2 text-3xl font-semibold tracking-tight">Fix these first</h2>
+        <div className="mt-6 space-y-3" role="list">
+          {fixes.map((f, i) => (
+            <FixCard
+              key={f.title}
+              n={i + 1}
+              title={f.title}
+              problem={f.problem}
+              change={f.change}
+              win={f.atPaywall || f.couldWin}
+              winLabel={f.atPaywall ? "said no at the paywall" : "had this objection"}
+              meta={f.screen > 0 ? `screen ${f.screen}` : undefined}
+            />
+          ))}
         </div>
       </section>
 
-      {/* ---------- 2. Fixes ---------- */}
-      <section>
-        <p className="t-label">fix these first</p>
-        <ol className="mt-4 divide-y divide-line border-y border-line">
-          {fixes.map((f, i) => (
-            <li key={f.title} className="grid gap-2 py-6 sm:grid-cols-[3rem_1fr_auto] sm:gap-6">
-              <span className="t-label pt-1">0{i + 1}</span>
-              <div className="min-w-0">
-                <p className="t-h3">{f.title}</p>
-                <p className="mt-2 text-muted">{f.problem}</p>
-                <p className="mt-2">
-                  <span className="font-medium">Do this: </span>
-                  {f.change}
-                </p>
-                {f.screen > 0 && <p className="t-label mt-2">screen {f.screen}</p>}
-              </div>
-              {f.couldWin > 0 && (
-                <div className="sm:text-right">
-                  <p className="t-number text-3xl">+{f.atPaywall || f.couldWin}</p>
-                  <p className="text-xs text-muted">{f.atPaywall ? "said no at the paywall" : "had this objection"}</p>
-                </div>
-              )}
-            </li>
-          ))}
-        </ol>
-      </section>
-
       {/* ---------- 3. Screen by screen ---------- */}
-      <section>
+      <section id="screens" className="scroll-mt-32">
         <p className="t-label">where people quit</p>
         <h2 className="t-h2 mt-2">Screen by screen</h2>
         <ol className="mt-6 flex gap-4 overflow-x-auto pb-4">
@@ -206,7 +211,7 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
       )}
 
       {/* ---------- 6. Why, quotes, segments ---------- */}
-      <section>
+      <section id="why" className="scroll-mt-32">
         <p className="t-label">why people said no</p>
         <ul className="mt-4 space-y-4">
           {stats.objections.slice(0, 6).map((o) => (
@@ -266,6 +271,17 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
       {/* free follow-up questions (and "something's wrong" fixes) */}
       {!demo && (
         <>
+          <ReportRevenue
+            testId={run.id}
+            url={run.url}
+            kind={kind}
+            yes={middle}
+            total={stats.perSample}
+            goal={goal}
+            fixes={fixes.map((f) => ({ title: f.title, wins: f.atPaywall || f.couldWin }))}
+            createdAt={run.createdAt}
+          />
+          <NextSteps kind={kind} fixWins={fixWins} retestHref={newVersionHref} newVersionHref={newVersionHref} />
           <ShareBox testId={run.id} headline={`${middle} of ${stats.perSample} simulated customers would ${goal} in my app's onboarding + paywall`} />
           <AskBox testId={run.id} rerunHref="/app?kind=app" />
           <ActualBox testId={run.id} kind="app" />
@@ -276,6 +292,6 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
       <p className="text-center text-xs text-faint">
         Simulated customers show buying intent, not real purchases. Cost of this test: ${run.totalCostUsd?.toFixed(3) ?? "?"}.
       </p>
-    </div>
+    </ReportShell>
   );
 }

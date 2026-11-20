@@ -72,7 +72,7 @@ export default function AskBox({ testId, rerunHref }: { testId: string; rerunHre
 
   const used = remaining === 0;
   return (
-    <section className="card p-6 sm:p-8" aria-labelledby="ask-title">
+    <section id="ask" className="card scroll-mt-32 p-6 sm:p-8" aria-labelledby="ask-title">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="ask-title" className="t-h3">
           Ask about this test
