@@ -45,16 +45,26 @@ type Clickable = {
 // Thrown when the site shows a bot-protection page instead of its content.
 export class BlockedError extends Error {}
 
+// The whole crawl gets a hard time limit, so one heavy or stalled site can't leave a person watching
+// a spinner for minutes. The browser is closed when the time is up, which makes every waiting step stop.
+export const CRAWL_LIMIT_MS = 120_000;
+export class SlowSiteError extends Error {}
+
 // options.id / options.store / options.prefix: where screenshots go. The
 // worker passes Supabase Storage; benches use a local folder by default.
 export async function crawlSite(
   url: string,
-  options: { id?: string; store?: BlobStore; prefix?: string; mode?: "website" | "store" } = {},
+  options: { id?: string; store?: BlobStore; prefix?: string; mode?: "website" | "store"; limitMs?: number } = {},
 ): Promise<Crawl> {
   const id = options.id ?? newId();
   const files: FileTarget = { store: options.store ?? new LocalBlobStore(), prefix: options.prefix ?? `local/crawls/${id}` };
   const costs: CallCost[] = [];
   const browser = await chromium.launch();
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    void browser.close().catch(() => {});
+  }, options.limitMs ?? CRAWL_LIMIT_MS);
   try {
     // A normal desktop Chrome identity, at our usual window size.
     const context = await browser.newContext({ ...devices["Desktop Chrome"], viewport: VIEWPORT });
@@ -123,8 +133,16 @@ export async function crawlSite(
     hero.mobileScreenshotFile = await phoneShot;
 
     return { id, url, createdAt: new Date().toISOString(), pages, costs, filesPrefix: files.prefix };
+  } catch (err) {
+    if (timedOut) {
+      throw new SlowSiteError(
+        "That site took more than 2 minutes to open, so we stopped. It may be very heavy, slow, or blocking automated visitors. Try the page's main address, or try again in a few minutes.",
+      );
+    }
+    throw err;
   } finally {
-    await browser.close(); // always close, even if something failed
+    clearTimeout(timer);
+    await browser.close().catch(() => {}); // always close, even if something failed
   }
 }
 
@@ -532,7 +550,8 @@ async function chooseClicks(
           `${c.hidden ? " (in a hidden menu)" : ` (${c.top < 800 ? "top of page" : "further down"})`}`,
       )
       .join("\n");
-    const response = await anthropic.messages.parse({
+    const response = await anthropic.messages.parse(
+      {
       model: HAIKU,
       max_tokens: 1000,
       output_config: { effort: "low", format: zodOutputFormat(ChoiceSchema) },
@@ -548,7 +567,9 @@ async function chooseClicks(
             `Use empty lists if there is no good match.`,
         },
       ],
-    });
+      },
+      { timeout: 45_000, maxRetries: 1 }, // a stalled request must not hold up the crawl (the backup word-matching takes over)
+    );
     costs.push(costOfCall("crawl: choose clicks", response.model, response.usage));
     const c = response.parsed_output;
     if (!c) return backup;

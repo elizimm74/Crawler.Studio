@@ -27,6 +27,7 @@ const CASES = [
   { name: "mega-menu builds links on hover", dir: "sites/megamenu", start: "/", pricing: "/plans.html", signup: "/signup.html" },
   { name: "STORE: product with a required size -> cart", dir: "sites/store", start: "/", mode: "store", pricing: "/products/astra-hoodie", signup: "/cart", cartFilled: true },
   { name: "STORE: products only via 'Shop all' -> cart", dir: "sites/store2", start: "/", mode: "store", pricing: "/products/halo-cap", signup: "/cart", cartFilled: true },
+  { name: "hard time limit stops a slow crawl", dir: "sites/slow", start: "/", limitMs: 800, tooSlow: true },
   { name: "bot-check page", dir: "sites/blocked", start: "/", blocked: true },
   { name: "page doesn't exist (404)", dir: "sites/blocked", start: "/no-such-page.html", missing: true },
 ];
@@ -71,11 +72,11 @@ function check(c, crawl) {
     const t0 = Date.now();
     let problems;
     try {
-      const crawl = await crawlSite(url, c.mode ? { mode: c.mode } : {});
-      problems = c.blocked || c.missing ? [`expected the crawler to stop with an error, but it crawled the page`] : check(c, crawl);
+      const crawl = await crawlSite(url, { ...(c.mode ? { mode: c.mode } : {}), ...(c.limitMs ? { limitMs: c.limitMs } : {}) });
+      problems = c.tooSlow ? ["the time limit did not stop the crawl"] : c.blocked || c.missing ? [`expected the crawler to stop with an error, but it crawled the page`] : check(c, crawl);
     } catch (err) {
       const msg = String(err && err.message);
-      const expected = (c.blocked && /block|bot|checking your browser/i.test(msg)) || (c.missing && /not found|no page/i.test(msg));
+      const expected = (c.blocked && /block|bot|checking your browser/i.test(msg)) || (c.missing && /not found|no page/i.test(msg)) || (c.tooSlow && /took more than 2 minutes/i.test(msg));
       problems = expected ? [] : [`crashed: ${msg.split("\n")[0]}`];
     }
     server.close();

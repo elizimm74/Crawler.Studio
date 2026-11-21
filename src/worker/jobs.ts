@@ -1,7 +1,7 @@
 // The two kinds of work the worker does. Each takes a claimed job, does the
 // slow part, and saves the result to the database.
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { crawlSite, BlockedError, MissingPageError } from "../lib/crawl";
+import { crawlSite, BlockedError, MissingPageError, SlowSiteError } from "../lib/crawl";
 import { understandSite, EMPTY_PROFILE } from "../lib/suggest";
 import { runTest, type Run } from "../lib/pipeline";
 import { logRunCost } from "../lib/cost";
@@ -58,7 +58,7 @@ export async function analyzeJob(job: Job, ctx: Ctx) {
     crawl = await crawlSite(row.url, { id: job.ref_id, store: ctx.store, prefix: `${job.user_id}/crawls/${job.ref_id}`, mode });
   } catch (err) {
     // A site that's missing or blocks bots: a clear message, not a retry.
-    if (err instanceof BlockedError || err instanceof MissingPageError) {
+    if (err instanceof BlockedError || err instanceof MissingPageError || err instanceof SlowSiteError) {
       await ctx.db.from("crawls").update({ status: "error", error: err.message, updated_at: now() }).eq("id", job.ref_id);
       return;
     }

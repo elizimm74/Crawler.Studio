@@ -109,7 +109,8 @@ export async function understandSite(
     .join("\n\n");
   const missing = (["pricing", "signup"] as const).filter((s) => !crawl.pages.some((p) => p.step === s));
 
-  const response = await anthropic.messages.parse({
+  const response = await anthropic.messages.parse(
+    {
     model: HAIKU,
     max_tokens: 4000,
     output_config: { effort: "low", format: zodOutputFormat(UnderstandSchema) },
@@ -135,7 +136,9 @@ export async function understandSite(
           AUDIENCE_INSTRUCTIONS,
       },
     ],
-  });
+    },
+    { timeout: 60_000, maxRetries: 1 }, // fails with a clear error instead of hanging for minutes
+  );
   assertNotRefused(response.stop_reason, "understand site");
 
   const s = response.parsed_output;
