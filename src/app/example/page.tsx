@@ -24,7 +24,7 @@ export default async function Example({ searchParams }: { searchParams: Promise<
         <div>
           <p className="t-label">example report · made-up data</p>
           <p className="mt-1 text-sm text-muted">
-            This is a pretend {app ? "habit app" : "meal-planning site"}. Your report looks like this, with your real screens, prices and customers.
+            This is a pretend {app ? "meal-planning app (MealMate, our own drawings)" : "meal-planning site"}. Your report looks like this, with your real screens, prices and customers.
           </p>
         </div>
         <Link href="/onboarding" className="btn btn-primary h-11 shrink-0 px-5">

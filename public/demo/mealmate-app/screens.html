@@ -1,0 +1,168 @@
+<!doctype html>
+<!--
+  Seven ORIGINAL mock screens of "MealMate", a pretend meal-planning app, for Crawler's /example app report.
+  The FLOW follows a pattern common to many subscription apps (welcome -> questions -> permission -> "your plan is
+  ready" -> sign-up -> free-trial paywall with a timeline), but the design, words, colours and drawings are our own.
+  Do NOT paste in other apps' real screenshots: their designs belong to them.
+  Render with:  node scripts/render-app-screens.cjs mealmate   (writes 1.jpg ... 7.jpg + overview.png here)
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MealMate screens</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root { --cream: #fbf7ef; --green: #1f5d3f; --green2: #2f7a55; --leaf: #8cc084; --ink: #1d2420; --muted: #6b726d; --line: #e7e0d2; --tomato: #e0674b; --sun: #f2b544; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #20231f; font-family: Geist, system-ui, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .row { display: flex; gap: 28px; padding: 28px; flex-wrap: nowrap; }
+  .screen { position: relative; width: 390px; height: 844px; overflow: hidden; flex: none; background: var(--cream); display: flex; flex-direction: column; padding: 0 24px; }
+  .status { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 12px 6px 0; font-weight: 600; font-size: 15px; }
+  .status .ic { display: flex; gap: 5px; align-items: center; }
+  .bars { display: flex; gap: 2px; align-items: flex-end; } .bars i { width: 3px; background: var(--ink); border-radius: 1px; }
+  .batt { width: 24px; height: 11px; border: 1.5px solid var(--ink); border-radius: 3px; padding: 1px; } .batt i { display: block; height: 100%; width: 70%; background: var(--ink); border-radius: 1px; }
+  .home { position: absolute; bottom: 8px; left: 50%; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; background: var(--ink); opacity: .85; }
+  .prog { display: flex; gap: 6px; margin-top: 14px; } .prog i { flex: 1; height: 4px; border-radius: 2px; background: var(--line); } .prog i.on { background: var(--green); }
+  .back { font-size: 22px; color: var(--ink); margin-top: 6px; height: 28px; }
+  h1 { font-family: Fraunces, Georgia, serif; font-weight: 700; font-size: 34px; line-height: 1.08; letter-spacing: -.02em; }
+  .sub { margin-top: 10px; font-size: 16px; color: var(--muted); line-height: 1.45; }
+  .btn { display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 16px; background: var(--green); color: #fff; font-weight: 600; font-size: 17px; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+  .foot { margin-top: auto; padding-bottom: 34px; display: flex; flex-direction: column; gap: 12px; }
+  .opt { display: flex; align-items: center; gap: 14px; padding: 16px; border: 1.5px solid var(--line); border-radius: 16px; background: #fff; font-weight: 500; font-size: 16px; }
+  .opt .em { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+  .opt.sel { border-color: var(--green); box-shadow: 0 0 0 2px rgb(31 93 63 / .15); }
+  .tick { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line); }
+  .opt.sel .tick { background: var(--green); border-color: var(--green); box-shadow: inset 0 0 0 4px #fff; }
+  .small { font-size: 13px; color: var(--muted); text-align: center; }
+  .card { background: #fff; border: 1.5px solid var(--line); border-radius: 20px; padding: 16px; }
+  .logo { display: flex; align-items: center; gap: 8px; font-family: Fraunces, serif; font-weight: 700; font-size: 20px; color: var(--green); }
+</style>
+</head>
+<body>
+<div class="row">
+
+  <!-- 1. welcome -->
+  <div class="screen" id="s1">
+    <div class="status"><span>9:41</span><span class="ic"><span class="bars"><i style="height:4px"></i><i style="height:6px"></i><i style="height:8px"></i><i style="height:10px"></i></span><span class="batt"><i></i></span></span></div>
+    <div class="logo" style="margin-top:14px"><svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="12" fill="#1f5d3f"/><path d="M8 15c2-6 8-8 11-8-1 4-3 10-10 10" fill="#8cc084"/></svg> MealMate</div>
+    <svg viewBox="0 0 340 340" width="342" height="342" style="margin:18px auto 0;display:block" aria-hidden="true">
+      <circle cx="170" cy="170" r="150" fill="#efe6d3"/><circle cx="170" cy="170" r="122" fill="#fff"/><circle cx="170" cy="170" r="108" fill="#fbf7ef"/>
+      <path d="M100 150c18-34 64-48 92-30-12 32-58 52-92 30z" fill="#8cc084"/><path d="M110 148c30-10 58-14 80-28" stroke="#2f7a55" stroke-width="3" fill="none"/>
+      <circle cx="210" cy="140" r="26" fill="#e0674b"/><circle cx="203" cy="133" r="6" fill="#f08a72"/>
+      <ellipse cx="160" cy="215" rx="58" ry="32" fill="#f2b544"/><ellipse cx="150" cy="208" rx="18" ry="8" fill="#f7cd77"/>
+      <circle cx="235" cy="205" r="14" fill="#8cc084"/><circle cx="250" cy="185" r="11" fill="#2f7a55"/><circle cx="115" cy="200" r="9" fill="#e0674b"/>
+    </svg>
+    <h1 style="margin-top:22px;text-align:center">A week of meals, planned in 2 minutes</h1>
+    <p class="sub" style="text-align:center">Recipes, macros and one grocery list for the whole week.</p>
+    <div class="foot"><div class="btn">Get started</div><p class="small">Already have an account? <b style="color:var(--ink)">Sign in</b></p></div>
+    <div class="home"></div>
+  </div>
+
+  <!-- 2. goal question -->
+  <div class="screen" id="s2">
+    <div class="status"><span>9:41</span><span class="ic"><span class="bars"><i style="height:4px"></i><i style="height:6px"></i><i style="height:8px"></i><i style="height:10px"></i></span><span class="batt"><i></i></span></span></div>
+    <div class="back">‹</div>
+    <div class="prog"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+    <h1 style="margin-top:24px">What's your main goal?</h1>
+    <p class="sub">We'll shape your plan around it.</p>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:24px">
+      <div class="opt sel"><span class="em" style="background:#e5f1e2">🥗</span>Eat healthier<span class="tick"></span></div>
+      <div class="opt"><span class="em" style="background:#fbecd2">💸</span>Spend less on food<span class="tick"></span></div>
+      <div class="opt"><span class="em" style="background:#fbe2dc">⚖️</span>Lose weight<span class="tick"></span></div>
+      <div class="opt"><span class="em" style="background:#e3ecf7">⏱️</span>Cook faster on weeknights<span class="tick"></span></div>
+    </div>
+    <div class="foot"><div class="btn">Continue</div></div>
+    <div class="home"></div>
+  </div>
+
+  <!-- 3. household question -->
+  <div class="screen" id="s3">
+    <div class="status"><span>9:41</span><span class="ic"><span class="bars"><i style="height:4px"></i><i style="height:6px"></i><i style="height:8px"></i><i style="height:10px"></i></span><span class="batt"><i></i></span></span></div>
+    <div class="back">‹</div>
+    <div class="prog"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+    <h1 style="margin-top:24px">How many people do you cook for?</h1>
+    <p class="sub">So portions and your grocery list come out right.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px">
+      <div class="card" style="text-align:center;padding:22px 10px"><div style="font-family:Fraunces,serif;font-size:36px;font-weight:700">1</div><div class="small">Just me</div></div>
+      <div class="card" style="text-align:center;padding:22px 10px;border-color:var(--green);box-shadow:0 0 0 2px rgb(31 93 63 / .15)"><div style="font-family:Fraunces,serif;font-size:36px;font-weight:700;color:var(--green)">2</div><div class="small">Two of us</div></div>
+      <div class="card" style="text-align:center;padding:22px 10px"><div style="font-family:Fraunces,serif;font-size:36px;font-weight:700">3–4</div><div class="small">Small family</div></div>
+      <div class="card" style="text-align:center;padding:22px 10px"><div style="font-family:Fraunces,serif;font-size:36px;font-weight:700">5+</div><div class="small">Big household</div></div>
+    </div>
+    <div class="foot"><div class="btn">Continue</div></div>
+    <div class="home"></div>
+  </div>
+
+  <!-- 4. notifications -->
+  <div class="screen" id="s4">
+    <div class="status"><span>9:41</span><span class="ic"><span class="bars"><i style="height:4px"></i><i style="height:6px"></i><i style="height:8px"></i><i style="height:10px"></i></span><span class="batt"><i></i></span></span></div>
+    <div class="back">‹</div>
+    <div class="prog"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+    <div style="margin:46px auto 0;width:150px;height:150px;border-radius:44px;background:#e5f1e2;display:flex;align-items:center;justify-content:center">
+      <svg width="74" height="74" viewBox="0 0 24 24" fill="none" stroke="#1f5d3f" stroke-width="1.6" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </div>
+    <h1 style="margin-top:30px;text-align:center">Get a nudge before dinner?</h1>
+    <p class="sub" style="text-align:center">We'll remind you what's cooking tonight and when to defrost.</p>
+    <div class="card" style="margin-top:26px;display:flex;gap:12px;align-items:center"><div class="logo" style="font-size:0"><svg width="34" height="34" viewBox="0 0 26 26"><circle cx="13" cy="13" r="12" fill="#1f5d3f"/><path d="M8 15c2-6 8-8 11-8-1 4-3 10-10 10" fill="#8cc084"/></svg></div><div><b style="font-size:14px">Tonight: lemon chicken traybake</b><div class="small" style="text-align:left">Take the chicken out of the freezer 🍋</div></div></div>
+    <div class="foot"><div class="btn">Allow notifications</div><p class="small" style="font-weight:500">Not now</p></div>
+    <div class="home"></div>
+  </div>
+
+  <!-- 5. plan ready -->
+  <div class="screen" id="s5">
+    <div class="status"><span>9:41</span><span class="ic"><span class="bars"><i style="height:4px"></i><i style="height:6px"></i><i style="height:8px"></i><i style="height:10px"></i></span><span class="batt"><i></i></span></span></div>
+    <div class="prog" style="margin-top:20px"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+    <div style="margin:22px auto 0;width:46px;height:46px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></div>
+    <h1 style="margin-top:16px;text-align:center">Your week is ready</h1>
+    <p class="sub" style="text-align:center">14 dinners, 1 grocery list, about $68 for two.</p>
+    <div class="card" style="margin-top:20px">
+      <p style="font-weight:600;font-size:15px">Daily targets <span class="small" style="float:right">edit any time</span></p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;text-align:center">
+        <div><svg width="64" height="64" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#efe6d3" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="#1f5d3f" stroke-width="4" stroke-dasharray="70 100" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><div style="font-weight:600;font-size:14px">1,950</div><div class="small">kcal</div></div>
+        <div><svg width="64" height="64" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#efe6d3" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="#e0674b" stroke-width="4" stroke-dasharray="58 100" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><div style="font-weight:600;font-size:14px">120g</div><div class="small">protein</div></div>
+        <div><svg width="64" height="64" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#efe6d3" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="#f2b544" stroke-width="4" stroke-dasharray="64 100" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><div style="font-weight:600;font-size:14px">210g</div><div class="small">carbs</div></div>
+        <div><svg width="64" height="64" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#efe6d3" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="#8cc084" stroke-width="4" stroke-dasharray="46 100" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><div style="font-weight:600;font-size:14px">65g</div><div class="small">fats</div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px;display:flex;justify-content:space-between;align-items:center"><div><b style="font-size:15px">Mon · Lemon chicken traybake</b><div class="small" style="text-align:left">35 min · 540 kcal</div></div><span style="font-size:26px">🍋</span></div>
+    <div class="foot"><div class="btn">See my plan</div></div>
+    <div class="home"></div>
+  </div>
+
+  <!-- 6. sign-up wall -->
+  <div class="screen" id="s6">
+    <div class="status"><span>9:41</span><span class="ic"><span class="bars"><i style="height:4px"></i><i style="height:6px"></i><i style="height:8px"></i><i style="height:10px"></i></span><span class="batt"><i></i></span></span></div>
+    <div class="back">‹</div>
+    <div class="prog"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+    <h1 style="margin-top:28px">Save your plan</h1>
+    <p class="sub">Create a free account to see your week and grocery list.</p>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:30px">
+      <div class="btn" style="background:#000"> Continue with Apple</div>
+      <div class="btn ghost">Continue with Google</div>
+      <div class="btn ghost">Continue with email</div>
+    </div>
+    <div class="foot"><p class="small">By continuing you agree to our Terms and Privacy Policy.</p></div>
+    <div class="home"></div>
+  </div>
+
+  <!-- 7. paywall: free trial with a timeline -->
+  <div class="screen" id="s7">
+    <div class="status"><span>9:41</span><span class="ic"><span class="bars"><i style="height:4px"></i><i style="height:6px"></i><i style="height:8px"></i><i style="height:10px"></i></span><span class="batt"><i></i></span></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;height:28px"><span style="color:#cfc8b8;font-size:16px">✕</span><span></span></div>
+    <h1 style="margin-top:10px;text-align:center;font-size:31px">Try MealMate Plus free for 7 days</h1>
+    <div style="margin-top:24px;display:flex;flex-direction:column;gap:18px;padding-left:4px">
+      <div style="display:flex;gap:14px"><span style="width:34px;height:34px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex:none">✓</span><div><b>Today</b><div class="small" style="text-align:left">Every recipe, smart grocery lists and swaps.</div></div></div>
+      <div style="display:flex;gap:14px"><span style="width:34px;height:34px;border-radius:50%;background:var(--sun);color:#fff;display:flex;align-items:center;justify-content:center;flex:none">🔔</span><div><b>Day 5</b><div class="small" style="text-align:left">We remind you before your trial ends.</div></div></div>
+      <div style="display:flex;gap:14px"><span style="width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;flex:none">★</span><div><b>Day 7</b><div class="small" style="text-align:left">Your plan starts. Cancel any time before.</div></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px">
+      <div class="card" style="padding:14px"><div class="small" style="text-align:left">Monthly</div><b style="font-size:18px">$7.99<span class="small"> /mo</span></b></div>
+      <div class="card" style="padding:14px;border-color:var(--green);box-shadow:0 0 0 2px rgb(31 93 63 / .15);position:relative"><span style="position:absolute;top:-11px;left:12px;background:var(--green);color:#fff;font-size:11px;font-weight:600;border-radius:99px;padding:2px 8px">BEST VALUE</span><div class="small" style="text-align:left">Yearly</div><b style="font-size:18px">$3.33<span class="small"> /mo</span></b></div>
+    </div>
+    <div class="foot" style="gap:10px"><p class="small" style="font-weight:600;color:var(--ink)">✓ No payment due now</p><div class="btn">Start my free week</div><p class="small" style="font-size:11px">7 days free, then $39.99 per year</p></div>
+    <div class="home"></div>
+  </div>
+
+</div>
+</body>
+</html>

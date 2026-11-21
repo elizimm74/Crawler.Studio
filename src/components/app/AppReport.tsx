@@ -116,8 +116,8 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
             const heavy = s.quit > 0 && s === worst;
             return (
               <li key={s.n} className="w-32 shrink-0 sm:w-36">
-                {demo ? (
-                  // the example report has no real screenshots: draw a simple phone screen
+                {demo && !shot.file.startsWith("/") ? (
+                  // an example without pictures: draw a simple phone screen
                   <div
                     className={`flex aspect-[9/16] w-full flex-col rounded-lg border bg-white p-3 ${heavy ? "border-white ring-2 ring-white" : "border-line"}`}
                     role="img"
@@ -131,7 +131,7 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={fileUrl(run.screensPrefix, shot.file)}
+                    src={shot.file.startsWith("/") ? shot.file : fileUrl(run.screensPrefix, shot.file)}
                     alt={`Screen ${s.n}: ${s.title || s.type}`}
                     className={`aspect-[9/16] w-full rounded-lg border object-cover object-top ${heavy ? "border-white ring-2 ring-white" : "border-line"}`}
                   />
