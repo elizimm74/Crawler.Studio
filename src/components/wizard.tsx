@@ -135,6 +135,11 @@ export async function waitForCrawl(crawlId: string) {
     if (process.env.NODE_ENV === "development" && data.status === "queued" && i >= 20) {
       throw new Error("No worker picked this up after 30 seconds. Start it in a second Terminal window: npm run worker:dev");
     }
+    // On the live site: nothing has started the job after ~60s = no worker is running (or all are busy).
+    // Say so plainly instead of spinning for 3 minutes. The job stays queued and runs when a worker is back.
+    if (data.status === "queued" && i >= 40) {
+      throw new Error("Crawler's test machine isn't running right now, so your analysis is waiting in line. It will run as soon as the machine is back. Please try again in a little while.");
+    }
   }
   throw new Error("Reading the site is taking too long. Is the worker running?");
 }
