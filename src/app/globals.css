@@ -1235,3 +1235,8 @@ a.nextcard:hover .arrow { transform: translateX(4px); }
 }
 html[data-calm] .report-stage::before { animation: none; }
 html[data-calm] .pathbar > i, html[data-calm] a.pathstep, html[data-calm] a.nextcard { transition: none; }
+
+/* ---- home screen banners (ScrollMarquee size="md") ---- */
+/* sized by BOTH width and height, so short laptop screens still fit banner + name + button + banner */
+.marquee-md .marquee-word { font-size: clamp(2.2rem, min(7.5vw, 10vh), 7rem); -webkit-text-stroke-width: 1.5px; }
+.home-hero .t-wordmark { font-size: clamp(4.5rem, min(21vw, 26vh), 17rem); }
