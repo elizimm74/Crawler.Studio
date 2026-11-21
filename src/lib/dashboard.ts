@@ -124,7 +124,27 @@ export type PlanData = {
   left: number;
   inviteLink: string;
   referrals: { count: number; needed: number; code: string };
+  billing?: boolean; // has paid before (a Stripe customer): show "Manage billing"
+  subscription?: Subscription | null;
 };
+
+// The monthly plan, as the Stripe webhook last saw it (migration 0013).
+export type Subscription = { plan: string; status: string; renews: string | null; cancelling: boolean };
+
+// One honest line about the plan for the dashboard: what it is and what happens next.
+export function subscriptionLine(sub: Subscription | null | undefined, now = new Date()): { text: string; warn: boolean } | null {
+  if (!sub) return null;
+  const name = sub.plan === "studio" ? "Studio" : "Launch";
+  const date = sub.renews ? new Date(sub.renews) : null;
+  const day = date && date > now ? date.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }) : null;
+  if (sub.status === "past_due" || sub.status === "unpaid") return { text: `${name}: payment failed. Update your card to keep your plan.`, warn: true };
+  if (sub.status === "incomplete") return { text: `${name}: waiting for the first payment.`, warn: true };
+  if (sub.status === "active" || sub.status === "trialing") {
+    if (sub.cancelling) return { text: day ? `${name}: cancelled, active until ${day}. Your tests stay.` : `${name}: cancelled. Your tests stay.`, warn: false };
+    return { text: day ? `${name}: renews ${day}` : `${name}: active`, warn: false };
+  }
+  return { text: `${name} ended. Your unused tests stay.`, warn: false };
+}
 
 export type Trends = { enough: false; tests: number; needed: number } | { enough: true; tests: number; blockers: { category: string; pct: number }[] };
 

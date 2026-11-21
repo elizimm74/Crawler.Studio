@@ -125,9 +125,9 @@ test("answer check: copy-paste crowds get flagged", () => {
   return q.flags.length === 3 && q.uniqueQuotesPct === 5 ? null : JSON.stringify(q);
 });
 
-// ---------- payments: Stripe signature + what counts as a paid checkout ----------
+// ---------- payments: Stripe signature + monthly subscriptions ----------
 const crypto = require("crypto");
-const { verifyStripeSignature, readPaidCheckout, checkoutForm, paidPlan } = require(path.join(lib, "stripe.js"));
+const { verifyStripeSignature, checkoutForm, paidPlan } = require(path.join(lib, "stripe.js"));
 const SECRET = "whsec_bench_only";
 const sign = (payload, t, secret = SECRET) => `t=${t},v1=${crypto.createHmac("sha256", secret).update(`${t}.${payload}`).digest("hex")}`;
 const NOW = 1_800_000_000;
@@ -147,19 +147,63 @@ test("any one of several v1 signatures may match (Stripe secret rotation)", () =
   return verifyStripeSignature('{"a":1}', `t=${NOW},v1=${"0".repeat(64)},${good}`, SECRET, NOW) ? null : "rejected";
 });
 const UID = "11111111-2222-3333-4444-555555555555";
-const ev = (o, type = "checkout.session.completed") => ({ type, data: { object: { id: "cs_test_abcdefgh123", payment_status: "paid", amount_total: 1900, currency: "usd", metadata: { user_id: UID, plan_id: "launch" }, ...o } } });
-test("a paid Launch Pack checkout adds 5 tests (tests come from OUR plans, not Stripe)", () => {
-  const p = readPaidCheckout(ev({}));
-  return p && p.plan.tests === 5 && p.userId === UID && p.amountCents === 1900 ? null : JSON.stringify(p);
+const { readInvoicePaid, readSubscription, portalConfigForm } = require(path.join(lib, "stripe.js"));
+const { subscriptionLine } = require(path.join(lib, "dashboard.js"));
+// An invoice.paid event, with our metadata where NEWER Stripe API versions put it (parent.subscription_details).
+const inv = (o = {}, meta = { user_id: UID, plan_id: "launch" }, type = "invoice.paid") => ({
+  type, data: { object: { id: "in_test_abcdefgh", status: "paid", billing_reason: "subscription_create", amount_paid: 1900, currency: "usd", parent: { subscription_details: { metadata: meta } }, ...o } },
 });
-test("unpaid, unknown pack, bad user id, overpaid amount or other events add nothing", () => {
-  const cases = [ev({ payment_status: "unpaid" }), ev({ metadata: { user_id: UID, plan_id: "free" } }), ev({ metadata: { user_id: "x", plan_id: "launch" } }), ev({ amount_total: 99999 }), ev({}, "invoice.paid")];
-  const got = cases.map(readPaidCheckout);
+test("a paid first invoice adds the plan's 5 tests (tests come from OUR plans, not Stripe)", () => {
+  const p = readInvoicePaid(inv());
+  return p && p.plan.tests === 5 && p.userId === UID && p.amountCents === 1900 && p.invoice === "in_test_abcdefgh" ? null : JSON.stringify(p);
+});
+test("a monthly renewal adds tests too; older API versions' metadata location also works", () => {
+  const renew = readInvoicePaid(inv({ billing_reason: "subscription_cycle" }));
+  const old = readInvoicePaid(inv({ parent: null, subscription_details: { metadata: { user_id: UID, plan_id: "studio" } }, amount_paid: 4900 }));
+  return renew && old && old.plan.tests === 20 ? null : JSON.stringify([renew, old]);
+});
+test("unpaid, plan-change proration, unknown plan, bad user, overpaid or other events add nothing", () => {
+  const cases = [
+    inv({ status: "open" }), inv({ billing_reason: "subscription_update" }), inv({ billing_reason: "manual" }),
+    inv({}, { user_id: UID, plan_id: "free" }), inv({}, { user_id: "x", plan_id: "launch" }), inv({ amount_paid: 99999 }),
+    inv({}, undefined, "invoice.payment_failed"), inv({}, undefined, "checkout.session.completed"),
+  ];
+  const got = cases.map(readInvoicePaid);
   return got.every((x) => x === null) ? null : JSON.stringify(got);
 });
-test("checkout price and pack come from the server's plans", () => {
+const subEv = (o = {}, type = "customer.subscription.updated") => ({
+  type, created: NOW, data: { object: { id: "sub_test_abc123", customer: "cus_test_abc123", status: "active", cancel_at_period_end: false, metadata: { user_id: UID, plan_id: "studio" }, items: { data: [{ current_period_end: NOW + 86400 * 30 }] }, ...o } },
+});
+test("subscription events: status, renew date (new API: on the item), cancel-at-month-end, deleted = canceled", () => {
+  const a = readSubscription(subEv());
+  const c = readSubscription(subEv({ cancel_at_period_end: true, items: undefined, current_period_end: NOW + 100 }));
+  const d = readSubscription(subEv({}, "customer.subscription.deleted"));
+  const bad = [readSubscription(subEv({ metadata: {} })), readSubscription(subEv({ customer: null })), readSubscription(subEv({}, "invoice.paid"))];
+  return a && a.plan.id === "studio" && a.status === "active" && a.periodEnd === new Date((NOW + 86400 * 30) * 1000).toISOString() && a.eventAt === new Date(NOW * 1000).toISOString() &&
+    c && c.cancelling && c.periodEnd && d && d.status === "canceled" && bad.every((x) => x === null)
+    ? null : JSON.stringify({ a, c, d, bad });
+});
+test("checkout is a MONTHLY subscription; price, plan and who come from the server", () => {
   const f = checkoutForm(paidPlan("studio"), { id: UID, email: "a@b.co" }, "https://crawler.test");
-  return eq([f.get("line_items[0][price_data][unit_amount]"), f.get("metadata[plan_id]"), f.get("mode"), f.get("client_reference_id"), paidPlan("free"), paidPlan("x")], ["4900", "studio", "payment", UID, null, null], "form");
+  const g = checkoutForm(paidPlan("launch"), { id: UID, email: "a@b.co", customer: "cus_123" }, "https://crawler.test");
+  return eq(
+    [f.get("line_items[0][price_data][unit_amount]"), f.get("line_items[0][price_data][recurring][interval]"), f.get("mode"), f.get("subscription_data[metadata][plan_id]"), f.get("subscription_data[metadata][user_id]"), g.get("customer"), g.get("customer_email"), paidPlan("free"), paidPlan("x")],
+    ["4900", "month", "subscription", "studio", UID, "cus_123", null, null, null],
+    "form",
+  );
+});
+test("billing page: cancel at the end of the month, no plan switching", () => {
+  const f = portalConfigForm();
+  return eq([f.get("features[subscription_cancel][mode]"), f.get("features[subscription_update][enabled]"), f.get("features[payment_method_update][enabled]")], ["at_period_end", "false", "true"], "portal");
+});
+test("plan line: renews / cancelled / payment failed / ended", () => {
+  const now = new Date("2026-11-21T00:00:00Z");
+  const r = (s) => subscriptionLine({ plan: "launch", renews: "2026-12-21T10:00:00Z", cancelling: false, ...s }, now);
+  return eq(
+    [r({ status: "active" }).text, r({ status: "active", cancelling: true }).text, r({ status: "past_due" }).warn, r({ status: "canceled" }).text, subscriptionLine(null)],
+    ["Launch: renews Dec 21", "Launch: cancelled, active until Dec 21. Your tests stay.", true, "Launch ended. Your unused tests stay.", null],
+    "lines",
+  );
 });
 
 // ---------- re-tests: before / after with the same customers ----------

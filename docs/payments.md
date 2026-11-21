@@ -1,33 +1,36 @@
-# Payments (Stripe): how it works and how to switch it on
+# Payments (Stripe): monthly subscriptions
 
 ## How it works (plain English)
-1. On `/pricing`, a signed-in person taps **Buy Launch Pack** or **Buy Studio Pack**.
-2. Our server (`/api/checkout`) asks Stripe for a checkout page. The price and the number of tests come from `src/lib/plans.ts` on OUR server, so nobody can change them in their browser.
-3. The person pays on **Stripe's** page. Crawler never sees card details.
-4. Stripe tells our server "this was paid" by calling the **webhook** (`/api/stripe/webhook`). We check Stripe's signature first; a fake call is rejected.
-5. The webhook calls `record_purchase` in the database: it saves the purchase and adds the tests (5 or 20). The checkout id is unique, so if Stripe sends the same message twice, the tests are only added once.
-6. The person lands on `/dashboard?paid=...` with a thank-you note. Bought tests never expire and always use the full 100 simulated customers.
+1. On `/pricing`, a signed-in person taps **Subscribe** on Launch ($19/month, 5 tests) or Studio ($49/month, 20 tests).
+2. Our server (`/api/checkout`) asks Stripe for a checkout page in **subscription** mode. The price and the number of tests come from `src/lib/plans.ts` on OUR server, so nobody can change them in their browser. Someone who already has a plan is sent to Manage billing instead (no double charges).
+3. The person pays on **Stripe's** page. Crawler never sees card details. Stripe then charges the card **every month** by itself.
+4. Stripe tells our server what happened by calling the **webhook** (`/api/stripe/webhook`). We check Stripe's signature first; a fake call is rejected.
+   - `invoice.paid` (the first month or a renewal) -> `record_invoice` adds that month's tests (5 or 20). The invoice id is unique, so a repeated message never adds tests twice.
+   - `customer.subscription.created / updated / deleted` -> `sync_subscription` saves the status: active, past_due (a payment failed; Stripe retries the card for a while), cancelled at month end, or ended. An older message can never overwrite a newer one.
+5. The person lands on `/dashboard?paid=...` with a thank-you note. The dashboard rail shows "Launch: renews Dec 21" (or "payment failed, update your card", or "cancelled, active until ...") and a **Manage billing** link.
+6. **Manage billing** (`/api/billing`) opens Stripe's customer portal: change card, download invoices, cancel. Cancelling stops the plan at the END of the paid month. Switching plans is turned off there: people cancel and subscribe to the other plan.
+7. Unused tests **roll over** and stay after cancelling (they were paid for). A failed payment adds no tests.
 
-Files: `src/lib/stripe.ts`, `src/app/api/checkout/route.ts`, `src/app/api/stripe/webhook/route.ts`, `src/components/BuyButton.tsx`, `supabase/migrations/0008_purchases.sql`. No Stripe package is installed (plain `fetch`).
+Files: `src/lib/stripe.ts`, `src/app/api/checkout/route.ts`, `src/app/api/billing/route.ts`, `src/app/api/stripe/webhook/route.ts`, `src/components/BuyButton.tsx`, `src/components/ManageBilling.tsx`, `supabase/migrations/0013_subscriptions.sql` (0008 = the old one-time packs; its table `purchases` now also stores paid invoices). No Stripe package is installed (plain `fetch`). The billing-portal settings are created automatically the first time someone opens Manage billing, if the Stripe account has none.
 
-## Switch it on (do this with your dad, he owns the Stripe account)
-Start in **Test mode** (the toggle in the Stripe dashboard). Test cards don't move real money.
+## Switch it on (with your dad, he owns the Stripe account)
+Start in the **Sandbox / Test mode**. Test cards don't move real money.
 
-1. **Keys:** Stripe dashboard → Developers → API keys → copy the **Secret key** (`sk_test_...`).
-2. **Webhook:** Developers → Webhooks → Add endpoint
-   - URL: `https://YOUR-SITE/api/stripe/webhook` (your real deployed address)
-   - Events: `checkout.session.completed` and `checkout.session.async_payment_succeeded`
+1. **Keys:** Stripe dashboard -> Developers -> API keys -> copy the **Secret key** (`sk_test_...`).
+2. **Webhook:** Developers -> Webhooks -> Add destination
+   - URL: `https://crawler-for-vercel.vercel.app/api/stripe/webhook`
+   - Events (select these 4): `invoice.paid`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`
    - Copy the **Signing secret** (`whsec_...`).
 3. Put them in the environment (NEVER in chat, never in git):
-   - On your Mac: `.env.local` → `STRIPE_SECRET_KEY=...` and `STRIPE_WEBHOOK_SECRET=...`
-   - On Vercel: Project → Settings → Environment Variables (same two names), plus `SUPABASE_SECRET_KEY` (the webhook needs it to add tests).
-4. Restart the site. The pricing buttons change from "Coming soon" to "Buy".
-5. Test: buy a pack with Stripe's test card `4242 4242 4242 4242`, any future date, any CVC. Check the dashboard: tests left should go up by 5 or 20.
+   - Vercel: Project -> Settings -> Environment Variables: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `SUPABASE_SECRET_KEY` (the webhook needs it to add tests). Then redeploy (upload the folder again).
+   - On your Mac (optional): the same lines in `.env.local`.
+4. The pricing buttons change from "Coming soon" to "Subscribe".
+5. Test: subscribe with Stripe's test card `4242 4242 4242 4242`, any future date, any CVC. The dashboard's tests-left should go up by 5 or 20 and the rail should say "renews ...". Then open Manage billing and cancel: it should say "cancelled, active until ...".
+   - Failed payment test: in the portal, change the card to `4000 0000 0000 0341` (attaches, then fails when charged), then in Stripe's dashboard open the subscription and use a test clock / "advance time" to the next month.
 
-Testing the webhook on your Mac before deploying needs Stripe's CLI (`stripe listen --forward-to localhost:3000/api/stripe/webhook`). That's an install, so ask first; it's easier to test right after deploying.
-
-## Before real money (switch to Live mode)
-- Live keys + a live webhook endpoint (repeat steps 1-3 in Live mode).
-- Stripe will ask your dad for business details and a bank account for payouts.
-- Add a refund policy and terms to the site (Stripe and the app stores expect them).
+## Before real money (Live mode)
+- Live keys + a live webhook destination (repeat steps 1-3 in Live mode). Finish Stripe's "required task past due" banner first.
+- Vercel's free Hobby plan is non-commercial: switch to Pro before taking real payments.
+- Add Terms (with the auto-renewal and refund rules), a Privacy page, and a support email. The pricing page already states: renews every month at the price shown until you cancel, cancel any time, keep the plan until the end of the paid month.
+- Stripe -> Settings -> Billing -> Subscriptions and emails: turn on the emails for failed payments and upcoming renewals (Stripe sends them).
 - Sales tax/VAT: consider Stripe Tax; ask an accountant when sales start.

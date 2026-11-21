@@ -3,7 +3,7 @@
   Five mock screens of a "Crawler" mobile app: 4 onboarding screens + the paywall.
   Made so Crawler can test ITSELF (an App test: upload 1.jpg ... 5.jpg in order).
   Render them with:  node scripts/render-app-screens.cjs
-  Prices match src/lib/plans.ts (one-time packs, no subscription). Example numbers are labelled as examples.
+  Prices match src/lib/plans.ts (monthly plans, cancel any time). Example numbers are labelled as examples.
 -->
 <html lang="en">
 <head>
@@ -138,24 +138,24 @@
     <span>✓ 100 simulated customers per test</span>
     <span>✓ AI explorer tries your product</span>
     <span>✓ Ranked fixes with rewritten copy</span>
-    <span>✓ Tests never expire</span>
+    <span>✓ Unused tests roll over</span>
   </div>
   <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">
     <div class="card" style="position:relative;border:3px solid #fff;outline:3px solid var(--ink)">
       <span class="pill" style="position:absolute;top:-12px;right:16px;background:var(--ink);color:#fff">best value</span>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><p style="font-weight:600;font-size:17px">Studio Pack</p><p style="font-size:14px;color:#4a4a5a">20 tests · $2.45 per test</p></div>
-        <p style="font-family:Archivo;font-weight:900;font-size:30px;letter-spacing:-0.04em;color:var(--blue)">$49</p>
+        <div><p style="font-weight:600;font-size:17px">Studio</p><p style="font-size:14px;color:#4a4a5a">20 tests a month · $2.45 per test</p></div>
+        <p style="font-family:Archivo;font-weight:900;font-size:30px;letter-spacing:-0.04em;color:var(--blue)">$49<span style="font-size:14px;letter-spacing:0">/mo</span></p>
       </div>
     </div>
     <div class="ink" style="padding:18px;display:flex;justify-content:space-between;align-items:center">
-      <div><p style="font-weight:600;font-size:17px">Launch Pack</p><p style="font-size:14px;color:rgb(255 255 255 / .65)">5 tests · $3.80 per test</p></div>
-      <p style="font-family:Archivo;font-weight:900;font-size:30px;letter-spacing:-0.04em">$19</p>
+      <div><p style="font-weight:600;font-size:17px">Launch</p><p style="font-size:14px;color:rgb(255 255 255 / .65)">5 tests a month · $3.80 per test</p></div>
+      <p style="font-family:Archivo;font-weight:900;font-size:30px;letter-spacing:-0.04em">$19<span style="font-size:14px;letter-spacing:0">/mo</span></p>
     </div>
   </div>
   <div class="bottom" style="gap:6px">
-    <p style="text-align:center;font-size:13px;color:rgb(255 255 255 / .8)">One-time purchase. No subscription. Nothing renews.</p>
-    <div class="btn white">Buy Studio Pack · $49</div>
+    <p style="text-align:center;font-size:13px;color:rgb(255 255 255 / .8)">Renews monthly until you cancel. Cancel any time.</p>
+    <div class="btn white">Subscribe to Studio · $49/month</div>
     <div class="btn ghost">Start with 1 free test</div>
     <p style="text-align:center;font-size:12px;color:rgb(255 255 255 / .65)">Restore purchases · Terms of Use · Privacy Policy</p>
   </div>

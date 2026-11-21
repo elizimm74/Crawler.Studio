@@ -1,6 +1,7 @@
 "use client";
-// "Buy" on the pricing page: asks our server for a Stripe Checkout page, then goes there.
-// Card details are typed on Stripe's page, never on Crawler's.
+// "Subscribe" on the pricing page: asks our server for a Stripe Checkout page, then goes there.
+// Card details are typed on Stripe's page, never on Crawler's. If you already have a plan, the
+// server sends you to "Manage billing" instead (no double subscriptions).
 import { useState } from "react";
 
 export default function BuyButton({ planId, label, primary }: { planId: "launch" | "studio"; label: string; primary?: boolean }) {

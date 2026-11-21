@@ -38,7 +38,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (error) {
     if (error.message.includes("CHAT_LIMIT")) {
       return NextResponse.json(
-        { error: "You've used your 2 free questions for this test. More questions come with packs (coming soon).", limitReached: true },
+        { error: "You've used your 2 free questions for this test. More questions come with paid plans (coming soon).", limitReached: true },
         { status: 402 },
       );
     }

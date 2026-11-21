@@ -126,10 +126,10 @@ export default function NextSteps({
             </span>
             <p className="mt-2 font-medium">Keep testing as you fix</p>
             <p className="text-sm text-muted">
-              {pack.name}: {pack.tests} tests for {priceLabel(pack)}, one-time ({perTestLabel(pack)}). Nothing renews.
+              {pack.name}: {pack.tests} tests a month for {priceLabel(pack)} ({perTestLabel(pack)}). Unused tests roll over; cancel any time.
             </p>
             <span className="mt-auto pt-2 text-sm text-faint">
-              See packs <span className="arrow inline-block">→</span>
+              See plans <span className="arrow inline-block">→</span>
             </span>
           </Link>
         )}

@@ -22,7 +22,8 @@ import { useTween } from "./useTween";
 import { Bar, Crowd, Icon, Spark, TrendChart } from "./viz";
 import { money } from "@/lib/revenue";
 import { PLAYS } from "@/lib/playbook";
-import { summarize, type Analysis, type DashboardData } from "@/lib/dashboard";
+import { subscriptionLine, summarize, type Analysis, type DashboardData } from "@/lib/dashboard";
+import ManageBilling from "@/components/ManageBilling";
 
 const VIEWS = [
   ["overview", "Overview"],
@@ -178,7 +179,8 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
         : data.analyses,
     [query, data.analyses],
   );
-  const planLabel = plan.unlimited ? "Admin" : plan.plan === "pack" ? "Test packs" : plan.plan === "free" ? "Free plan" : `${plan.plan} plan`;
+  const planLabel = plan.unlimited ? "Admin" : plan.plan === "pack" ? "Paid tests" : plan.plan === "free" ? "Free plan" : plan.plan === "studio" ? "Studio plan" : "Launch plan";
+  const subLine = subscriptionLine(plan.subscription);
   const summary = latest
     ? `${latest.label} ${latest.delta === null ? "scored" : latest.delta > 0 ? "climbed to" : latest.delta < 0 ? "slipped to" : "held at"} ${latest.score} of ${latest.total}.${latest.blocker ? ` Biggest blocker: ${latest.blocker}.` : ""}`
     : `Your first test is free. ${plan.customers} simulated customers try your app, game, site or store.`;
@@ -248,7 +250,9 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                     <Bar pct={(plan.used / plan.limit) * 100} />
                   </div>
                 )}
-                {!plan.unlimited && plan.plan === "free" && (
+                {subLine && <p className={`mt-3 text-xs ${subLine.warn ? "text-white" : "text-faint"}`}>{subLine.text}</p>}
+                {plan.billing && <ManageBilling className="mt-2 text-xs text-faint underline underline-offset-2 transition-colors hover:text-fg" />}
+                {!plan.unlimited && plan.plan === "free" && !plan.billing && (
                   <button type="button" onClick={() => pick("fixes")} className="mt-3 text-xs text-faint transition-colors hover:text-fg">
                     Invite {plan.referrals.needed} friends: {plan.referrals.count}/{plan.referrals.needed} →
                   </button>
@@ -296,11 +300,18 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
             </Link>
           </div>
 
+          {subLine?.warn && (
+            <p role="status" className="gpanel flex flex-wrap items-center gap-3 p-4 text-sm">
+              <span className="font-medium">{subLine.text}</span>
+              {plan.billing && <ManageBilling className="btn btn-secondary h-9 px-4 text-sm" label="Update card" />}
+            </p>
+          )}
+
           {paid && (
             <p role="status" className="gpanel p-4 text-sm">
               <span className="font-medium">Payment received. Thank you!</span>{" "}
               <span className="text-muted">
-                Your {paid === "studio" ? "Studio" : "Launch"} Pack tests are being added. Refresh in a few seconds if the count hasn&apos;t changed.
+                Your {paid === "studio" ? "Studio" : "Launch"} plan is on. This month&apos;s tests are being added; refresh in a few seconds if the count hasn&apos;t changed. It renews monthly until you cancel in Manage billing.
               </span>
             </p>
           )}

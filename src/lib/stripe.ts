@@ -1,8 +1,10 @@
-// Stripe, without the Stripe package: two small calls to Stripe's API with plain fetch.
-//   1. createCheckout(): makes a Stripe Checkout page for one pack. The PRICE comes from
-//      src/lib/plans.ts on the server, never from the browser.
-//   2. verifyStripeSignature(): proves a webhook really came from Stripe (HMAC-SHA256 with the
+// Stripe, without the Stripe package: a few calls to Stripe's API with plain fetch.
+//   1. createCheckout(): a Stripe Checkout page that starts a MONTHLY subscription. The price
+//      comes from src/lib/plans.ts on the server, never from the browser.
+//   2. createPortal(): Stripe's "Manage billing" page (change card, see invoices, cancel).
+//   3. verifyStripeSignature(): proves a webhook really came from Stripe (HMAC-SHA256 with the
 //      webhook secret, and the timestamp must be fresh so an old message can't be replayed).
+//   4. readInvoicePaid() / readSubscription(): pull what we need out of Stripe's events, or null.
 // Keys live only in environment variables (.env.local / Vercel): STRIPE_SECRET_KEY,
 // STRIPE_WEBHOOK_SECRET. They never go to the browser and never into git.
 import { createHmac, timingSafeEqual } from "crypto";
@@ -16,33 +18,81 @@ export const paidPlan = (id: unknown): PaidPlan | null => {
   return (p as PaidPlan) ?? null;
 };
 
+const UUID = /^[0-9a-f-]{36}$/;
+
 // The form Stripe expects (bracket names for nested fields). Pure, so the bench can check it.
-export function checkoutForm(plan: PaidPlan, user: { id: string; email?: string | null }, siteUrl: string): URLSearchParams {
+// `customer`: the person's existing Stripe customer id, so all their invoices stay in one place.
+export function checkoutForm(
+  plan: PaidPlan,
+  user: { id: string; email?: string | null; customer?: string | null },
+  siteUrl: string,
+): URLSearchParams {
   const f = new URLSearchParams();
-  f.set("mode", "payment");
+  f.set("mode", "subscription");
   f.set("success_url", `${siteUrl}/dashboard?paid=${plan.id}`);
   f.set("cancel_url", `${siteUrl}/pricing?cancelled=1`);
   f.set("client_reference_id", user.id);
-  if (user.email && !user.email.endsWith("privaterelay.appleid.com")) f.set("customer_email", user.email);
+  if (user.customer) f.set("customer", user.customer);
+  else if (user.email && !user.email.endsWith("privaterelay.appleid.com")) f.set("customer_email", user.email);
   f.set("line_items[0][quantity]", "1");
   f.set("line_items[0][price_data][currency]", "usd");
   f.set("line_items[0][price_data][unit_amount]", String(Math.round(plan.priceUsd * 100)));
-  f.set("line_items[0][price_data][product_data][name]", `Crawler ${plan.name} (${plan.tests} tests)`);
-  f.set("line_items[0][price_data][product_data][description]", "One-time purchase. Tests never expire. Simulated customers, buying intent.");
+  f.set("line_items[0][price_data][recurring][interval]", "month");
+  f.set("line_items[0][price_data][product_data][name]", `Crawler ${plan.name} (${plan.tests} tests a month)`);
+  // The webhook reads WHO and WHICH PLAN from the subscription's metadata (set here, by our server).
   f.set("metadata[user_id]", user.id);
   f.set("metadata[plan_id]", plan.id);
+  f.set("subscription_data[metadata][user_id]", user.id);
+  f.set("subscription_data[metadata][plan_id]", plan.id);
+  f.set("subscription_data[description]", "Simulated customers, buying intent. Cancel any time.");
   f.set("allow_promotion_codes", "true");
   return f;
 }
 
-export async function createCheckout(plan: PaidPlan, user: { id: string; email?: string | null }, siteUrl: string): Promise<string> {
-  const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-    method: "POST",
+async function stripe<T>(path: string, form?: URLSearchParams, method = "POST"): Promise<T> {
+  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+    method,
     headers: { Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`, "Content-Type": "application/x-www-form-urlencoded" },
-    body: checkoutForm(plan, user, siteUrl),
+    body: method === "GET" ? undefined : form,
   });
-  const data = (await res.json().catch(() => ({}))) as { url?: string; error?: { message?: string } };
-  if (!res.ok || !data.url) throw new Error(data.error?.message || `Stripe error ${res.status}`);
+  const data = (await res.json().catch(() => ({}))) as T & { error?: { message?: string } };
+  if (!res.ok) throw new Error(data.error?.message || `Stripe error ${res.status}`);
+  return data;
+}
+
+export async function createCheckout(plan: PaidPlan, user: { id: string; email?: string | null; customer?: string | null }, siteUrl: string): Promise<string> {
+  const data = await stripe<{ url?: string }>("checkout/sessions", checkoutForm(plan, user, siteUrl));
+  if (!data.url) throw new Error("Stripe gave no checkout URL");
+  return data.url;
+}
+
+// Stripe's customer portal needs a "configuration". Use the account's existing one; if there is none
+// (a brand-new account or sandbox), create one: update card, see invoices, cancel at the end of the
+// month. Switching plans is OFF (our prices aren't saved Stripe products); people cancel and re-subscribe.
+export function portalConfigForm(): URLSearchParams {
+  const f = new URLSearchParams();
+  f.set("business_profile[headline]", "Crawler: manage your plan");
+  f.set("features[invoice_history][enabled]", "true");
+  f.set("features[payment_method_update][enabled]", "true");
+  f.set("features[customer_update][enabled]", "true");
+  f.set("features[customer_update][allowed_updates][0]", "email");
+  f.set("features[customer_update][allowed_updates][1]", "address");
+  f.set("features[subscription_cancel][enabled]", "true");
+  f.set("features[subscription_cancel][mode]", "at_period_end");
+  f.set("features[subscription_cancel][cancellation_reason][enabled]", "true");
+  ["too_expensive", "unused", "missing_features", "low_quality", "other"].forEach((r, i) =>
+    f.set(`features[subscription_cancel][cancellation_reason][options][${i}]`, r),
+  );
+  f.set("features[subscription_update][enabled]", "false");
+  return f;
+}
+
+export async function createPortal(customer: string, siteUrl: string): Promise<string> {
+  const list = await stripe<{ data?: { id: string }[] }>("billing_portal/configurations?active=true&limit=1", undefined, "GET");
+  const config = list.data?.[0]?.id ?? (await stripe<{ id: string }>("billing_portal/configurations", portalConfigForm())).id;
+  const f = new URLSearchParams({ customer, return_url: `${siteUrl}/dashboard`, configuration: config });
+  const data = await stripe<{ url?: string }>("billing_portal/sessions", f);
+  if (!data.url) throw new Error("Stripe gave no billing URL");
   return data.url;
 }
 
@@ -61,18 +111,69 @@ export function verifyStripeSignature(payload: string, header: string | null, se
   });
 }
 
-// What a "checkout finished" event must contain before we add tests. Returns null if anything's off.
-export type PaidCheckout = { session: string; userId: string; plan: PaidPlan; amountCents: number; currency: string };
-export function readPaidCheckout(event: unknown): PaidCheckout | null {
-  const e = event as { type?: string; data?: { object?: Record<string, unknown> } };
-  if (e?.type !== "checkout.session.completed" && e?.type !== "checkout.session.async_payment_succeeded") return null;
-  const s = e.data?.object ?? {};
-  const meta = (s.metadata ?? {}) as Record<string, string>;
+type Obj = Record<string, unknown>;
+const obj = (x: unknown): Obj => (x && typeof x === "object" ? (x as Obj) : {});
+const str = (x: unknown) => (typeof x === "string" ? x : typeof obj(x).id === "string" ? (obj(x).id as string) : "");
+
+// Who + which plan, from our own metadata. Stripe has moved where an invoice keeps its subscription's
+// metadata between API versions, so look in each place (newest first).
+function invoiceMeta(inv: Obj): Obj {
+  const parentSub = obj(obj(inv.parent).subscription_details);
+  const oldSub = obj(inv.subscription_details);
+  const line = obj(((obj(inv.lines).data as unknown[]) ?? [])[0]);
+  for (const m of [parentSub.metadata, oldSub.metadata, line.metadata]) {
+    const meta = obj(m);
+    if (meta.user_id && meta.plan_id) return meta;
+  }
+  return {};
+}
+
+// "invoice.paid" for a NEW subscription or a monthly RENEWAL -> add that month's tests. Returns null
+// for anything else (other events, plan-change proration invoices, unknown plan, odd amounts).
+export type PaidInvoice = { invoice: string; userId: string; plan: PaidPlan; amountCents: number; currency: string };
+export function readInvoicePaid(event: unknown): PaidInvoice | null {
+  const e = obj(event);
+  if (e.type !== "invoice.paid") return null;
+  const inv = obj(obj(e.data).object);
+  if (inv.status !== "paid" || typeof inv.id !== "string") return null;
+  if (inv.billing_reason !== "subscription_create" && inv.billing_reason !== "subscription_cycle") return null;
+  const meta = invoiceMeta(inv);
   const plan = paidPlan(meta.plan_id);
-  const amount = Number(s.amount_total);
-  if (s.payment_status !== "paid" || !plan || typeof s.id !== "string") return null;
-  if (!/^[0-9a-f-]{36}$/.test(meta.user_id ?? "")) return null;
-  // The amount paid must match the server's price (discount codes can lower it, never raise the tests).
+  const userId = String(meta.user_id ?? "");
+  const amount = Number(inv.amount_paid);
+  if (!plan || !UUID.test(userId)) return null;
+  // Discount codes can lower the amount; nothing can make one month add more tests than the plan.
   if (!Number.isFinite(amount) || amount < 0 || amount > plan.priceUsd * 100) return null;
-  return { session: s.id, userId: meta.user_id, plan, amountCents: amount, currency: String(s.currency ?? "usd") };
+  return { invoice: inv.id, userId, plan, amountCents: amount, currency: String(inv.currency ?? "usd") };
+}
+
+// customer.subscription.created / .updated / .deleted -> mirror the status in our database.
+export type SubState = {
+  sub: string; userId: string; customer: string; plan: PaidPlan;
+  status: string; periodEnd: string | null; cancelling: boolean; eventAt: string;
+};
+const SUB_EVENTS = ["customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"];
+export function readSubscription(event: unknown): SubState | null {
+  const e = obj(event);
+  if (!SUB_EVENTS.includes(String(e.type))) return null;
+  const s = obj(obj(e.data).object);
+  const meta = obj(s.metadata);
+  const plan = paidPlan(meta.plan_id);
+  const userId = String(meta.user_id ?? "");
+  const customer = str(s.customer);
+  if (!plan || !UUID.test(userId) || typeof s.id !== "string" || !customer) return null;
+  // The period end moved from the subscription onto its items in newer API versions.
+  const item = obj(((obj(s.items).data as unknown[]) ?? [])[0]);
+  const end = Number(s.current_period_end ?? item.current_period_end);
+  const created = Number(e.created);
+  return {
+    sub: s.id,
+    userId,
+    customer,
+    plan,
+    status: e.type === "customer.subscription.deleted" ? "canceled" : String(s.status ?? "incomplete"),
+    periodEnd: Number.isFinite(end) && end > 0 ? new Date(end * 1000).toISOString() : null,
+    cancelling: Boolean(s.cancel_at_period_end) || Boolean(s.cancel_at),
+    eventAt: new Date((Number.isFinite(created) && created > 0 ? created : Date.now() / 1000) * 1000).toISOString(),
+  };
 }

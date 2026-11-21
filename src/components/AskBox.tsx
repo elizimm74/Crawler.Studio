@@ -110,7 +110,7 @@ export default function AskBox({ testId, rerunHref }: { testId: string; rerunHre
 
       {used ? (
         <p className="mt-6 rounded-lg border border-line-strong bg-subtle p-4 text-sm">
-          You&apos;ve used your free questions for this test. More questions come with packs (coming soon). You can still{" "}
+          You&apos;ve used your free questions for this test. More questions come with paid plans (coming soon). You can still{" "}
           <Link href={rerunHref} className="underline">
             run a new test
           </Link>

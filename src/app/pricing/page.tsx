@@ -1,10 +1,12 @@
-// /pricing: the plans from src/lib/plans.ts. One-time packs, no subscriptions.
-// Paid packs open Stripe Checkout (BuyButton -> /api/checkout). Signed-out visitors sign up first.
+// /pricing: the plans from src/lib/plans.ts. Monthly subscriptions, cancel any time.
+// Paid plans open Stripe Checkout (BuyButton -> /api/checkout). Signed-out visitors sign up first.
 // Without the Stripe keys in the environment, they say "Coming soon".
 import Link from "next/link";
 import { currentUser } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { PLANS, perTestLabel, priceLabel } from "@/lib/plans";
+import ManageBilling from "@/components/ManageBilling";
+import { supabaseServer } from "@/lib/supabase/server";
 import { stripeEnabled } from "@/lib/stripe";
 import BuyButton from "@/components/BuyButton";
 
@@ -15,18 +17,33 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
   const user = await currentUser();
   const payments = stripeEnabled();
   const signedIn = Boolean(user) || !AUTH_ENABLED;
+  // Already paying? Show "Manage billing" instead of a second Subscribe button.
+  let current: string | null = null;
+  let billing = false;
+  if (user && AUTH_ENABLED) {
+    const { data } = await (await supabaseServer()).rpc("my_plan");
+    const sub = (data as { subscription?: { plan: string; status: string } | null; billing?: boolean } | null) ?? null;
+    billing = Boolean(sub?.billing);
+    if (sub?.subscription && ["active", "trialing", "past_due"].includes(sub.subscription.status)) current = sub.subscription.plan;
+  }
 
   return (
     <div className="mx-auto max-w-5xl">
       <p className="t-label">pricing</p>
-      <h1 className="t-h1 mt-4">Pay per launch, not per month.</h1>
+      <h1 className="t-h1 mt-4">Test every change before it ships.</h1>
       <p className="t-lead mt-4 max-w-xl">
-        Buy tests once. They never expire, so they&apos;re there whenever you have something new to launch.
+        A monthly plan adds fresh tests every month. Unused tests roll over, and you can cancel any time.
       </p>
 
       {cancelled && (
         <p role="status" className="card mt-8 p-4 text-sm">
           Checkout cancelled. Nothing was charged.
+        </p>
+      )}
+      {billing && (
+        <p className="card mt-8 flex flex-wrap items-center gap-3 p-4 text-sm">
+          {current ? `You're on ${current === "studio" ? "Studio" : "Launch"}.` : "You've paid before."} Change your card, see invoices or cancel:
+          <ManageBilling className="btn btn-secondary h-9 px-4 text-sm" />
         </p>
       )}
 
@@ -41,7 +58,7 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
               </div>
               <p className="mt-6 flex items-baseline gap-2">
                 <span className="t-number text-5xl">{priceLabel(p)}</span>
-                <span className="text-faint">{free ? "" : "one-time"}</span>
+                <span className="text-faint">{free ? "" : "/ month"}</span>
               </p>
               <p className="mt-1 text-sm text-faint">{perTestLabel(p)}</p>
               <p className="mt-4 text-sm text-muted">{p.note}</p>
@@ -61,11 +78,17 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
                 <span className="btn btn-ghost mt-8 w-full cursor-default text-faint" aria-disabled>
                   Coming soon
                 </span>
+              ) : current === p.id ? (
+                <span className="btn btn-ghost mt-8 w-full cursor-default" aria-disabled>
+                  Your plan
+                </span>
+              ) : current ? (
+                <ManageBilling className="btn btn-secondary mt-8 w-full" label="Cancel, then switch" />
               ) : user || !AUTH_ENABLED ? (
-                <BuyButton planId={p.id as "launch" | "studio"} label={`Buy ${p.name} · ${priceLabel(p)}`} primary={p.id === "launch"} />
+                <BuyButton planId={p.id as "launch" | "studio"} label={`Subscribe · ${priceLabel(p)}/month`} primary={p.id === "launch"} />
               ) : (
                 <Link href="/signup?next=/pricing" className={`btn mt-8 w-full ${p.id === "launch" ? "btn-primary" : "btn-secondary"}`}>
-                  Sign up to buy
+                  Sign up to subscribe
                 </Link>
               )}
             </div>
@@ -73,8 +96,13 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
         })}
       </div>
 
-      <p className="t-label mt-8">
-        every test: simulated customers · buying intent, not real purchases · one-time, no subscription · secure checkout by Stripe
+      {/* Auto-renewal disclosure (clear terms BEFORE paying, easy cancel: required by auto-renewal laws). */}
+      <p className="mt-8 max-w-2xl text-sm text-muted">
+        Paid plans renew automatically every month at the price shown until you cancel. Cancel any time from Manage billing
+        on your dashboard: you keep the plan until the end of the month you paid for, and unused tests stay on your account.
+      </p>
+      <p className="t-label mt-6">
+        every test: simulated customers · buying intent, not real purchases · secure checkout by Stripe
       </p>
     </div>
   );
