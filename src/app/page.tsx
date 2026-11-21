@@ -19,10 +19,10 @@ export default function Home() {
       {/* sticky: stays in place while the white sheet scrolls over it.
           -mt cancels main's top padding; the height is the screen minus the header. */}
       <section className="home-hero sticky top-16 -mt-12 h-[calc(100svh-4rem)] sm:-mt-16">
-        <ScrollLift className="relative isolate flex h-full flex-col items-center justify-between text-center">
+        <ScrollLift className="relative isolate flex h-full flex-col items-center text-center">
           {/* the big moving banner across the top: what Crawler is */}
           <ScrollMarquee size="md" className="rise" label="What Crawler is" items={["100 customers", "Real reasons", "Before launch", "Any product"]} />
-          <div className="relative flex flex-col items-center">
+          <div className="relative flex flex-1 flex-col items-center justify-center pb-8">
           {/* faint claw scratches behind the word */}
           <Claws
             delay={0.3}
@@ -50,8 +50,6 @@ export default function Home() {
             <span aria-hidden>→</span>
           </Link>
           </div>
-          {/* and one drifting the other way across the bottom: what it finds */}
-          <ScrollMarquee size="md" reverse className="rise d4" label="What simulated customers often find" items={["Price hidden", "No proof", "Too many steps", "Signup wall", "Unclear value"]} />
         </ScrollLift>
       </section>
 
