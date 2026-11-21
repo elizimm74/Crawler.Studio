@@ -15,6 +15,7 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(params.get("error"));
   const [checkEmail, setCheckEmail] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   if (!AUTH_ENABLED) {
     return (
@@ -42,6 +43,11 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
         : await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) return setMessage(friendly(error.message));
+    // Supabase doesn't say "this email is taken" (so nobody can probe which emails have accounts):
+    // it returns a user with NO identities and sends no email. Tell the person what to do instead.
+    if (mode === "signup" && data.user && (data.user.identities?.length ?? 0) === 0) {
+      return setMessage("That email already has an account. Sign in instead, or use Continue with Apple / Google if that's how you joined. No password? Use \"Forgot password\" on the sign-in page.");
+    }
     // New accounts usually need to confirm their email first.
     if (mode === "signup" && !data.session) return setCheckEmail(true);
     router.push(after);
@@ -59,12 +65,37 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
     if (error) setMessage(friendly(error.message));
   }
 
+  // "Forgot password": emails a link back to /auth/callback, which signs them in and opens /auth/reset.
+  // Also how someone who joined with Apple or Google can add a password.
+  async function forgot() {
+    if (!email) return setMessage("Type your email above first, then click Forgot password.");
+    setBusy(true);
+    setMessage(null);
+    const { error } = await supabaseBrowser().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/auth/reset")}`,
+    });
+    setBusy(false);
+    if (error) return setMessage(friendly(error.message));
+    setResetSent(true);
+  }
+
+  if (resetSent) {
+    return (
+      <div className="card p-6">
+        <p className="t-h3">Check your email</p>
+        <p className="mt-1 text-sm text-muted">
+          If <b>{email}</b> has an account, we sent a link to set a new password. It can take a minute; check spam too.
+        </p>
+      </div>
+    );
+  }
+
   if (checkEmail) {
     return (
       <div className="card p-6">
         <p className="t-h3">Check your email</p>
         <p className="mt-1 text-sm text-muted">
-          We sent a link to <b>{email}</b>. Click it to finish signing up.
+          We sent a link to <b>{email}</b>. Click it to finish signing up. It can take a minute; check spam too.
         </p>
       </div>
     );
@@ -118,6 +149,11 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
         <button disabled={busy} className="btn btn-primary w-full">
           {busy ? "One sec…" : mode === "signup" ? "Create account" : "Sign in"}
         </button>
+        {mode === "signin" && (
+          <button type="button" onClick={forgot} disabled={busy} className="text-sm text-muted underline underline-offset-2 hover:text-fg">
+            Forgot password? (or joined with Apple / Google and want one)
+          </button>
+        )}
       </form>
       <p className="text-sm text-muted">
         {mode === "signup" ? (
@@ -171,6 +207,7 @@ function friendly(msg: string) {
   if (/email not confirmed/i.test(msg)) return "Please click the link in your email first.";
   if (/already registered/i.test(msg)) return "That email already has an account. Try signing in.";
   if (/provider is not enabled|unsupported provider/i.test(msg)) return "That sign-in option isn't switched on yet. Use email for now.";
-  if (/rate limit/i.test(msg)) return "Too many tries. Wait a minute and try again.";
+  if (/rate limit/i.test(msg)) return "Too many emails or tries right now. Wait a few minutes and try again.";
+  if (/error sending|smtp/i.test(msg)) return "We couldn't send the email right now. Try again in a few minutes, or use Continue with Apple.";
   return msg;
 }
