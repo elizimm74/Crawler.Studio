@@ -74,5 +74,5 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     plan,
     trends: (trendsRes.data as Trends | null) ?? null,
   };
-  return <DashboardView data={data} paid={paid === "launch" || paid === "studio" ? paid : undefined} />;
+  return <DashboardView data={data} paid={paid === "starter" || paid === "growth" || paid === "scale" ? paid : undefined} />;
 }

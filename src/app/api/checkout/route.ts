@@ -1,4 +1,4 @@
-// POST /api/checkout { planId: "launch" | "studio" } -> { url }  (the Stripe Checkout page)
+// POST /api/checkout { planId: "starter" | "growth" | "scale" } -> { url }  (the Stripe Checkout page)
 // Signed-in only. Starts a MONTHLY subscription. The price and tests come from src/lib/plans.ts,
 // never the browser. Someone who already has a live plan is sent to "Manage billing" instead
 // (so nobody gets charged twice by accident).

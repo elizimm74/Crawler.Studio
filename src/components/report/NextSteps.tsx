@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { usePlan } from "@/components/dashboard/usePlan";
 import { Icon } from "@/components/dashboard/viz";
-import { PLANS, perTestLabel, priceLabel } from "@/lib/plans";
+import { PLANS, priceLabel } from "@/lib/plans";
 
 type Kind = "website" | "store" | "app" | "game" | "video";
 
@@ -44,7 +44,7 @@ export default function NextSteps({
   ideas.push({ href: "/dashboard#minds", title: "Try a different crowd", text: "Save a customer mind (say, students on a budget) and test the same product with them.", icon: "minds" });
 
   const free = plan && !plan.unlimited && plan.plan === "free";
-  const pack = PLANS.find((p) => p.id === "launch")!;
+  const pack = PLANS.find((p) => p.id === "starter")!;
 
   return (
     <section id="next" className="scroll-mt-32 space-y-4" aria-label="What to do next">
@@ -126,7 +126,7 @@ export default function NextSteps({
             </span>
             <p className="mt-2 font-medium">Keep testing as you fix</p>
             <p className="text-sm text-muted">
-              {pack.name}: {pack.tests} tests a month for {priceLabel(pack)} ({perTestLabel(pack)}). Unused tests roll over; cancel any time.
+              {pack.name}: {pack.customers.toLocaleString("en-US")} simulated customers a month (about 10 tests) for {priceLabel(pack)}/month. Cancel any time.
             </p>
             <span className="mt-auto pt-2 text-sm text-faint">
               See plans <span className="arrow inline-block">→</span>

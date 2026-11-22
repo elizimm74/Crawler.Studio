@@ -147,48 +147,31 @@ test("any one of several v1 signatures may match (Stripe secret rotation)", () =
   return verifyStripeSignature('{"a":1}', `t=${NOW},v1=${"0".repeat(64)},${good}`, SECRET, NOW) ? null : "rejected";
 });
 const UID = "11111111-2222-3333-4444-555555555555";
-const { readInvoicePaid, readSubscription, portalConfigForm } = require(path.join(lib, "stripe.js"));
-const { subscriptionLine } = require(path.join(lib, "dashboard.js"));
-// An invoice.paid event, with our metadata where NEWER Stripe API versions put it (parent.subscription_details).
-const inv = (o = {}, meta = { user_id: UID, plan_id: "launch" }, type = "invoice.paid") => ({
-  type, data: { object: { id: "in_test_abcdefgh", status: "paid", billing_reason: "subscription_create", amount_paid: 1900, currency: "usd", parent: { subscription_details: { metadata: meta } }, ...o } },
-});
-test("a paid first invoice adds the plan's 5 tests (tests come from OUR plans, not Stripe)", () => {
-  const p = readInvoicePaid(inv());
-  return p && p.plan.tests === 5 && p.userId === UID && p.amountCents === 1900 && p.invoice === "in_test_abcdefgh" ? null : JSON.stringify(p);
-});
-test("a monthly renewal adds tests too; older API versions' metadata location also works", () => {
-  const renew = readInvoicePaid(inv({ billing_reason: "subscription_cycle" }));
-  const old = readInvoicePaid(inv({ parent: null, subscription_details: { metadata: { user_id: UID, plan_id: "studio" } }, amount_paid: 4900 }));
-  return renew && old && old.plan.tests === 20 ? null : JSON.stringify([renew, old]);
-});
-test("unpaid, plan-change proration, unknown plan, bad user, overpaid or other events add nothing", () => {
-  const cases = [
-    inv({ status: "open" }), inv({ billing_reason: "subscription_update" }), inv({ billing_reason: "manual" }),
-    inv({}, { user_id: UID, plan_id: "free" }), inv({}, { user_id: "x", plan_id: "launch" }), inv({ amount_paid: 99999 }),
-    inv({}, undefined, "invoice.payment_failed"), inv({}, undefined, "checkout.session.completed"),
-  ];
-  const got = cases.map(readInvoicePaid);
-  return got.every((x) => x === null) ? null : JSON.stringify(got);
-});
+const { readSubscription, portalConfigForm } = require(path.join(lib, "stripe.js"));
+const { subscriptionLine, sizesFor } = require(path.join(lib, "dashboard.js"));
+const { PLANS, TEST_SIZES } = require(path.join(lib, "plans.js"));
+test("plans: $25 = 1,000, $100 = 10,000, $250 = 30,000 customers a month; only Growth and Scale include ads", () =>
+  eq(PLANS.map((p) => [p.id, p.priceUsd, p.customers, p.ads]), [["free", 0, 25, false], ["starter", 25, 1000, false], ["growth", 100, 10000, true], ["scale", 250, 30000, true]], "plans"));
+test("test sizes offered = only what fits in what's left this month", () =>
+  eq([sizesFor({ allowance: 1000, used: 700, left: 300, resets: null }, false, TEST_SIZES), sizesFor(null, false, TEST_SIZES), sizesFor(null, true, TEST_SIZES), sizesFor({ allowance: 1000, used: 950, left: 50, resets: null }, false, TEST_SIZES)], [[100, 250], [], [100, 250, 500, 1000], []], "sizes"));
 const subEv = (o = {}, type = "customer.subscription.updated") => ({
-  type, created: NOW, data: { object: { id: "sub_test_abc123", customer: "cus_test_abc123", status: "active", cancel_at_period_end: false, metadata: { user_id: UID, plan_id: "studio" }, items: { data: [{ current_period_end: NOW + 86400 * 30 }] }, ...o } },
+  type, created: NOW, data: { object: { id: "sub_test_abc123", customer: "cus_test_abc123", status: "active", cancel_at_period_end: false, metadata: { user_id: UID, plan_id: "growth" }, items: { data: [{ current_period_start: NOW, current_period_end: NOW + 86400 * 30 }] }, ...o } },
 });
-test("subscription events: status, renew date (new API: on the item), cancel-at-month-end, deleted = canceled", () => {
+test("subscription events: status, month start + renew date (new API: on the item), cancel-at-month-end, deleted = canceled", () => {
   const a = readSubscription(subEv());
   const c = readSubscription(subEv({ cancel_at_period_end: true, items: undefined, current_period_end: NOW + 100 }));
   const d = readSubscription(subEv({}, "customer.subscription.deleted"));
-  const bad = [readSubscription(subEv({ metadata: {} })), readSubscription(subEv({ customer: null })), readSubscription(subEv({}, "invoice.paid"))];
-  return a && a.plan.id === "studio" && a.status === "active" && a.periodEnd === new Date((NOW + 86400 * 30) * 1000).toISOString() && a.eventAt === new Date(NOW * 1000).toISOString() &&
+  const bad = [readSubscription(subEv({ metadata: {} })), readSubscription(subEv({ customer: null })), readSubscription(subEv({}, "invoice.paid")), readSubscription(subEv({ metadata: { user_id: UID, plan_id: "free" } }))];
+  return a && a.plan === "growth" && a.status === "active" && a.periodStart === new Date(NOW * 1000).toISOString() && a.periodEnd === new Date((NOW + 86400 * 30) * 1000).toISOString() && a.eventAt === new Date(NOW * 1000).toISOString() &&
     c && c.cancelling && c.periodEnd && d && d.status === "canceled" && bad.every((x) => x === null)
     ? null : JSON.stringify({ a, c, d, bad });
 });
 test("checkout is a MONTHLY subscription; price, plan and who come from the server", () => {
-  const f = checkoutForm(paidPlan("studio"), { id: UID, email: "a@b.co" }, "https://crawler.test");
-  const g = checkoutForm(paidPlan("launch"), { id: UID, email: "a@b.co", customer: "cus_123" }, "https://crawler.test");
+  const f = checkoutForm(paidPlan("growth"), { id: UID, email: "a@b.co" }, "https://crawler.test");
+  const g = checkoutForm(paidPlan("starter"), { id: UID, email: "a@b.co", customer: "cus_123" }, "https://crawler.test");
   return eq(
     [f.get("line_items[0][price_data][unit_amount]"), f.get("line_items[0][price_data][recurring][interval]"), f.get("mode"), f.get("subscription_data[metadata][plan_id]"), f.get("subscription_data[metadata][user_id]"), g.get("customer"), g.get("customer_email"), paidPlan("free"), paidPlan("x")],
-    ["4900", "month", "subscription", "studio", UID, "cus_123", null, null, null],
+    ["10000", "month", "subscription", "growth", UID, "cus_123", null, null, null],
     "form",
   );
 });
@@ -198,10 +181,10 @@ test("billing page: cancel at the end of the month, no plan switching", () => {
 });
 test("plan line: renews / cancelled / payment failed / ended", () => {
   const now = new Date("2026-11-21T00:00:00Z");
-  const r = (s) => subscriptionLine({ plan: "launch", renews: "2026-12-21T10:00:00Z", cancelling: false, ...s }, now);
+  const r = (s) => subscriptionLine({ plan: "starter", renews: "2026-12-21T10:00:00Z", cancelling: false, ...s }, now);
   return eq(
     [r({ status: "active" }).text, r({ status: "active", cancelling: true }).text, r({ status: "past_due" }).warn, r({ status: "canceled" }).text, subscriptionLine(null)],
-    ["Launch: renews Dec 21", "Launch: cancelled, active until Dec 21. Your tests stay.", true, "Launch ended. Your unused tests stay.", null],
+    ["Starter: renews Dec 21", "Starter: cancelled, active until Dec 21.", true, "Starter ended.", null],
     "lines",
   );
 });

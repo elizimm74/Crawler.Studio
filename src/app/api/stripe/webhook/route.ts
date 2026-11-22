@@ -1,12 +1,12 @@
 // POST /api/stripe/webhook  (called by STRIPE, not by people)
 // 1. Check the Stripe-Signature header with STRIPE_WEBHOOK_SECRET (otherwise: 400, nothing happens).
-// 2. invoice.paid (new subscription or monthly renewal) -> add that month's tests (record_invoice).
-//    The invoice id is unique, so if Stripe sends the same event twice, tests are only added once.
-// 3. customer.subscription.created/updated/deleted -> mirror the status (sync_subscription):
-//    active, past_due (payment failed, Stripe is retrying), canceled, "cancels at the end of the month".
-// This is the ONE web route that uses the Supabase secret key, because only the server may add tests.
+// 2. customer.subscription.created/updated/deleted -> mirror the status (sync_subscription):
+//    active, past_due (payment failed, Stripe is retrying), canceled, "cancels at the end of the month",
+//    and the billing period (the month's simulated-customer allowance is counted from its start).
+//    Other events (e.g. invoice.paid) are acknowledged and ignored.
+// This is the ONE web route that uses the Supabase secret key, because only the server may change plans.
 import { NextResponse } from "next/server";
-import { readInvoicePaid, readSubscription, verifyStripeSignature } from "@/lib/stripe";
+import { readSubscription, verifyStripeSignature } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function POST(req: Request) {
@@ -28,8 +28,9 @@ export async function POST(req: Request) {
       p_sub: sub.sub,
       p_user: sub.userId,
       p_customer: sub.customer,
-      p_plan: sub.plan.id,
+      p_plan: sub.plan,
       p_status: sub.status,
+      p_period_start: sub.periodStart,
       p_period_end: sub.periodEnd,
       p_cancel: sub.cancelling,
       p_event_at: sub.eventAt,
@@ -37,21 +38,6 @@ export async function POST(req: Request) {
     if (error) return retry("sync_subscription", error.message);
     console.log(JSON.stringify({ event: "subscription", sub: sub.sub, status: sub.status, cancelling: sub.cancelling, applied: data }));
     return NextResponse.json({ received: true });
-  }
-
-  const paid = readInvoicePaid(event);
-  if (paid) {
-    const { error, data } = await supabaseAdmin().rpc("record_invoice", {
-      p_invoice: paid.invoice,
-      p_user: paid.userId,
-      p_plan: paid.plan.id,
-      p_tests: paid.plan.tests,
-      p_amount: paid.amountCents,
-      p_currency: paid.currency,
-    });
-    if (error) return retry("record_invoice", error.message);
-    console.log(JSON.stringify({ event: "invoice_paid", invoice: paid.invoice, plan: paid.plan.id, added: data }));
-    return NextResponse.json({ received: true, added: data });
   }
 
   return NextResponse.json({ received: true, ignored: true }); // other events: nothing to do

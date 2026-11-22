@@ -4,7 +4,7 @@
 // server sends you to "Manage billing" instead (no double subscriptions).
 import { useState } from "react";
 
-export default function BuyButton({ planId, label, primary }: { planId: "launch" | "studio"; label: string; primary?: boolean }) {
+export default function BuyButton({ planId, label, primary }: { planId: "starter" | "growth" | "scale"; label: string; primary?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function buy() {

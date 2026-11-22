@@ -1,10 +1,10 @@
-// /pricing: the plans from src/lib/plans.ts. Monthly subscriptions, cancel any time.
+// /pricing: the plans from src/lib/plans.ts. Monthly plans measured in simulated customers, cancel any time.
 // Paid plans open Stripe Checkout (BuyButton -> /api/checkout). Signed-out visitors sign up first.
 // Without the Stripe keys in the environment, they say "Coming soon".
 import Link from "next/link";
 import { currentUser } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
-import { PLANS, perTestLabel, priceLabel } from "@/lib/plans";
+import { PLANS, allowanceLabel, per100Label, planName, priceLabel } from "@/lib/plans";
 import ManageBilling from "@/components/ManageBilling";
 import { supabaseServer } from "@/lib/supabase/server";
 import { stripeEnabled } from "@/lib/stripe";
@@ -28,11 +28,12 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-6xl">
       <p className="t-label">pricing</p>
-      <h1 className="t-h1 mt-4">Test every change before it ships.</h1>
+      <h1 className="t-h1 mt-4">Pay for the crowd you need.</h1>
       <p className="t-lead mt-4 max-w-xl">
-        A monthly plan adds fresh tests every month. Unused tests roll over, and you can cancel any time.
+        Every plan gives you simulated customers each month. A test uses as many as it simulates: 100 for a quick read,
+        up to 1,000 for a big launch. Cancel any time.
       </p>
 
       {cancelled && (
@@ -42,25 +43,26 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
       )}
       {billing && (
         <p className="card mt-8 flex flex-wrap items-center gap-3 p-4 text-sm">
-          {current ? `You're on ${current === "studio" ? "Studio" : "Launch"}.` : "You've paid before."} Change your card, see invoices or cancel:
+          {current ? `You're on ${planName(current)}.` : "You've paid before."} Change your card, see invoices or cancel:
           <ManageBilling className="btn btn-secondary h-9 px-4 text-sm" />
         </p>
       )}
 
-      <div className="mt-12 grid gap-4 md:grid-cols-3">
+      <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {PLANS.map((p) => {
           const free = p.priceUsd === 0;
           return (
-            <div key={p.id} className={`card flex flex-col p-6 ${p.id === "launch" ? "border-fg" : ""}`}>
+            <div key={p.id} className={`card flex flex-col p-6 ${p.id === "starter" ? "border-fg" : ""}`}>
               <div className="flex items-center justify-between">
                 <p className="font-medium">{p.name}</p>
-                {p.id === "launch" && <span className="pill pill-buy">most popular</span>}
+                {p.id === "starter" && <span className="pill pill-buy">one launch a month</span>}
               </div>
               <p className="mt-6 flex items-baseline gap-2">
                 <span className="t-number text-5xl">{priceLabel(p)}</span>
                 <span className="text-faint">{free ? "" : "/ month"}</span>
               </p>
-              <p className="mt-1 text-sm text-faint">{perTestLabel(p)}</p>
+              <p className="mt-1 text-sm text-faint">{allowanceLabel(p)}</p>
+              {!free && <p className="text-xs text-faint">{per100Label(p)}</p>}
               <p className="mt-4 text-sm text-muted">{p.note}</p>
               <ul className="mt-6 flex-1 space-y-2 border-t border-line pt-6 text-sm">
                 {p.features.map((f) => (
@@ -71,7 +73,7 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
                 ))}
               </ul>
               {free ? (
-                <Link href={signedIn ? "/app" : "/signup"} className="btn btn-primary mt-8 w-full">
+                <Link href={signedIn ? "/app" : "/signup"} className="btn btn-secondary mt-8 w-full">
                   Start free
                 </Link>
               ) : !payments ? (
@@ -85,9 +87,9 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
               ) : current ? (
                 <ManageBilling className="btn btn-secondary mt-8 w-full" label="Cancel, then switch" />
               ) : user || !AUTH_ENABLED ? (
-                <BuyButton planId={p.id as "launch" | "studio"} label={`Subscribe · ${priceLabel(p)}/month`} primary={p.id === "launch"} />
+                <BuyButton planId={p.id as "starter" | "growth" | "scale"} label={`Subscribe · ${priceLabel(p)}/month`} primary={p.id === "starter"} />
               ) : (
-                <Link href="/signup?next=/pricing" className={`btn mt-8 w-full ${p.id === "launch" ? "btn-primary" : "btn-secondary"}`}>
+                <Link href="/signup?next=/pricing" className={`btn mt-8 w-full ${p.id === "starter" ? "btn-primary" : "btn-secondary"}`}>
                   Sign up to subscribe
                 </Link>
               )}
@@ -99,7 +101,8 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
       {/* Auto-renewal disclosure (clear terms BEFORE paying, easy cancel: required by auto-renewal laws). */}
       <p className="mt-8 max-w-2xl text-sm text-muted">
         Paid plans renew automatically every month at the price shown until you cancel. Cancel any time from Manage billing
-        on your dashboard: you keep the plan until the end of the month you paid for, and unused tests stay on your account.
+        on your dashboard: you keep the plan until the end of the month you paid for. Each month&apos;s simulated customers
+        reset when the plan renews (unused ones don&apos;t carry over). A test that fails on our side doesn&apos;t count.
       </p>
       <p className="t-label mt-6">
         every test: simulated customers · buying intent, not real purchases · secure checkout by Stripe

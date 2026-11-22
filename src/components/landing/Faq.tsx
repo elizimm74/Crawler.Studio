@@ -12,7 +12,7 @@ const QA: [string, string][] = [
     "How accurate is it?",
     "The facts are as accurate as you make them: you confirm every price, button and screen before the test runs. Predictions can't be perfect, so we run apps 3 times to show a range, compare against published subscription-app benchmarks, and publish predicted vs real results on our accuracy page.",
   ],
-  ["What does it cost?", "Your first test is free. After that, a monthly plan adds fresh tests every month (unused ones roll over). Cancel any time."],
+  ["What does it cost?", "Your first test is free. After that, plans start at $25 a month for 1,000 simulated customers (about 10 tests). Growth ($100) and Scale ($250) add bigger crowds and video/ad tests. Cancel any time."],
   [
     "Do you test apps too?",
     "Yes. Drop in screenshots of your onboarding and paywall. You get a screen-by-screen drop-off, App Store and Google Play rule checks, an A/B verdict for two paywalls, and rewritten copy.",

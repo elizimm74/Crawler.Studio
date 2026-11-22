@@ -4,7 +4,9 @@
 //   2. createPortal(): Stripe's "Manage billing" page (change card, see invoices, cancel).
 //   3. verifyStripeSignature(): proves a webhook really came from Stripe (HMAC-SHA256 with the
 //      webhook secret, and the timestamp must be fresh so an old message can't be replayed).
-//   4. readInvoicePaid() / readSubscription(): pull what we need out of Stripe's events, or null.
+//   4. readSubscription(): pull what we need out of Stripe's subscription events, or null.
+//      (Plans are customers per MONTH, counted in the database from the billing period, so a paid
+//      invoice needs no separate handling: the subscription's status + period are enough.)
 // Keys live only in environment variables (.env.local / Vercel): STRIPE_SECRET_KEY,
 // STRIPE_WEBHOOK_SECRET. They never go to the browser and never into git.
 import { createHmac, timingSafeEqual } from "crypto";
@@ -12,7 +14,7 @@ import { PLANS, type Plan } from "./plans";
 
 export const stripeEnabled = () => Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);
 
-export type PaidPlan = Plan & { id: "launch" | "studio" };
+export type PaidPlan = Plan & { id: "starter" | "growth" | "scale" };
 export const paidPlan = (id: unknown): PaidPlan | null => {
   const p = PLANS.find((x) => x.id === id && x.priceUsd > 0);
   return (p as PaidPlan) ?? null;
@@ -38,7 +40,7 @@ export function checkoutForm(
   f.set("line_items[0][price_data][currency]", "usd");
   f.set("line_items[0][price_data][unit_amount]", String(Math.round(plan.priceUsd * 100)));
   f.set("line_items[0][price_data][recurring][interval]", "month");
-  f.set("line_items[0][price_data][product_data][name]", `Crawler ${plan.name} (${plan.tests} tests a month)`);
+  f.set("line_items[0][price_data][product_data][name]", `Crawler ${plan.name} (${plan.customers.toLocaleString("en-US")} simulated customers a month)`);
   // The webhook reads WHO and WHICH PLAN from the subscription's metadata (set here, by our server).
   f.set("metadata[user_id]", user.id);
   f.set("metadata[plan_id]", plan.id);
@@ -115,42 +117,12 @@ type Obj = Record<string, unknown>;
 const obj = (x: unknown): Obj => (x && typeof x === "object" ? (x as Obj) : {});
 const str = (x: unknown) => (typeof x === "string" ? x : typeof obj(x).id === "string" ? (obj(x).id as string) : "");
 
-// Who + which plan, from our own metadata. Stripe has moved where an invoice keeps its subscription's
-// metadata between API versions, so look in each place (newest first).
-function invoiceMeta(inv: Obj): Obj {
-  const parentSub = obj(obj(inv.parent).subscription_details);
-  const oldSub = obj(inv.subscription_details);
-  const line = obj(((obj(inv.lines).data as unknown[]) ?? [])[0]);
-  for (const m of [parentSub.metadata, oldSub.metadata, line.metadata]) {
-    const meta = obj(m);
-    if (meta.user_id && meta.plan_id) return meta;
-  }
-  return {};
-}
-
-// "invoice.paid" for a NEW subscription or a monthly RENEWAL -> add that month's tests. Returns null
-// for anything else (other events, plan-change proration invoices, unknown plan, odd amounts).
-export type PaidInvoice = { invoice: string; userId: string; plan: PaidPlan; amountCents: number; currency: string };
-export function readInvoicePaid(event: unknown): PaidInvoice | null {
-  const e = obj(event);
-  if (e.type !== "invoice.paid") return null;
-  const inv = obj(obj(e.data).object);
-  if (inv.status !== "paid" || typeof inv.id !== "string") return null;
-  if (inv.billing_reason !== "subscription_create" && inv.billing_reason !== "subscription_cycle") return null;
-  const meta = invoiceMeta(inv);
-  const plan = paidPlan(meta.plan_id);
-  const userId = String(meta.user_id ?? "");
-  const amount = Number(inv.amount_paid);
-  if (!plan || !UUID.test(userId)) return null;
-  // Discount codes can lower the amount; nothing can make one month add more tests than the plan.
-  if (!Number.isFinite(amount) || amount < 0 || amount > plan.priceUsd * 100) return null;
-  return { invoice: inv.id, userId, plan, amountCents: amount, currency: String(inv.currency ?? "usd") };
-}
-
 // customer.subscription.created / .updated / .deleted -> mirror the status in our database.
+// Plans the webhook may record: today's three, plus the two from the first sandbox build.
+const SUB_PLANS = ["starter", "growth", "scale", "launch", "studio"];
 export type SubState = {
-  sub: string; userId: string; customer: string; plan: PaidPlan;
-  status: string; periodEnd: string | null; cancelling: boolean; eventAt: string;
+  sub: string; userId: string; customer: string; plan: string;
+  status: string; periodStart: string | null; periodEnd: string | null; cancelling: boolean; eventAt: string;
 };
 const SUB_EVENTS = ["customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"];
 export function readSubscription(event: unknown): SubState | null {
@@ -158,13 +130,15 @@ export function readSubscription(event: unknown): SubState | null {
   if (!SUB_EVENTS.includes(String(e.type))) return null;
   const s = obj(obj(e.data).object);
   const meta = obj(s.metadata);
-  const plan = paidPlan(meta.plan_id);
+  const plan = String(meta.plan_id ?? "");
   const userId = String(meta.user_id ?? "");
   const customer = str(s.customer);
-  if (!plan || !UUID.test(userId) || typeof s.id !== "string" || !customer) return null;
+  if (!SUB_PLANS.includes(plan) || !UUID.test(userId) || typeof s.id !== "string" || !customer) return null;
   // The period end moved from the subscription onto its items in newer API versions.
   const item = obj(((obj(s.items).data as unknown[]) ?? [])[0]);
   const end = Number(s.current_period_end ?? item.current_period_end);
+  const start = Number(s.current_period_start ?? item.current_period_start);
+  const iso = (sec: number) => (Number.isFinite(sec) && sec > 0 ? new Date(sec * 1000).toISOString() : null);
   const created = Number(e.created);
   return {
     sub: s.id,
@@ -172,7 +146,8 @@ export function readSubscription(event: unknown): SubState | null {
     customer,
     plan,
     status: e.type === "customer.subscription.deleted" ? "canceled" : String(s.status ?? "incomplete"),
-    periodEnd: Number.isFinite(end) && end > 0 ? new Date(end * 1000).toISOString() : null,
+    periodStart: iso(start),
+    periodEnd: iso(end),
     cancelling: Boolean(s.cancel_at_period_end) || Boolean(s.cancel_at),
     eventAt: new Date((Number.isFinite(created) && created > 0 ? created : Date.now() / 1000) * 1000).toISOString(),
   };

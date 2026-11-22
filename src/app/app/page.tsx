@@ -14,7 +14,7 @@ import ExplorePanel from "@/components/ExplorePanel";
 import Working from "@/components/Working";
 import Onboarding from "@/components/Onboarding";
 import { MyMindsCards, SaveMind } from "@/components/dashboard/minds";
-import { StarterNote, usePlan } from "@/components/dashboard/usePlan";
+import { SizePicker, StarterNote, fitSize, usePlan } from "@/components/dashboard/usePlan";
 import AppWizard from "@/components/app/AppWizard";
 import VideoWizard from "@/components/video/VideoWizard";
 import { Chevron, ErrorNote, Heading, Nav, PRESET_HINT, PresetCard, Stepper, Summary, waitForCrawl } from "@/components/wizard";
@@ -81,7 +81,9 @@ function Wizard() {
   const [ownsProduct, setOwnsProduct] = useState(false);
   const autoStarted = useRef(false);
   const plan = usePlan(); // how many customers this account's test gets (25 starter / 100 full)
-  const customers = plan?.customers ?? 100;
+  const [size, setSize] = useState(100); // paid plans pick 100 / 250 / 500 / 1,000
+  // shown on the launch step: the picked size on paid plans, else what the server will give (25 / 100)
+  const customers = plan && (plan.monthly || plan.unlimited) ? fitSize(plan, size) : (plan?.customers ?? 100);
 
   async function analyze(target = url) {
     setBusy("analyzing");
@@ -138,6 +140,7 @@ function Wizard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          count: fitSize(plan, size), // only a request: the database checks it against the plan
           crawlId: crawl.id,
           audience,
           profile: { ...profile, productType: params.get("type") === "store" ? "store" : "website" },
@@ -326,6 +329,7 @@ function Wizard() {
               onOwnsProduct={setOwnsProduct}
             />
           </div>
+          <SizePicker plan={plan} value={fitSize(plan, size)} onChange={setSize} />
           <StarterNote plan={plan} />
           <ErrorNote error={error} />
           <div className="flex items-center justify-between gap-4 border-t border-line pt-6">

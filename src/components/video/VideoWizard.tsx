@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AudiencePicker from "@/components/AudiencePicker";
 import Working from "@/components/Working";
 import { MyMindsCards, SaveMind } from "@/components/dashboard/minds";
-import { StarterNote, usePlan } from "@/components/dashboard/usePlan";
+import { SizePicker, StarterNote, fitSize, usePlan, AdsGate } from "@/components/dashboard/usePlan";
 import { Arrow } from "@/components/landing/UrlForm";
 import { Chevron, ErrorNote, Heading, Nav, PRESET_HINT, PresetCard, Stepper, Summary, waitForCrawl } from "@/components/wizard";
 import { DEFAULT_AUDIENCE, PRESETS } from "@/lib/presets";
@@ -35,7 +35,8 @@ export default function VideoWizard() {
   const router = useRouter();
   const params = useSearchParams();
   const plan = usePlan();
-  const viewers = plan?.customers ?? 100;
+  const [size, setSize] = useState(100); // paid plans pick 100 / 250 / 500 / 1,000
+  const viewers = plan && (plan.monthly || plan.unlimited) ? fitSize(plan, size) : (plan?.customers ?? 100);
   const [step, setStep] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [frames, setFrames] = useState<Frame[]>([]);
@@ -161,6 +162,7 @@ export default function VideoWizard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          count: fitSize(plan, size), // only a request: the database checks it against the plan
           crawlId,
           audience,
           profile,
@@ -186,6 +188,15 @@ export default function VideoWizard() {
 
   const setBeat = (i: number, patch: Partial<Beat>) => setBeats((all) => all.map((b, j) => (j === i ? { ...b, ...patch } : b)));
   const late = productAt > 3;
+
+  // Starter / free plans don't include video and ad tests: say so before any upload.
+  if (plan && !plan.ads && !plan.unlimited) {
+    return (
+      <div className="mx-auto max-w-2xl">
+        <AdsGate plan={plan} />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-4xl space-y-12">
@@ -403,6 +414,7 @@ export default function VideoWizard() {
             <Summary label="Audience" value={`${viewers} × 3 · ${presetName}`} />
             <Summary label="View range" value={usual ? `from ${compact(usual)} usual` : "add views to see it"} />
           </dl>
+          <SizePicker plan={plan} value={fitSize(plan, size)} onChange={setSize} />
           <StarterNote plan={plan} />
           <ErrorNote error={error} />
           <div className="flex items-center justify-between gap-4 border-t border-line pt-6">

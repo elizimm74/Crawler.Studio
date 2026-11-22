@@ -1,6 +1,7 @@
 // The dashboard's numbers, worked out IN CODE from a person's own saved tests.
 // Pure functions (no database, no AI), so the bench can test them with known answers.
 import { playsFor, type Play } from "./playbook";
+import { planName } from "./plans";
 
 // One saved test, reduced to what the dashboard needs. Rows come newest first.
 export type TestRow = {
@@ -125,8 +126,20 @@ export type PlanData = {
   inviteLink: string;
   referrals: { count: number; needed: number; code: string };
   billing?: boolean; // has paid before (a Stripe customer): show "Manage billing"
+  ads?: boolean; // video / ad tests included in this plan
+  monthly?: Monthly | null; // paid plans: simulated customers this billing month
   subscription?: Subscription | null;
 };
+
+// Paid plans: the month's simulated-customer allowance (migration 0014).
+export type Monthly = { allowance: number; used: number; left: number; resets: string | null };
+
+// The test sizes this person can pick right now: only sizes that fit in what's left this month.
+export function sizesFor(monthly: Monthly | null | undefined, unlimited: boolean, sizes: readonly number[]): number[] {
+  if (unlimited) return [...sizes];
+  if (!monthly) return [];
+  return sizes.filter((n) => n <= monthly.left);
+}
 
 // The monthly plan, as the Stripe webhook last saw it (migration 0013).
 export type Subscription = { plan: string; status: string; renews: string | null; cancelling: boolean };
@@ -134,16 +147,16 @@ export type Subscription = { plan: string; status: string; renews: string | null
 // One honest line about the plan for the dashboard: what it is and what happens next.
 export function subscriptionLine(sub: Subscription | null | undefined, now = new Date()): { text: string; warn: boolean } | null {
   if (!sub) return null;
-  const name = sub.plan === "studio" ? "Studio" : "Launch";
+  const name = planName(sub.plan);
   const date = sub.renews ? new Date(sub.renews) : null;
   const day = date && date > now ? date.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }) : null;
   if (sub.status === "past_due" || sub.status === "unpaid") return { text: `${name}: payment failed. Update your card to keep your plan.`, warn: true };
   if (sub.status === "incomplete") return { text: `${name}: waiting for the first payment.`, warn: true };
   if (sub.status === "active" || sub.status === "trialing") {
-    if (sub.cancelling) return { text: day ? `${name}: cancelled, active until ${day}. Your tests stay.` : `${name}: cancelled. Your tests stay.`, warn: false };
+    if (sub.cancelling) return { text: day ? `${name}: cancelled, active until ${day}.` : `${name}: cancelled.`, warn: false };
     return { text: day ? `${name}: renews ${day}` : `${name}: active`, warn: false };
   }
-  return { text: `${name} ended. Your unused tests stay.`, warn: false };
+  return { text: `${name} ended.`, warn: false };
 }
 
 export type Trends = { enough: false; tests: number; needed: number } | { enough: true; tests: number; blockers: { category: string; pct: number }[] };

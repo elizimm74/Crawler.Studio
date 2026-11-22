@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AudiencePicker from "@/components/AudiencePicker";
 import Working from "@/components/Working";
 import { MyMindsCards, SaveMind } from "@/components/dashboard/minds";
-import { StarterNote, usePlan } from "@/components/dashboard/usePlan";
+import { SizePicker, StarterNote, fitSize, usePlan } from "@/components/dashboard/usePlan";
 import { Arrow } from "@/components/landing/UrlForm";
 import { Chevron, ErrorNote, Heading, Nav, PRESET_HINT, PresetCard, Stepper, Summary, waitForCrawl } from "@/components/wizard";
 import PaywallEditor, { ChecksList } from "./PaywallEditor";
@@ -31,7 +31,9 @@ export default function AppWizard() {
   const params = useSearchParams();
   const [step, setStep] = useState(0);
   const plan = usePlan(); // how many customers per crowd this account gets (25 starter / 100 full)
-  const customers = plan?.customers ?? 100;
+  const [size, setSize] = useState(100); // paid plans pick 100 / 250 / 500 / 1,000
+  // shown on the launch step: the picked size on paid plans, else what the server will give (25 / 100)
+  const customers = plan && (plan.monthly || plan.unlimited) ? fitSize(plan, size) : (plan?.customers ?? 100);
   const [shots, setShots] = useState<Shot[]>([]);
   const [shotsB, setShotsB] = useState<Shot[]>([]);
   const [busy, setBusy] = useState<null | "uploading" | "reading" | "starting">(null);
@@ -110,6 +112,7 @@ export default function AppWizard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          count: fitSize(plan, size), // only a request: the database checks it against the plan
           crawlId,
           audience,
           profile: { ...profile, productType: params.get("type") === "game" ? "game" : "app" },
@@ -317,6 +320,7 @@ export default function AppWizard() {
             <Summary label="Audience" value={`${customers} × 3 · ${presetName}`} />
             <Summary label="Goal" value={hasPaywall ? `Would ${profile.goal}` : "Finish onboarding"} />
           </dl>
+          <SizePicker plan={plan} value={fitSize(plan, size)} onChange={setSize} />
           <StarterNote plan={plan} />
           <ErrorNote error={error} />
           <div className="flex items-center justify-between gap-4 border-t border-line pt-6">
