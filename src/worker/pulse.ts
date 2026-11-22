@@ -28,7 +28,8 @@ export function startPulse(db: SupabaseClient, log: (msg: string, extra?: Record
   const tz = process.env.DIGEST_TZ || "America/New_York";
   const hour = Math.min(23, Math.max(0, Number(process.env.DIGEST_HOUR ?? 21)));
   const skip = new Set((process.env.SLACK_SKIP ?? "").split(",").map((s) => s.trim()).filter(Boolean)); // e.g. "signup,waitlist"
-  void db.from("ops_state").upsert({ key: "tz", value: tz }); // so "today" in the database matches yours
+  // so "today" in the database matches yours (awaited via .then: Supabase requests only send when awaited)
+  db.from("ops_state").upsert({ key: "tz", value: tz }).then(({ error }) => error && log("pulse: saving time zone failed", { error: error.message }));
 
   let busy = false;
   async function events() {

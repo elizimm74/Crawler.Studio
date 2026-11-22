@@ -94,6 +94,9 @@ export function formatEvent(e: OpsEvent): string | null {
     case "analysis_failed":
       lines.push(`:hammer_and_wrench: An analysis failed (${String(d.url ?? "")}): ${String(d.error || "no reason saved")}`);
       break;
+    case "hello":
+      lines.push(":wave: *Crawler Pulse is connected.* Sales, subscribers, sign-ups and problems will show up here, plus a daily report at 9pm.");
+      break;
     default:
       return null;
   }

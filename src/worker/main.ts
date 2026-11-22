@@ -41,7 +41,10 @@ async function handle(job: Job) {
   const started = Date.now();
   ctx.log("job started", { job: job.id, kind: job.kind, ref: job.ref_id, attempt: job.attempts });
   // "Still alive": if this worker dies, another one picks the job up later.
-  const beat = setInterval(() => void db.rpc("heartbeat_job", { p_id: job.id }), HEARTBEAT_MS);
+  // NOTE: Supabase requests only SEND when awaited / .then()-ed, so a bare `void db.rpc(...)` does nothing.
+  const beat = setInterval(() => {
+    db.rpc("heartbeat_job", { p_id: job.id }).then(({ error }) => error && ctx.log("heartbeat failed", { job: job.id, error: error.message }));
+  }, HEARTBEAT_MS);
   try {
     if (job.kind === "analyze") await analyzeJob(job, ctx);
     else await runJob(job, ctx);
