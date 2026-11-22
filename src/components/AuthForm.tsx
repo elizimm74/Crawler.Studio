@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
+import { safePath } from "@/lib/safePath";
 
 export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   const router = useRouter();
@@ -198,9 +199,7 @@ function AppleMark() {
 }
 
 // Only allow going back to pages on OUR site (never a link to another website).
-function safeNext(next: string | null) {
-  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
-}
+const safeNext = (next: string | null) => safePath(next, "/dashboard");
 
 function friendly(msg: string) {
   if (/invalid login credentials/i.test(msg)) return "That email and password don't match.";

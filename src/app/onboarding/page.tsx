@@ -3,13 +3,14 @@
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/supabase/server";
 import Onboarding from "@/components/Onboarding";
+import { safePath } from "@/lib/safePath";
 
 export const metadata = { title: "crawler: welcome" };
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ next?: string; kind?: string; mind?: string; preset?: string }> }) {
   const { next, kind, mind, preset } = await searchParams;
   // Only allow going back to pages on OUR site.
-  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/app";
+  const safeNext = safePath(next, "/app"); // only pages on our own site
 
   const user = await currentUser();
   if (user?.user_metadata?.onboarded) redirect(safeNext);

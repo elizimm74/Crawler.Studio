@@ -1,6 +1,7 @@
 // Cleans an audience that came from the browser (saved "customer minds").
 // Never trust the browser: only known options, sane numbers, short text, short lists.
-import { BUDGETS, COMPANY_SIZES, MINDSETS, TECH_LEVELS, type Audience } from "./types";
+import { BUDGETS, COMPANY_SIZES, GOALS, MINDSETS, TECH_LEVELS, type Audience, type Goal, type ProductProfile } from "./types";
+import { isProductType } from "./productTypes";
 
 const num = (x: unknown, min: number, max: number, fallback: number) => {
   const n = Number(x);
@@ -47,4 +48,25 @@ export function mindProblem(a: Audience): string | null {
   if (!a.mindsets.length) return "Pick at least one mindset.";
   if (!a.techComfort.length) return "Pick at least one tech comfort level.";
   return null;
+}
+
+// Cleans the product details the browser sends with a test. Every simulated customer reads these, so
+// they're kept short: a giant paste would make every AI call (and the bill) huge.
+export function cleanProfile(x: unknown): ProductProfile | null {
+  if (!x || typeof x !== "object" || Array.isArray(x)) return null;
+  const p = x as Record<string, unknown>;
+  const text = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+  const list = (v: unknown) =>
+    (Array.isArray(v) ? v : []).slice(0, 12).map((s) => text(s, 200)).filter(Boolean);
+  return {
+    productType: isProductType(p.productType) ? p.productType : undefined,
+    goal: GOALS.includes(p.goal as Goal) ? (p.goal as Goal) : "sign up",
+    whatItIs: text(p.whatItIs, 600),
+    whoItsFor: text(p.whoItsFor, 400),
+    mainPromise: text(p.mainPromise, 400),
+    prices: list(p.prices),
+    proof: list(p.proof),
+    friction: list(p.friction),
+    tryTask: text(p.tryTask, 300),
+  };
 }

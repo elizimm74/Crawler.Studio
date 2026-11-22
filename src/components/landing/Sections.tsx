@@ -110,7 +110,10 @@ export function Compare() {
     <div>
       <p className="t-label text-center">where Crawler fits</p>
       <h2 className="t-chunk mt-3 text-center">Not instead of real users. Before them.</h2>
-      <div className="mt-10 overflow-x-auto">
+      <p className="t-label mt-8 sm:hidden" aria-hidden>
+        swipe the table sideways →
+      </p>
+      <div className="mt-3 overflow-x-auto sm:mt-10">
         <table className="card w-full min-w-[40rem] border-separate border-spacing-0 text-left text-sm">
           <caption className="sr-only">Comparison of ways to check a launch</caption>
           <thead>

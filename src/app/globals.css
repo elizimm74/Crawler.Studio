@@ -1240,3 +1240,13 @@ html[data-calm] .pathbar > i, html[data-calm] a.pathstep, html[data-calm] a.next
 /* sized by BOTH width and height, so short laptop screens still fit banner + name + button + banner */
 .marquee-md .marquee-word { font-size: clamp(2.2rem, min(7.5vw, 10vh), 7rem); -webkit-text-stroke-width: 1.5px; }
 .home-hero .t-wordmark { font-size: clamp(4.5rem, min(21vw, 26vh), 17rem); }
+
+/* ---- FINAL POLISH (2026-11-22 launch audit) ---- */
+/* Readable accent TEXT: the brand blue #2f45e6 is only 2.9:1 on the near-black page (below the 3:1
+   minimum even for big text). Text uses a lighter shade of the same blue (about 5.5:1); buttons,
+   rings and other filled shapes keep the deep brand blue. */
+.text-accent { color: #7684ff; }
+/* No lonely last words in headings and lead paragraphs ("...before launch / day."). */
+.t-lead, .t-h1, .t-h2, .t-h3, .t-chunk, .home-hero p { text-wrap: balance; }
+/* phone menu: no default disclosure triangle */
+.phone-menu > summary::-webkit-details-marker { display: none; }

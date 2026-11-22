@@ -3,7 +3,7 @@
 // GET /api/crawls/:id until it's done.
 import { NextResponse } from "next/server";
 import { requireUser, jsonError } from "@/lib/supabase/api";
-import { normalizeUrl } from "@/lib/urls";
+import { normalizeUrl } from "@/lib/normalizeUrl";
 
 export async function POST(req: Request) {
   const auth = await requireUser();

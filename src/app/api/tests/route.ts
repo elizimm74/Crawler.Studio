@@ -1,17 +1,17 @@
 // POST /api/tests { crawlId, audience, profile, explore?, credentials?, ownsProduct? } -> { testId }
 // Checks the input, encrypts any test-account login, then start_test()
 // checks your plan's limit and queues the job, all in one transaction.
-import { isProductType } from "@/lib/productTypes";
 import { NextResponse } from "next/server";
 import { requireUser, jsonError } from "@/lib/supabase/api";
 import { encryptJson } from "@/lib/crypto";
-import { normalizeUrl } from "@/lib/urls";
+import { normalizeUrl } from "@/lib/normalizeUrl";
 import type { Audience, Credentials, ExploreSettings, ProductProfile } from "@/lib/types";
 import type { AppAnalysis, AppSettings } from "@/lib/app/types";
 import { cleanAppSettings } from "@/lib/app/validate";
 import type { VideoAnalysis, VideoSettings } from "@/lib/video/types";
 import { cleanVideoSettings } from "@/lib/video/validate";
 import { TEST_SIZES } from "@/lib/plans";
+import { cleanAudience, cleanProfile } from "@/lib/audience";
 
 // Only a REQUEST: start_test() decides the real size (free: 25 or 100; paid: 100/250/500/1,000 if it
 // fits in this month's simulated customers). Anything else becomes 100.
@@ -32,9 +32,12 @@ export async function POST(req: Request) {
     retestOf?: string; // re-test: repeat this earlier test with the same customers
     count?: number; // the test size the person picked (paid plans)
   } | null;
-  if (!body?.crawlId || !body.audience || !body.profile) return jsonError("Missing the analysis, audience or product profile.");
-  // Only a known product type is kept (it selects a fixed prompt sentence; never raw text).
-  body.profile.productType = isProductType(body.profile.productType) ? body.profile.productType : undefined;
+  // Never trust the browser: known options only, short text, short lists (every customer reads these).
+  const profile = cleanProfile(body?.profile);
+  const audience = cleanAudience(body?.audience);
+  if (!body?.crawlId || typeof body.crawlId !== "string" || !audience || !profile) return jsonError("Missing the analysis, audience or product profile.");
+  body.profile = profile; // productType is checked inside cleanProfile (it selects a fixed prompt sentence)
+  body.audience = audience;
   let size = sizeOf(body.count);
 
   // ---------- App test ----------

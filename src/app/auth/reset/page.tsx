@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabaseBrowser } from "@/lib/supabase/browser";
+import { AUTH_ENABLED } from "@/lib/supabase/config";
 
 export default function ResetPassword() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function ResetPassword() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!AUTH_ENABLED) return setSignedIn(false); // accounts switched off (no Supabase keys)
     supabaseBrowser()
       .auth.getUser()
       .then(({ data }) => setSignedIn(Boolean(data.user)))

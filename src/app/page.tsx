@@ -46,7 +46,7 @@ export default function Home() {
             className="rise d3 mt-8 flex max-w-[calc(100%-2rem)] flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border border-white/30 px-5 py-2 text-center text-sm text-white/90 hover:bg-white/10"
           >
             <span className="t-label">example</span>
-            <span>mealmate.app: 41 of 100 would sign up · top blocker: price hidden</span>
+            <span>mealmate.app: 20 of 100 would sign up · top blocker: price hidden</span>
             <span aria-hidden>→</span>
           </Link>
           </div>

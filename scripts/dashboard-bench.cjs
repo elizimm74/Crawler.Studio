@@ -275,5 +275,35 @@ test("daily report time uses YOUR time zone (04:30 UTC = 23:30 the day before in
   eq(localNow("America/New_York", new Date("2026-11-22T04:30:00Z")), { date: "2026-11-21", hour: 23 }, "tz"));
 test("ties and the very first day are not records", () => eq([O.records(D).length, O.records({ ...D, revenue: 5000, best_revenue_before: 0, tests: 3, best_tests_before: 0 }).length], [1, 0], "records"));
 
+// ---------- security: the browser never visits private / internal addresses ----------
+const NG = require(path.join(lib, "netguard.js"));
+test("private, local and cloud-metadata addresses are recognised (IPv4 + IPv6)", () => {
+  const priv = ["127.0.0.1", "10.1.2.3", "172.16.0.1", "172.31.255.255", "192.168.1.1", "169.254.169.254", "100.64.0.1", "0.0.0.0", "::1", "fd00::1", "fe80::1", "::ffff:127.0.0.1", "224.0.0.1"];
+  const pub = ["8.8.8.8", "172.32.0.1", "1.1.1.1", "2606:4700::1111", "100.128.0.1"];
+  const bad = priv.filter((ip) => !NG.isPrivateIp(ip)).concat(pub.filter((ip) => NG.isPrivateIp(ip)));
+  return bad.length ? "wrong: " + bad.join(", ") : null;
+});
+test("private names are caught before any lookup", () => {
+  const priv = ["localhost", "worker.railway.internal", "printer.local", "intranet", "[::1]"];
+  const bad = priv.filter((h) => !NG.obviouslyPrivate(h)).concat(["stripe.com", "my.site.co.uk"].filter((h) => NG.obviouslyPrivate(h)));
+  return bad.length ? "wrong: " + bad.join(", ") : null;
+});
+test("in production the address box refuses private addresses, odd schemes and embedded passwords", () => {
+  const N = require(path.join(lib, "normalizeUrl.js"));
+  const was = process.env.GUARD_PRIVATE_URLS;
+  process.env.GUARD_PRIVATE_URLS = "1";
+  const got = ["127.0.0.1", "localhost:3000", "169.254.169.254", "a.railway.internal", "user:pw@site.com", "stripe.com"].map((x) => N.normalizeUrl(x));
+  process.env.GUARD_PRIVATE_URLS = was;
+  return eq(got, [null, null, null, null, null, "https://stripe.com/"], "urls");
+});
+
+test("after sign-in, only pages on our own site are allowed (no open redirect)", () => {
+  const { safePath } = require(path.join(lib, "safePath.js"));
+  const bad = ["//evil.com", "/\\evil.com", "https://evil.com", "/\tevil.com", "javascript:alert(1)", "/%5Cevil.com\\x", "", null];
+  const got = bad.map((x) => safePath(x, "/dashboard"));
+  const ok = [safePath("/app?url=https%3A%2F%2Fsite.com&kind=app"), safePath("/tests/abc#share")];
+  return got.every((x) => x === "/dashboard") && ok[0] === "/app?url=https%3A%2F%2Fsite.com&kind=app" && ok[1] === "/tests/abc#share" ? null : JSON.stringify({ got, ok });
+});
+
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);

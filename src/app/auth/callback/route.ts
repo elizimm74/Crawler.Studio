@@ -3,12 +3,12 @@
 // Swaps the one-time code for a real sign-in, then continues to `next`.
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase/server";
+import { safePath } from "@/lib/safePath";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const nextParam = url.searchParams.get("next") ?? "/dashboard";
-  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/dashboard";
+  const next = safePath(url.searchParams.get("next"), "/dashboard"); // only pages on our own site
 
   // Google or Apple sent the person back with an error (e.g. they pressed "Cancel").
   const providerError = url.searchParams.get("error_description") ?? url.searchParams.get("error");

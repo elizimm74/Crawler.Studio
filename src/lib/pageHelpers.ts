@@ -5,6 +5,7 @@
 // which normal searches like document.querySelectorAll can't see. These
 // helpers search inside those too.
 import type { BrowserContext } from "playwright";
+import { guardContext } from "./netguard";
 
 export type CrawlerHelpers = {
   deepAll: (selector: string) => Element[]; // like querySelectorAll, but also inside web components
@@ -51,5 +52,6 @@ const SCRIPT = `
 `;
 
 export async function installHelpers(context: BrowserContext) {
+  await guardContext(context); // production: the browser may only load public internet addresses (see netguard.ts)
   await context.addInitScript({ content: SCRIPT });
 }

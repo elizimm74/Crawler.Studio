@@ -60,12 +60,12 @@ export default function Science() {
           <p className="t-label">facts = published · assumptions = our estimates</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[36rem] text-left text-sm">
+          <table className="w-full text-left text-sm sm:min-w-[36rem]">
             <caption className="sr-only">Research findings used by Crawler&apos;s simulated customers, with sources</caption>
             <thead>
               <tr>
                 {["Finding", "Applies to", "Source"].map((h) => (
-                  <th key={h} scope="col" className="t-label whitespace-nowrap px-5 py-3 font-normal sm:px-6">
+                  <th key={h} scope="col" className="t-label px-3 py-3 font-normal sm:whitespace-nowrap sm:px-6">
                     {h}
                   </th>
                 ))}
@@ -74,11 +74,11 @@ export default function Science() {
             <tbody>
               {FACTS.map((f) => (
                 <tr key={f.finding} className="border-t border-line">
-                  <th scope="row" className="px-5 py-3 font-medium sm:px-6">
+                  <th scope="row" className="px-3 py-3 font-medium sm:px-6">
                     {f.finding}
                   </th>
-                  <td className="whitespace-nowrap px-5 py-3 text-muted sm:px-6">{f.who}</td>
-                  <td className="px-5 py-3 text-muted sm:px-6">{f.source}</td>
+                  <td className="px-3 py-3 text-muted sm:whitespace-nowrap sm:px-6">{f.who}</td>
+                  <td className="px-3 py-3 text-muted sm:px-6">{f.source}</td>
                 </tr>
               ))}
             </tbody>

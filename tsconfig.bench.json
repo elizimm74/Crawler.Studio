@@ -32,6 +32,9 @@
     "src/lib/app/chunks.ts",
     "src/lib/revenue.ts",
     "src/lib/ops.ts",
-    "src/worker/pulse.ts"
+    "src/worker/pulse.ts",
+    "src/lib/netguard.ts",
+    "src/lib/normalizeUrl.ts",
+    "src/lib/safePath.ts"
   ]
 }

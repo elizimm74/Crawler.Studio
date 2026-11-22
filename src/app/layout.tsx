@@ -2,6 +2,7 @@
 import CalmToggle from "@/components/CalmToggle";
 import type { Metadata } from "next";
 import Link from "next/link";
+import PhoneMenu from "@/components/PhoneMenu";
 import "./globals.css";
 import { APP_NAME, SITE_URL } from "@/lib/config";
 import { currentUser } from "@/lib/supabase/server";
@@ -100,6 +101,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   </Link>
                 </>
               )}
+              <PhoneMenu signedIn={Boolean(user)} accounts={AUTH_ENABLED} />
             </nav>
           </div>
         </header>

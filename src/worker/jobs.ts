@@ -2,6 +2,7 @@
 // slow part, and saves the result to the database.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { crawlSite, BlockedError, MissingPageError, SlowSiteError } from "../lib/crawl";
+import { publicUrlProblem } from "../lib/netguard";
 import { understandSite, EMPTY_PROFILE } from "../lib/suggest";
 import { runTest, type Run } from "../lib/pipeline";
 import { logRunCost } from "../lib/cost";
@@ -50,6 +51,13 @@ export async function analyzeJob(job: Job, ctx: Ctx) {
   await ctx.db.from("crawls").update({ status: "running", updated_at: now() }).eq("id", job.ref_id);
   if (row.url.startsWith("app://")) return analyzeAppJob(job, ctx, (row.data as { input: AppInput }).input);
   if (row.url.startsWith("video://")) return analyzeVideoJob(job, ctx, (row.data as { input: VideoInput }).input);
+
+  // Never visit private / internal addresses (see src/lib/netguard.ts).
+  const problem = await publicUrlProblem(row.url);
+  if (problem) {
+    await ctx.db.from("crawls").update({ status: "error", error: problem, updated_at: now() }).eq("id", job.ref_id);
+    return;
+  }
 
   let crawl: Crawl;
   try {
