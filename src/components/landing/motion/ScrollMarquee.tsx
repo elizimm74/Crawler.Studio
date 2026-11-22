@@ -1,13 +1,14 @@
 "use client";
 // Giant type that drifts sideways forever. Scroll and it speeds up; scroll the other way
 // and it turns around. Alternating words are outlined and solid. Stops when off screen.
+// pace = how fast it drifts when you're not scrolling (pixels per second, default 70).
 // size "md" = a smaller band (used at the top and bottom of the home screen); reverse = drifts the other way.
 import { LOGO_PATHS, LOGO_TRANSFORM } from "../../Mark";
 import { useEffect, useRef } from "react";
 
 const COPIES = 3;
 
-export default function ScrollMarquee({ items, label, size = "lg", reverse = false, className = "" }: { items: string[]; label: string; size?: "lg" | "md"; reverse?: boolean; className?: string }) {
+export default function ScrollMarquee({ items, label, size = "lg", reverse = false, className = "", pace = 70 }: { items: string[]; label: string; size?: "lg" | "md"; reverse?: boolean; className?: string; pace?: number }) {
   const wrap = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
 
@@ -32,7 +33,7 @@ export default function ScrollMarquee({ items, label, size = "lg", reverse = fal
       if (Math.abs(dy) > 0.5) dir = (dy > 0 ? -1 : 1) * flip;
       speed += (Math.abs(dy) / Math.max(dt, 0.001) - speed) * 0.08;
       const unit = t.scrollWidth / COPIES;
-      x += dir * (70 + speed * 0.45) * dt;
+      x += dir * (pace + speed * 0.45) * dt; // pace = resting speed in pixels per second
       if (x <= -unit) x += unit;
       if (x > 0) x -= unit;
       t.style.transform = `translate3d(${x}px,0,0)`;
@@ -51,7 +52,7 @@ export default function ScrollMarquee({ items, label, size = "lg", reverse = fal
       io.disconnect();
       cancelAnimationFrame(raf);
     };
-  }, [reverse]);
+  }, [reverse, pace]);
 
   return (
     <div ref={wrap} className={`bleed select-none self-stretch overflow-hidden ${size === "md" ? "marquee-md py-3" : "py-6"} ${className}`} role="group" aria-label={label}>

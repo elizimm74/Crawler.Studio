@@ -21,7 +21,7 @@ export default function Home() {
       <section className="home-hero sticky top-16 -mt-12 h-[calc(100svh-4rem)] sm:-mt-16">
         <ScrollLift className="relative isolate flex h-full flex-col items-center text-center">
           {/* the big moving banner across the top: what Crawler is */}
-          <ScrollMarquee size="md" className="rise" label="What Crawler is" items={["100 customers", "Real reasons", "Before launch", "Any product"]} />
+          <ScrollMarquee size="md" pace={115} className="rise" label="What Crawler is" items={["100 customers", "Real reasons", "Before launch", "Any product"]} />
           <div className="relative flex flex-1 flex-col items-center justify-center pb-8">
           {/* faint claw scratches behind the word */}
           <Claws
