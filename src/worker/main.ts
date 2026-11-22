@@ -25,7 +25,10 @@ let stopping = false;
 const running = new Set<Promise<void>>();
 
 async function claim(): Promise<Job | null> {
-  const { data, error } = await db.rpc("claim_job", { p_worker: workerId });
+  const { data, error } = await db.rpc("claim_job", { p_worker: workerId }).then(
+    (r) => r,
+    (err: Error) => ({ data: null, error: err }), // a network blip: try again on the next poll
+  );
   if (error) {
     ctx.log("claim failed", { error: error.message });
     return null;
@@ -59,19 +62,30 @@ async function handle(job: Job) {
 }
 
 // Each "slot" works on one job at a time; `concurrency` slots run side by side.
+// A slot must NEVER die: any surprise error is logged and the loop carries on after a short pause.
 async function slot() {
   while (!stopping) {
-    const job = await claim();
-    if (!job) {
-      await new Promise((r) => setTimeout(r, pollMs));
-      continue;
+    try {
+      const job = await claim();
+      if (!job) {
+        await new Promise((r) => setTimeout(r, pollMs));
+        continue;
+      }
+      const p = handle(job);
+      running.add(p);
+      await p.finally(() => running.delete(p));
+    } catch (err) {
+      ctx.log("slot error (continuing)", { error: (err as Error).message });
+      await new Promise((r) => setTimeout(r, 5_000));
     }
-    const p = handle(job);
-    running.add(p);
-    await p;
-    running.delete(p);
   }
 }
+
+// Last line of defence: log instead of crashing the whole worker (Node exits on these by default).
+process.on("unhandledRejection", (err) => ctx.log("unhandled rejection (continuing)", { error: String((err as Error)?.message ?? err) }));
+process.on("uncaughtException", (err) => ctx.log("uncaught exception (continuing)", { error: err.message }));
+// Every 5 minutes: "still alive" + memory use, so a crash from running out of memory shows up in the logs.
+setInterval(() => ctx.log("alive", { rssMb: Math.round(process.memoryUsage().rss / 1e6), running: running.size }), 300_000).unref();
 
 // Clean shutdown (hosts send SIGTERM before restarting): stop taking new jobs
 // and let current ones finish. Jobs cut off anyway get retried by another worker.
