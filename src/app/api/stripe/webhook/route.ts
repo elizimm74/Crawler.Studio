@@ -3,10 +3,11 @@
 // 2. customer.subscription.created/updated/deleted -> mirror the status (sync_subscription):
 //    active, past_due (payment failed, Stripe is retrying), canceled, "cancels at the end of the month",
 //    and the billing period (the month's simulated-customer allowance is counted from its start).
-//    Other events (e.g. invoice.paid) are acknowledged and ignored.
+// 3. invoice.paid -> save the payment (record_payment) for revenue tracking + the founder's Slack alerts.
+//    Other events are acknowledged and ignored.
 // This is the ONE web route that uses the Supabase secret key, because only the server may change plans.
 import { NextResponse } from "next/server";
-import { readSubscription, verifyStripeSignature } from "@/lib/stripe";
+import { readPayment, readSubscription, verifyStripeSignature } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function POST(req: Request) {
@@ -37,6 +38,21 @@ export async function POST(req: Request) {
     });
     if (error) return retry("sync_subscription", error.message);
     console.log(JSON.stringify({ event: "subscription", sub: sub.sub, status: sub.status, cancelling: sub.cancelling, applied: data }));
+    return NextResponse.json({ received: true });
+  }
+
+  const pay = readPayment(event);
+  if (pay) {
+    const { error, data } = await supabaseAdmin().rpc("record_payment", {
+      p_invoice: pay.invoice,
+      p_user: pay.userId,
+      p_plan: pay.plan,
+      p_amount: pay.amountCents,
+      p_currency: pay.currency,
+      p_paid_at: pay.paidAt,
+    });
+    if (error) return retry("record_payment", error.message);
+    console.log(JSON.stringify({ event: "payment", invoice: pay.invoice, cents: pay.amountCents, saved: data }));
     return NextResponse.json({ received: true });
   }
 

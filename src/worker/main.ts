@@ -9,6 +9,7 @@ import { checkWorkerEnv } from "../lib/env";
 import { supabaseAdmin } from "../lib/supabase/admin";
 import { SupabaseBlobStore } from "../lib/blobs";
 import { analyzeJob, markFailed, runJob, type Ctx, type Job } from "./jobs";
+import { startPulse } from "./pulse";
 
 const HEARTBEAT_MS = 30_000;
 const { concurrency, pollMs } = checkWorkerEnv();
@@ -100,4 +101,5 @@ for (const signal of ["SIGTERM", "SIGINT"] as const) {
 }
 
 ctx.log("worker started", { concurrency, pollMs });
+startPulse(db, ctx.log); // Slack alerts + daily report for the founder (only if SLACK_WEBHOOK_URL is set)
 for (let i = 0; i < concurrency; i++) void slot();

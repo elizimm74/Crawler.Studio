@@ -30,6 +30,8 @@
     "src/lib/video/frames.ts",
     "src/lib/video/validate.ts",
     "src/lib/app/chunks.ts",
-    "src/lib/revenue.ts"
+    "src/lib/revenue.ts",
+    "src/lib/ops.ts",
+    "src/worker/pulse.ts"
   ]
 }

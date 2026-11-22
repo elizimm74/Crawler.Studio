@@ -242,5 +242,38 @@ test("no people, no price or junk input = zeros, never NaN", () => {
 test("the rate can never pass 100% (yes 100 + fixes 50, follow-through 100%)", () => eq(R.projectRevenue({ people: 100, price: 10, intentPct: 100, realShare: 1, fixPct: 50 }).withFixes, 1000, "cap"));
 test("money formatting", () => eq([R.money(840), R.money(12400), R.money(240000), R.money(1500000)], ["$840", "$12.4k", "$240k", "$1.5M"], "format"));
 
+// ---------- founder pulse: Slack messages + daily report ----------
+const O = require(path.join(lib, "ops.js"));
+const ev = (kind, data) => ({ id: 1, kind, data, created_at: new Date().toISOString() });
+test("first ever payment is celebrated; amounts in dollars; email stays masked", () => {
+  const t = O.formatEvent(ev("payment", { amount: 2500, plan: "starter", email: "j***@gmail.com", today: 2500, best_before: 0, all_time: 2500, all_time_before: 0, mrr: 2500 }));
+  return t.includes("$25") && t.includes("first ever payment") && t.includes("j***@gmail.com") && !t.includes("record") ? null : t;
+});
+test("record day only when today passes the old best (and only once)", () => {
+  const beat = O.formatEvent(ev("payment", { amount: 10000, plan: "growth", today: 15000, best_before: 12500, all_time: 90000, all_time_before: 80000, mrr: 1 }));
+  const again = O.formatEvent(ev("payment", { amount: 2500, plan: "starter", today: 17500, best_before: 12500, all_time: 92500, all_time_before: 90000, mrr: 1 }));
+  const not = O.formatEvent(ev("payment", { amount: 2500, plan: "starter", today: 5000, best_before: 12500, all_time: 95000, all_time_before: 92500, mrr: 1 }));
+  return beat.includes("New record day") && !again.includes("record") && !not.includes("record") ? null : [beat, again, not].join(" || ");
+});
+test("milestones: passing $1,000 all-time, 100 accounts, $500 MRR", () => {
+  const a = O.formatEvent(ev("payment", { amount: 10000, today: 10000, best_before: 50000, all_time: 105000, all_time_before: 95000, mrr: 0 }));
+  const b = O.formatEvent(ev("signup", { total: 100 }));
+  const c = O.formatEvent(ev("sub_new", { plan: "growth", mrr: 52500, subscribers: 9 }));
+  return a.includes("$1,000") && b.includes("100 accounts!") && c.includes("MRR passed *$500*") ? null : [a, b, c].join(" || ");
+});
+test("crossed() picks the biggest mark passed, none when nothing passed", () => eq([O.crossed(90, 110, [100, 500]), O.crossed(450, 1200, [100, 500, 1000]), O.crossed(100, 120, [100, 500])], [100, 1000, null], "marks"));
+test("unknown events are skipped", () => eq(O.formatEvent(ev("mystery", {})), null, "skip"));
+const D = { day: "2026-11-22", revenue: 12500, payments: 3, best_revenue_before: 10000, revenue_week: 30000, revenue_month: 45000, revenue_all: 60000, mrr: 22500, subscribers: { starter: 5, growth: 1 }, failing_payments: 1, cancelling: 0, signups: 4, best_signups_before: 9, users: 40, waitlist_new: 2, waitlist: 120, tests: 12, best_tests_before: 12, customers: 1500, customers_all: 9000, failed: 0, ai_cost: 0.8, sale_streak: 3 };
+test("daily report: revenue, MRR by plan, profit after AI cost, record, streak, watch list", () => {
+  const t = O.formatDigest(D);
+  const want = ["Revenue today: $125*", "MRR $225 · 1 Growth, 5 Starter", "AI cost today $0.80", "about $124.20", "best revenue day ever ($125)", "3-day sales streak", "1 failing payment"];
+  const miss = want.filter((w) => !t.includes(w));
+  return miss.length ? "missing: " + miss.join(" | ") + "\n" + t : null;
+});
+const { localNow } = require(path.join(lib, "..", "worker", "pulse.js"));
+test("daily report time uses YOUR time zone (04:30 UTC = 23:30 the day before in New York)", () =>
+  eq(localNow("America/New_York", new Date("2026-11-22T04:30:00Z")), { date: "2026-11-21", hour: 23 }, "tz"));
+test("ties and the very first day are not records", () => eq([O.records(D).length, O.records({ ...D, revenue: 5000, best_revenue_before: 0, tests: 3, best_tests_before: 0 }).length], [1, 0], "records"));
+
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);

@@ -152,3 +152,35 @@ export function readSubscription(event: unknown): SubState | null {
     eventAt: new Date((Number.isFinite(created) && created > 0 ? created : Date.now() / 1000) * 1000).toISOString(),
   };
 }
+
+// invoice.paid -> one real payment (the first month or a renewal), for revenue tracking.
+// Who + which plan come from OUR metadata on the subscription; Stripe has moved where an invoice
+// keeps it between API versions, so look in each place (newest first).
+export type Payment = { invoice: string; userId: string; plan: string; amountCents: number; currency: string; paidAt: string };
+export function readPayment(event: unknown): Payment | null {
+  const e = obj(event);
+  if (e.type !== "invoice.paid") return null;
+  const inv = obj(obj(e.data).object);
+  if (inv.status !== "paid" || typeof inv.id !== "string") return null;
+  const line = obj(((obj(inv.lines).data as unknown[]) ?? [])[0]);
+  let meta: Obj = {};
+  for (const m of [obj(obj(inv.parent).subscription_details).metadata, obj(inv.subscription_details).metadata, line.metadata]) {
+    if (obj(m).user_id && obj(m).plan_id) {
+      meta = obj(m);
+      break;
+    }
+  }
+  const plan = String(meta.plan_id ?? "");
+  const userId = String(meta.user_id ?? "");
+  const amount = Number(inv.amount_paid);
+  if (!SUB_PLANS.includes(plan) || !UUID.test(userId) || !Number.isFinite(amount) || amount < 0) return null;
+  const paid = Number(obj(inv.status_transitions).paid_at ?? e.created);
+  return {
+    invoice: inv.id,
+    userId,
+    plan,
+    amountCents: Math.round(amount),
+    currency: String(inv.currency ?? "usd"),
+    paidAt: new Date((Number.isFinite(paid) && paid > 0 ? paid : Date.now() / 1000) * 1000).toISOString(),
+  };
+}
