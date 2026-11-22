@@ -23,7 +23,7 @@ The database, logins and screenshot storage are already live on Supabase (projec
 2. Framework: Next.js (auto-detected). Leave the build settings alone.
 3. **Environment variables** (Settings → Environment Variables). Use the names in `.env.example`:
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (public)
-   - `NEXT_PUBLIC_SITE_URL` = your real address, e.g. `https://crawler.app`
+   - `NEXT_PUBLIC_SITE_URL` = your real address, `https://crawler.studio`
    - `ANTHROPIC_API_KEY` (the chat needs it) and `CREDENTIALS_KEY` (same value as the worker)
    - optional `YOUTUBE_API_KEY` (video tests: look up a YouTube creator's recent views; without it people type them in)
    - `SUPABASE_SECRET_KEY`: needed ONLY by the Stripe webhook route (to add bought tests). Keep it out of every other route.

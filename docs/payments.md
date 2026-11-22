@@ -28,7 +28,7 @@ Start in the **Sandbox / Test mode**. Test cards don't move real money.
 
 1. **Keys:** Stripe dashboard -> Developers -> API keys -> copy the **Secret key** (`sk_test_...`).
 2. **Webhook:** Developers -> Webhooks -> Add destination
-   - URL: `https://crawler-for-vercel.vercel.app/api/stripe/webhook`
+   - URL: `https://crawler.studio/api/stripe/webhook`
    - Events: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted` (`invoice.paid` may stay selected; it's ignored)
    - Copy the **Signing secret** (`whsec_...`).
 3. Put them in the environment (NEVER in chat, never in git):

@@ -24,7 +24,7 @@ const env = (k) => (process.env[k] || "").trim();
 const SUPABASE_URL = env("NEXT_PUBLIC_SUPABASE_URL").replace(/\/$/, "");
 const SECRET = env("SUPABASE_SECRET_KEY");
 const SITE = (env("WAITLIST_SITE") || "https://elizimm74.github.io/Study").replace(/\/$/, ""); // where unsubscribe.html lives
-const LAUNCH_URL = env("LAUNCH_URL") || SITE; // where the "Try Crawler" button goes
+const LAUNCH_URL = env("LAUNCH_URL") || "https://crawler.studio"; // where the "Try Crawler" button goes
 const FROM = env("MAIL_FROM");
 const ADDRESS = env("MAIL_ADDRESS");
 const RESEND = env("RESEND_API_KEY");

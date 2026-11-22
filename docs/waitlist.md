@@ -61,7 +61,7 @@ Sends for real. Edit the wording first in `scripts/send-launch-email.cjs` (the `
 `SUBJECT`). Keep it honest: the customers are simulated.
 
 Set `LAUNCH_URL` in `.env.local` to the real product address before you send (the "Try Crawler" button
-goes there). Until then it points at the GitHub Pages site.
+goes there). It defaults to https://crawler.studio.
 
 ## Good to know
 
