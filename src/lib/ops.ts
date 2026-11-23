@@ -5,6 +5,7 @@
 // Where the events come from: database triggers (migration 0016) write rows into ops_events;
 // the worker (src/worker/pulse.ts) reads them and calls these functions.
 import { PLANS, planName } from "./plans";
+import { HEARD } from "./insights";
 
 export type OpsEvent = { id: number; kind: string; data: Record<string, unknown>; created_at: string };
 
@@ -114,6 +115,7 @@ export type Digest = {
   waitlist_new: number; waitlist: number;
   tests: number; best_tests_before: number; customers: number; customers_all: number;
   failed: number; ai_cost: number; sale_streak: number;
+  sources?: Record<string, number>; // where today's sign-ups said they heard of Crawler (ops_sources)
 };
 
 // Today's records: only counted when there WAS an earlier best to beat (day one isn't a "record").
@@ -143,6 +145,8 @@ export function formatDigest(d: Digest): string {
     `Sign-ups ${num(d.signups)} · ${num(d.users)} accounts · Waitlist ${num(d.waitlist)}${d.waitlist_new ? ` (+${num(d.waitlist_new)})` : ""}`,
     `Tests ${num(d.tests)} · ${num(d.customers)} simulated customers (${num(d.customers_all)} all-time)`,
   ];
+  const src = Object.entries(d.sources ?? {}).sort((a, b) => b[1] - a[1]);
+  if (src.length) lines.push(`Heard about us via: ${src.map(([k, n]) => `${HEARD[k] ?? k} ${n}`).join(" · ")}`);
   const recs = records(d);
   if (recs.length) lines.push("", `:trophy: *Record:* ${recs.join(" · ")}`);
   if (d.sale_streak >= 2) lines.push(`:fire: ${num(d.sale_streak)}-day sales streak`);

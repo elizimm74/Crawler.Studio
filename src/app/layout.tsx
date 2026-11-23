@@ -3,6 +3,7 @@ import CalmToggle from "@/components/CalmToggle";
 import type { Metadata } from "next";
 import Link from "next/link";
 import PhoneMenu from "@/components/PhoneMenu";
+import FirstTouch from "@/components/FirstTouch";
 import "./globals.css";
 import { APP_NAME, SITE_URL } from "@/lib/config";
 import { currentUser } from "@/lib/supabase/server";
@@ -51,6 +52,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body className="flex min-h-screen flex-col">
         {/* home page only: blue claws scratch a white page open */}
         <Intro />
+        <FirstTouch />
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-bg focus:p-4">
           Skip to content
         </a>

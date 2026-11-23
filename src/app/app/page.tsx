@@ -52,9 +52,12 @@ function Entry() {
     } catch {}
     if (!saved || !AUTH_ENABLED) return;
     sessionStorage.removeItem("crawler-onboarding");
+    const { signup, ...onboarding } = JSON.parse(saved) as { signup?: object | null } & Record<string, unknown>;
     void supabaseBrowser()
-      .auth.updateUser({ data: { onboarded: true, onboarding: JSON.parse(saved) } })
+      .auth.updateUser({ data: { onboarded: true, onboarding } })
       .catch(() => null);
+    // "About you" answers + where they first came from (marketing totals, migration 0018)
+    if (signup) void supabaseBrowser().rpc("save_signup_answers", { p: signup }).then(() => null, () => null);
   }, []);
 
   if (params.get("kind") === "app") return <AppWizard key={params.toString()} />;

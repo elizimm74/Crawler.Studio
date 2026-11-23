@@ -234,6 +234,11 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
               <Link href="/pricing" className="dash-quick">
                 <Icon name="spark" className="h-4 w-4" /> Get more tests
               </Link>
+              {plan.unlimited && (
+                <Link href="/admin/insights" className="dash-quick">
+                  <Icon name="spark" className="h-4 w-4" /> Insights (admin)
+                </Link>
+              )}
             </div>
 
             <div className="mt-auto pt-8">

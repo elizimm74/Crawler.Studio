@@ -62,7 +62,8 @@ export function startPulse(db: SupabaseClient, log: (msg: string, extra?: Record
       if (!mine) return; // already posted today (or another worker is doing it)
       const { data, error } = await db.rpc("ops_digest", { p_day: now.date });
       if (error || !data) return log("pulse: digest failed", { error: error?.message });
-      if (!(await postSlack(formatDigest(data as Digest)))) log("pulse: Slack refused the daily report");
+      const { data: sources } = await db.rpc("ops_sources", { p_day: now.date }); // optional extra line
+      if (!(await postSlack(formatDigest({ ...(data as Digest), sources: (sources as Record<string, number>) ?? undefined })))) log("pulse: Slack refused the daily report");
     } catch (err) {
       log("pulse: digest error", { error: (err as Error).message });
     }

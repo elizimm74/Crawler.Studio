@@ -305,5 +305,32 @@ test("after sign-in, only pages on our own site are allowed (no open redirect)",
   return got.every((x) => x === "/dashboard") && ok[0] === "/app?url=https%3A%2F%2Fsite.com&kind=app" && ok[1] === "/tests/abc#share" ? null : JSON.stringify({ got, ok });
 });
 
+// ---------- marketing insights: first visit + advice ----------
+const I = require(path.join(lib, "insights.js"));
+test("first visit: link tags kept, referring site = domain only, our own site ignored", () => {
+  const a = I.readFirstTouch("https://crawler.studio/?utm_source=TikTok&utm_campaign=launch", "https://www.tiktok.com/@someone/video/123?x=1");
+  const b = I.readFirstTouch("https://crawler.studio/pricing", "https://crawler.studio/");
+  const c = I.readFirstTouch("https://crawler.studio/?ref=producthunt", "");
+  return eq([a.utmSource, a.utmCampaign, a.ref, a.path, b.ref, b.path, c.utmSource], ["TikTok", "launch", "www.tiktok.com", "/", undefined, "/pricing", "producthunt"], "touch");
+});
+test("advice waits for enough sign-ups instead of guessing", () => {
+  const t = I.advice({ heard_from: [{ value: "tiktok", n: 3, tested: 1, paid: 1 }] }, 3);
+  return t.length === 1 && t[0].includes("too early") ? null : JSON.stringify(t);
+});
+test("advice: most sign-ups vs most PAYING per sign-up are told apart; small channels ignored", () => {
+  const g = { heard_from: [
+    { value: "tiktok", n: 40, tested: 10, paid: 1 },
+    { value: "x", n: 12, tested: 9, paid: 3 },
+    { value: "reddit", n: 4, tested: 4, paid: 4 },
+    { value: "not answered", n: 30, tested: 5, paid: 0 },
+  ], age: [{ value: "18-24", n: 25, tested: 8, paid: 2 }] };
+  const t = I.advice(g, 86).join(" | ");
+  return t.includes("Most sign-ups come from TikTok (40)") && t.includes("X / Twitter brings the most paying customers per sign-up (25%)") && !t.includes("Reddit") && t.includes("18-24") ? null : t;
+});
+test("Slack daily report lists today's sources, most first", () => {
+  const t = O.formatDigest({ ...D, sources: { x: 1, tiktok: 3 } });
+  return t.includes("Heard about us via: TikTok 3 · X / Twitter 1") ? null : t;
+});
+
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);

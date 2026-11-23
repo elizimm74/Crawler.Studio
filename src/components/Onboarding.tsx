@@ -1,7 +1,10 @@
 "use client";
-// The questions asked BEFORE every test (and as first-run onboarding). Two calm steps:
-//   1. What are you launching?  four big tiles; picking one moves on by itself
+// The questions asked BEFORE every test (and as first-run onboarding). Calm steps:
+//   1. What are you launching?  big tiles; picking one moves on by itself
 //   2. Where is it? (the link, or "you'll add screenshots next") + who it's for (optional)
+//   3. FIRST TIME ONLY: "About you" (age, where you heard of us, role, stage, goal). All optional,
+//      one tap each, with Skip. Saved with where they first came from (src/lib/insights.ts) via
+//      save_signup_answers (migration 0018), so the admin insights page can study it.
 // Fewer, bigger questions = more people reach their result. Everything but the link is optional.
 // It's the first thing new visitors see (the home page button), no account needed.
 // The answers are saved on the account (Supabase "user metadata"), which also marks
@@ -11,12 +14,13 @@ import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { Arrow } from "@/components/landing/UrlForm";
+import { AGES, GOALS, HEARD, ROLES, STAGES, firstTouch, type About } from "@/lib/insights";
 
 type Kind = "website" | "app" | "game" | "store" | "video";
 const needsUrl = (k: Kind) => k === "website" || k === "store";
 const WHO = ["Students", "Founders", "Parents", "Small businesses", "Developers", "Everyone"];
 
-export default function Onboarding({ startUrl, startKind = "website", mind, preset }: { startUrl: string; startKind?: Kind; mind?: string; preset?: string }) {
+export default function Onboarding({ startUrl, startKind = "website", mind, preset, firstTime = false }: { startUrl: string; startKind?: Kind; mind?: string; preset?: string; firstTime?: boolean }) {
   const router = useRouter();
   const [kind, setKind] = useState<Kind>(startKind);
   const [url, setUrl] = useState(startUrl);
@@ -25,23 +29,29 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
   const [who, setWho] = useState("");
   const [whoText, setWhoText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [step, setStep] = useState<1 | 2>(startUrl ? 2 : 1); // a link from the home page skips to step 2
+  const [step, setStep] = useState<1 | 2 | 3>(startUrl ? 2 : 1); // a link from the home page skips to step 2
+  const [about, setAbout] = useState<About>({});
+  const steps = firstTime ? 3 : 2;
+  const pick = (k: keyof About, v: string) => setAbout((a) => ({ ...a, [k]: a[k] === v ? undefined : v }));
 
   const audience = whoText.trim() || who; // their own words win over the chip
   const canNext = !needsUrl(kind) || url.trim().length > 3;
 
-  async function finish() {
+  async function finish(skipAbout = false) {
     setBusy(true);
     const answers = { kind, url: needsUrl(kind) ? url : "", what, when, who: audience };
+    // First-time visitors: their "About you" answers + where they first came from (for marketing totals).
+    const signup = firstTime ? { ...(skipAbout ? {} : about), ...firstTouch(), kind } : null; // Skip still saves where they came from
     if (AUTH_ENABLED) {
       // Signed in: save the answers + "onboarded" on the account now.
       // Signed out: keep them in this tab; the test page saves them right after sign-up.
       const { data } = await supabaseBrowser().auth.getUser();
       if (data.user) {
         await supabaseBrowser().auth.updateUser({ data: { onboarded: true, onboarding: answers } }).catch(() => null);
+        if (signup) await supabaseBrowser().rpc("save_signup_answers", { p: signup }).then(() => null, () => null);
       } else {
         try {
-          sessionStorage.setItem("crawler-onboarding", JSON.stringify(answers));
+          sessionStorage.setItem("crawler-onboarding", JSON.stringify({ ...answers, signup }));
         } catch {
           // storage blocked: the answers just aren't saved to the account
         }
@@ -60,7 +70,9 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
 
   function next(e: React.FormEvent) {
     e.preventDefault();
-    if (canNext) void finish();
+    if (!canNext) return;
+    if (firstTime && step === 2) return setStep(3); // first time: one quick "About you" step
+    void finish();
   }
 
   const choose = (k: Kind) => {
@@ -72,15 +84,15 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
   return (
     <div className="mx-auto max-w-5xl">
       {/* progress: two thin bars */}
-      <div className="mx-auto flex max-w-xs gap-2" aria-label={`Step ${step} of 2`}>
-        {[1, 2].map((i) => (
+      <div className="mx-auto flex max-w-xs gap-2" aria-label={`Step ${step} of ${steps}`}>
+        {Array.from({ length: steps }, (_, i) => i + 1).map((i) => (
           <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= step ? "bg-accent" : "bg-line"}`} />
         ))}
       </div>
 
       {step === 1 ? (
         <section className="mt-12 text-center" aria-labelledby="ob-q1">
-          <p className="t-label">step 1 of 2 · takes about a minute</p>
+          <p className="t-label">step 1 of {steps} · takes about a minute</p>
           <h1 id="ob-q1" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
             What are you launching?
           </h1>
@@ -105,12 +117,63 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
             ))}
           </div>
         </section>
+      ) : step === 3 ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void finish();
+          }}
+          className="mx-auto mt-12 max-w-2xl"
+          aria-labelledby="ob-q3"
+        >
+          <button type="button" onClick={() => setStep(2)} className="btn btn-text -ml-3 h-10 text-sm">
+            ← Back
+          </button>
+          <p className="t-label mt-4">step 3 of 3 · optional · 10 seconds</p>
+          <h1 id="ob-q3" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
+            Quick, about you.
+          </h1>
+          <p className="mt-3 text-muted">Tap what fits. It helps us build Crawler for people like you.</p>
+
+          <Choice legend="Your age" options={Object.fromEntries(AGES.map((a) => [a, a]))} value={about.age} onPick={(v) => pick("age", v)} />
+          <Choice legend="Where did you hear about Crawler?" options={HEARD} value={about.heard} onPick={(v) => pick("heard", v)} />
+          {about.heard === "other" && (
+            <input
+              value={about.heardOther ?? ""}
+              onChange={(e) => setAbout((a) => ({ ...a, heardOther: e.target.value.slice(0, 80) }))}
+              placeholder="Where? e.g. a newsletter, a Discord, a podcast"
+              className="field mt-3"
+              aria-label="Where did you hear about Crawler"
+            />
+          )}
+          <Choice legend="What describes you best?" options={ROLES} value={about.role} onPick={(v) => pick("role", v)} />
+          <Choice legend="Where is your product?" options={STAGES} value={about.stage} onPick={(v) => pick("stage", v)} />
+          <Choice legend="What do you want most?" options={GOALS} value={about.goal} onPick={(v) => pick("goal", v)} />
+
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            <button type="submit" disabled={busy} className="btn btn-primary h-14 flex-1 text-base">
+              {busy ? "Starting…" : kind === "video" ? "Next: add the video" : !needsUrl(kind) ? "Next: add screenshots" : kind === "store" ? "Test my store" : "Test my site"}
+              {!busy && <Arrow />}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void finish(true)}
+              className="btn btn-ghost h-14 px-6 text-base"
+            >
+              Skip
+            </button>
+          </div>
+          <p className="mt-4 text-center text-xs text-faint">
+            Crawler is for people 13 and older. We only look at these answers as totals, never sell them, and never show them publicly.
+          </p>
+        </form>
       ) : (
         <form onSubmit={next} className="mx-auto mt-12 max-w-xl" aria-labelledby="ob-q2">
           <button type="button" onClick={() => setStep(1)} className="btn btn-text -ml-3 h-10 text-sm">
             ← {current.name}
           </button>
-          <p className="t-label mt-4">step 2 of 2</p>
+          <p className="t-label mt-4">step 2 of {steps}</p>
           <h1 id="ob-q2" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
             {needsUrl(kind) ? (kind === "store" ? "Where's your store?" : "Where does it live?") : kind === "video" ? "Let's see your video." : kind === "game" ? "Let's see your game." : "Let's see your app."}
           </h1>
@@ -171,13 +234,29 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
           </fieldset>
 
           <button type="submit" disabled={!canNext || busy} className="btn btn-primary mt-10 h-14 w-full text-base">
-            {busy ? "Starting…" : kind === "video" ? "Next: add the video" : !needsUrl(kind) ? "Next: add screenshots" : kind === "store" ? "Test my store" : "Test my site"}
+            {busy ? "Starting…" : firstTime ? "Next" : kind === "video" ? "Next: add the video" : !needsUrl(kind) ? "Next: add screenshots" : kind === "store" ? "Test my store" : "Test my site"}
             {!busy && <Arrow />}
           </button>
           <p className="mt-4 text-center text-xs text-faint">Free first test · simulated customers show buying intent, not real purchases.</p>
         </form>
       )}
     </div>
+  );
+}
+
+// One single-choice question as tap-to-pick chips (tap again to unpick).
+function Choice({ legend, options, value, onPick }: { legend: string; options: Record<string, string>; value?: string; onPick: (v: string) => void }) {
+  return (
+    <fieldset className="mt-8">
+      <legend className="text-sm font-medium">{legend}</legend>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {Object.entries(options).map(([v, label]) => (
+          <button key={v} type="button" aria-pressed={value === v} onClick={() => onPick(v)} className="chip">
+            {label}
+          </button>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 

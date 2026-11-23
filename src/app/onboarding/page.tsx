@@ -17,5 +17,5 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
 
   // Came from the landing page's URL box (next = /app?url=...)? Pre-fill that URL.
   const startUrl = new URL(safeNext, "http://x").searchParams.get("url") ?? "";
-  return <Onboarding startUrl={startUrl} startKind={kind === "app" || kind === "game" || kind === "store" || kind === "video" ? kind : "website"} mind={mind && /^[0-9a-f-]{36}$/.test(mind) ? mind : undefined} preset={preset?.slice(0, 40)} />;
+  return <Onboarding startUrl={startUrl} startKind={kind === "app" || kind === "game" || kind === "store" || kind === "video" ? kind : "website"} mind={mind && /^[0-9a-f-]{36}$/.test(mind) ? mind : undefined} preset={preset?.slice(0, 40)} firstTime />;
 }
