@@ -198,7 +198,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
         <aside className="dash-rail min-w-0 px-4 pt-6 sm:px-6 lg:sticky lg:top-16 lg:h-[calc(100dvh-4rem)] lg:overflow-y-auto lg:px-4 lg:py-6">
           <div className="hidden h-full flex-col lg:flex">
             <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2f45e6] text-base font-semibold text-white shadow-[0_8px_24px_-8px_#2f45e6]">{initial}</span>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#1d4ed8] text-base font-semibold text-white shadow-[0_8px_24px_-8px_#1d4ed8]">{initial}</span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium">{data.name}</span>
                 <span className="block truncate text-xs text-faint">{planLabel}</span>
@@ -410,7 +410,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                           <Link href={`/run/${f.testId}`} className="group flex items-center gap-3 py-3.5 transition-colors hover:text-white">
                             <span className="w-5 font-mono text-xs text-faint">{String(i + 1).padStart(2, "0")}</span>
                             <span className="min-w-0 flex-1 text-sm">{f.title}</span>
-                            {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#2f45e6]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
+                            {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#1d4ed8]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
                           </Link>
                         </li>
                       ))}

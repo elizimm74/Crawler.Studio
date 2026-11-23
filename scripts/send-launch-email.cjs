@@ -49,7 +49,7 @@ function message(person) {
     `<p>Hi ${esc(first)},</p>` +
     `<p>You asked us to tell you when Crawler launched. <strong>It's live.</strong></p>` +
     `<p>Crawler sends 100 simulated customers to your website, app, game, store or ad. They tell you what stopped them and what to fix first, in about a minute.</p>` +
-    `<p><a href="${esc(LAUNCH_URL)}" style="display:inline-block;background:#2f45e6;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:600">Try Crawler</a></p>` +
+    `<p><a href="${esc(LAUNCH_URL)}" style="display:inline-block;background:#1d4ed8;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:600">Try Crawler</a></p>` +
     `<p style="color:#555;font-size:14px">A reminder of what it is: the customers are simulated, so you get buying intent and reasons, not real purchases. It's a fast first read before you launch.</p>` +
     `<p>Thanks for being early.</p>` +
     `<hr style="border:0;border-top:1px solid #ddd;margin:28px 0 14px" />` +

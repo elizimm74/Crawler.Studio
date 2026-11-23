@@ -5,7 +5,7 @@
 /*
   CRAWLER DESIGN SYSTEM (v9, "glass": navy page, frosted panels, business-professional type).
   One look only (no light/dark modes):
-   - The PAGE is the logo blue #1a2aa6 with white text; BLACK panels (.card-blue, .blue-band, the dashboard) mix in.
+   - The PAGE is the logo blue #1d4ed8 with white text; BLACK panels (.card-blue, .blue-band, the dashboard) mix in.
    - CARDS (.card, .card-raised) and torn PAPER strips (.paper) are white with dark text.
      They work by re-setting the color variables inside themselves, so every
      component (text-fg, bg-accent, ...) automatically picks the right colors.
@@ -20,21 +20,21 @@
    Everything (page, cards, paper sheets) uses the SAME light-on-dark tokens, so text is
    always white-ish and components need no special cases. Surfaces are frosted glass. */
 :root {
-  --brand: #1a2aa6;
+  --brand: #1d4ed8;
   --bg: #060b2a; /* deep navy page */
   --surface: rgb(255 255 255 / 0.06); /* glass */
   --bg-subtle: rgb(255 255 255 / 0.06);
   --bg-raised: rgb(255 255 255 / 0.11);
   --fg: #ffffff;
-  --fg-muted: #c9cdea; /* about 11:1 on the navy */
-  --fg-faint: #9ea5cf; /* about 7:1 on the navy */
+  --fg-muted: #c8ccd4; /* about 11:1 on the navy */
+  --fg-faint: #9ba1ad; /* about 7:1 on the navy */
   --line: rgb(255 255 255 / 0.12);
   --line-strong: rgb(255 255 255 / 0.22);
   --accent: #ffffff; /* the main button is white... */
-  --accent-hover: #e6e9ff;
-  --accent-fg: #1a2aa6; /* ...with logo-blue text */
-  --accent-ink: #b9c3ff; /* small accent text on glass */
-  --sheen: rgb(26 42 166 / 0.16);
+  --accent-hover: #e3edff;
+  --accent-fg: #1d4ed8; /* ...with logo-blue text */
+  --accent-ink: #bcd2ff; /* small accent text on glass */
+  --sheen: rgb(29 78 216 / 0.16);
   --shadow-sm: 0 1px 0 rgb(255 255 255 / 0.08) inset, 0 8px 24px -16px rgb(0 0 0 / 0.6);
   --shadow: 0 1px 0 rgb(255 255 255 / 0.12) inset, 0 30px 60px -30px rgb(0 0 0 / 0.7);
   color-scheme: dark;
@@ -317,7 +317,7 @@ input[type="range"] {
   }
   .field:focus {
     outline: none;
-    border-color: #1a2aa6;
+    border-color: #1d4ed8;
     box-shadow: 0 0 0 3px rgb(255 255 255 / 0.45);
   }
   .field-label {
@@ -573,7 +573,7 @@ html {
 }
 /* Chunky display headings (same font as the "crawler" wordmark) */
 .features .t-chunk {
-  color: #1a2aa6;
+  color: #1d4ed8;
 }
 .t-chunk {
   font-family: "Archivo", var(--font-sans);
@@ -670,10 +670,10 @@ html {
   line-height: 1;
   text-transform: uppercase;
   color: transparent;
-  -webkit-text-stroke: 2px #1a2aa6;
+  -webkit-text-stroke: 2px #1d4ed8;
 }
 .marquee-word.is-solid {
-  color: #1a2aa6;
+  color: #1d4ed8;
 }
 @media (prefers-reduced-motion: reduce), (scripting: none) {
   .split-word > span {
@@ -762,7 +762,7 @@ body {
 body {
   background-image:
     radial-gradient(1100px 760px at 12% -12%, rgb(47 68 232 / 0.55) 0%, transparent 60%),
-    radial-gradient(900px 700px at 105% 18%, rgb(26 42 166 / 0.6) 0%, transparent 62%),
+    radial-gradient(900px 700px at 105% 18%, rgb(29 78 216 / 0.6) 0%, transparent 62%),
     radial-gradient(900px 640px at 50% 115%, rgb(18 30 130 / 0.7) 0%, transparent 70%);
   background-attachment: fixed;
 }
@@ -831,8 +831,8 @@ body {
 .features .card,
 .features .card-raised {
   --fg: #ffffff;
-  --fg-muted: #c9cdea;
-  --fg-faint: #9ea5cf;
+  --fg-muted: #c8ccd4;
+  --fg-faint: #9ba1ad;
   --line: rgb(255 255 255 / 0.12);
   --line-strong: rgb(255 255 255 / 0.22);
   --bg-subtle: rgb(255 255 255 / 0.06);
@@ -900,7 +900,7 @@ body {
    v10 "SOLID" (2026-11-19, founder: "the light blue looks terrible everywhere, the gradient
    background looks bad, make it look like the future"). Replaces the v9/v9.1 colors:
    - ONE flat near-black page (no glows, no gradients).
-   - ONE brand blue (#2f45e6, deep, never light/pastel): main buttons, active states, data marks.
+   - ONE brand blue (#1d4ed8, deep, never light/pastel): main buttons, active states, data marks.
    - Text is white and greys; small labels are grey, never blue.
    - Panels: barely-there glass (3.5% white + a hairline border).
    ===================================================================== */
@@ -917,8 +917,8 @@ body {
   --fg-faint: #8d92a4; /* about 6:1 on the page */
   --line: rgb(255 255 255 / 0.08);
   --line-strong: rgb(255 255 255 / 0.16);
-  --accent: #2f45e6; /* the one brand blue */
-  --accent-hover: #3b52f2;
+  --accent: #1d4ed8; /* the one brand blue */
+  --accent-hover: #2563eb;
   --accent-fg: #ffffff;
   --accent-ink: #f5f6f8; /* small "accent" text is white, not blue */
 }
@@ -946,14 +946,14 @@ body {
     border-block: 1px solid rgb(255 255 255 / 0.06);
   }
   .btn-primary {
-    background: #2f45e6;
+    background: #1d4ed8;
     color: #ffffff;
     border: 1px solid rgb(255 255 255 / 0.14);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 2px rgb(0 0 0 / 0.4);
   }
   .btn-primary:hover:not(:disabled) {
-    background: #3b52f2;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 8px 24px -12px rgb(47 69 230 / 0.7);
+    background: #2563eb;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 8px 24px -12px rgb(29 78 216 / 0.7);
   }
   .btn-secondary {
     background: rgb(255 255 255 / 0.06);
@@ -964,8 +964,8 @@ body {
     border: 1px solid rgb(255 255 255 / 0.12);
   }
   .field:focus {
-    border-color: #2f45e6;
-    box-shadow: 0 0 0 3px rgb(47 69 230 / 0.35);
+    border-color: #1d4ed8;
+    box-shadow: 0 0 0 3px rgb(29 78 216 / 0.35);
   }
 }
 .card-blue,
@@ -989,7 +989,7 @@ body {
 .dash-active {
   background: rgb(255 255 255 / 0.06);
   border: 1px solid rgb(255 255 255 / 0.1);
-  box-shadow: inset 3px 0 0 #2f45e6;
+  box-shadow: inset 3px 0 0 #1d4ed8;
 }
 /* the big logo behind the dashboard hero: a faint watermark, no glow */
 .dash-orb {
@@ -1018,7 +1018,7 @@ body {
   top: 2%;
   height: 2px;
   background: linear-gradient(90deg, transparent, #f5f6f8, transparent);
-  box-shadow: 0 0 18px 2px rgb(47 69 230 / 0.8);
+  box-shadow: 0 0 18px 2px rgb(29 78 216 / 0.8);
   animation: scan-sweep 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 @keyframes scan-sweep {
@@ -1067,8 +1067,8 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(620px 420px at 18% -4%, rgb(47 69 230 / 0.22), transparent 70%),
-    radial-gradient(520px 380px at 92% 28%, rgb(47 69 230 / 0.11), transparent 70%);
+    radial-gradient(620px 420px at 18% -4%, rgb(29 78 216 / 0.22), transparent 70%),
+    radial-gradient(520px 380px at 92% 28%, rgb(29 78 216 / 0.11), transparent 70%);
   animation: stage-drift 18s ease-in-out infinite alternate;
 }
 @keyframes stage-drift { to { transform: translate3d(0, 24px, 0) scale(1.04); } }
@@ -1088,7 +1088,7 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   position: absolute; left: 0; right: 0; top: 0; height: 44px; border-radius: 12px;
   background: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.04));
   border: 1px solid rgb(255 255 255 / 0.14);
-  box-shadow: inset 3px 0 0 #2f45e6, 0 10px 30px -12px rgb(47 69 230 / 0.6);
+  box-shadow: inset 3px 0 0 #1d4ed8, 0 10px 30px -12px rgb(29 78 216 / 0.6);
   transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 .dash-quick {
@@ -1118,7 +1118,7 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.35s;
-  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, -20%), rgb(47 69 230 / 0.2), transparent 60%);
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, -20%), rgb(29 78 216 / 0.2), transparent 60%);
 }
 .gpanel:hover::before { opacity: 1; }
 .gpanel:hover { border-color: rgb(255 255 255 / 0.2); }
@@ -1135,7 +1135,7 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   backdrop-filter: blur(14px);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.gsearch:focus-within { border-color: #2f45e6; box-shadow: 0 0 0 3px rgb(47 69 230 / 0.3); }
+.gsearch:focus-within { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgb(29 78 216 / 0.3); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .gpanel { background: #12141c; }
   .dash-rail { background: #0c0d12; }
@@ -1145,10 +1145,10 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
 .dash-rise { animation: dash-rise 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @keyframes dash-rise { from { opacity: 0; transform: translateY(16px) scale(0.985); } }
 .pulse-dot {
-  display: inline-block; width: 8px; height: 8px; border-radius: 9999px; background: #3b52f2;
+  display: inline-block; width: 8px; height: 8px; border-radius: 9999px; background: #2563eb;
   animation: pulse-ring 2s ease-out infinite;
 }
-@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgb(59 82 242 / 0.7); } 70%, 100% { box-shadow: 0 0 0 10px rgb(59 82 242 / 0); } }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgb(37 99 235 / 0.7); } 70%, 100% { box-shadow: 0 0 0 10px rgb(37 99 235 / 0); } }
 .fade-in { animation: fade-in 1s 0.6s both; }
 @keyframes fade-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
@@ -1175,8 +1175,8 @@ html:has(.report-stage), body:has(.report-stage) { overflow-x: clip; }
   height: 38rem;
   pointer-events: none;
   background:
-    radial-gradient(560px 340px at 30% 0%, rgb(47 69 230 / 0.2), transparent 70%),
-    radial-gradient(480px 320px at 78% 12%, rgb(47 69 230 / 0.1), transparent 70%);
+    radial-gradient(560px 340px at 30% 0%, rgb(29 78 216 / 0.2), transparent 70%),
+    radial-gradient(480px 320px at 78% 12%, rgb(29 78 216 / 0.1), transparent 70%);
   animation: stage-drift 18s ease-in-out infinite alternate;
 }
 .report .card,
@@ -1210,20 +1210,20 @@ html:has(.report-stage), body:has(.report-stage) { overflow-x: clip; }
 @media (min-width: 640px) { .fixcard { grid-template-columns: 2.75rem minmax(0, 1fr) auto; padding: 1.5rem; gap: 1.25rem; } }
 .fixnum {
   display: flex; height: 2.5rem; width: 2.5rem; align-items: center; justify-content: center; border-radius: 0.875rem;
-  background: rgb(47 69 230 / 0.2); border: 1px solid rgb(59 82 242 / 0.4); font-family: var(--font-mono); font-size: 0.8125rem;
+  background: rgb(29 78 216 / 0.2); border: 1px solid rgb(37 99 235 / 0.4); font-family: var(--font-mono); font-size: 0.8125rem;
 }
 .winpill { justify-self: start;
   display: inline-flex; flex-direction: column; align-items: center; min-width: 5.5rem; padding: 0.625rem 0.875rem; border-radius: 1rem;
-  background: linear-gradient(180deg, rgb(47 69 230 / 0.35), rgb(47 69 230 / 0.15)); border: 1px solid rgb(59 82 242 / 0.45);
-  box-shadow: 0 10px 30px -14px #2f45e6;
+  background: linear-gradient(180deg, rgb(29 78 216 / 0.35), rgb(29 78 216 / 0.15)); border: 1px solid rgb(37 99 235 / 0.45);
+  box-shadow: 0 10px 30px -14px #1d4ed8;
 }
 /* the launch path */
 .pathstep { position: relative; display: block; border-radius: 1rem; padding: 1rem; border: 1px solid rgb(255 255 255 / 0.1); background: rgb(255 255 255 / 0.03); transition: transform 0.25s, border-color 0.25s, background 0.25s; }
 a.pathstep:hover { transform: translateY(-3px); border-color: rgb(255 255 255 / 0.25); background: rgb(255 255 255 / 0.06); }
 .pathdot { display: flex; height: 1.75rem; width: 1.75rem; align-items: center; justify-content: center; border-radius: 9999px; border: 1px solid rgb(255 255 255 / 0.25); font-size: 0.75rem; }
-.pathdot.done { background: #2f45e6; border-color: #3b52f2; color: #fff; box-shadow: 0 0 0 4px rgb(47 69 230 / 0.25); }
+.pathdot.done { background: #1d4ed8; border-color: #2563eb; color: #fff; box-shadow: 0 0 0 4px rgb(29 78 216 / 0.25); }
 .pathbar { height: 4px; border-radius: 9999px; background: rgb(255 255 255 / 0.08); overflow: hidden; }
-.pathbar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2f45e6, #3b52f2); transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.pathbar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #1d4ed8, #2563eb); transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .nextcard { display: flex; flex-direction: column; gap: 0.5rem; padding: 1.25rem; transition: transform 0.25s; }
 a.nextcard:hover { transform: translateY(-3px); }
 .nextcard .arrow { transition: transform 0.25s; }
@@ -1242,10 +1242,10 @@ html[data-calm] .pathbar > i, html[data-calm] a.pathstep, html[data-calm] a.next
 .home-hero .t-wordmark { font-size: clamp(4.5rem, min(21vw, 26vh), 17rem); }
 
 /* ---- FINAL POLISH (2026-11-22 launch audit) ---- */
-/* Readable accent TEXT: the brand blue #2f45e6 is only 2.9:1 on the near-black page (below the 3:1
+/* Readable accent TEXT: the brand blue #1d4ed8 is only 2.9:1 on the near-black page (below the 3:1
    minimum even for big text). Text uses a lighter shade of the same blue (about 5.5:1); buttons,
    rings and other filled shapes keep the deep brand blue. */
-.text-accent { color: #7684ff; }
+.text-accent { color: #6ea0ff; }
 /* No lonely last words in headings and lead paragraphs ("...before launch / day."). */
 .t-lead, .t-h1, .t-h2, .t-h3, .t-chunk, .home-hero p { text-wrap: balance; }
 /* phone menu: no default disclosure triangle */
