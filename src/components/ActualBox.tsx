@@ -4,8 +4,10 @@
 // to Crawler's prediction. That track record is how we earn trust.
 import { useState } from "react";
 
-export default function ActualBox({ testId, kind }: { testId: string; kind: "website" | "app" }) {
+export default function ActualBox({ testId, kind }: { testId: string; kind: "website" | "app" | "video" }) {
   const [value, setValue] = useState("");
+  const [visitors, setVisitors] = useState("");
+  const [days, setDays] = useState("");
   const [state, setState] = useState<"idle" | "busy" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +19,7 @@ export default function ActualBox({ testId, kind }: { testId: string; kind: "web
       const res = await fetch(`/api/tests/${testId}/actual`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ realPct: Number(value) }),
+        body: JSON.stringify({ realPct: Number(value), visitors: visitors ? Number(visitors) : undefined, days: days ? Number(days) : undefined }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error);
@@ -46,7 +48,7 @@ export default function ActualBox({ testId, kind }: { testId: string; kind: "web
       {state === "done" ? (
         <p className="mt-4 rounded-lg border border-line-strong bg-subtle p-4 text-sm">Thank you. That helps make Crawler more honest.</p>
       ) : (
-        <form onSubmit={save} className="mt-4 flex flex-col gap-2 sm:flex-row">
+        <form onSubmit={save} className="mt-4 flex flex-col flex-wrap gap-2 sm:flex-row">
           <label htmlFor="actual-input" className="sr-only">
             Real conversion rate in percent
           </label>
@@ -65,6 +67,14 @@ export default function ActualBox({ testId, kind }: { testId: string; kind: "web
             />
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted">%</span>
           </div>
+          <label htmlFor="actual-visitors" className="sr-only">
+            Real visitors counted (optional)
+          </label>
+          <input id="actual-visitors" type="number" min={1} step="1" value={visitors} onChange={(e) => setVisitors(e.target.value)} placeholder="visitors (optional)" className="field h-12 sm:w-44" />
+          <label htmlFor="actual-days" className="sr-only">
+            Over how many days (optional)
+          </label>
+          <input id="actual-days" type="number" min={1} step="1" value={days} onChange={(e) => setDays(e.target.value)} placeholder="days (optional)" className="field h-12 sm:w-36" />
           <button className="btn btn-secondary h-12 px-6" disabled={state === "busy" || !value}>
             {state === "busy" ? "Saving…" : "Save my real result"}
           </button>
