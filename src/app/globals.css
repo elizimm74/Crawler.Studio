@@ -1242,10 +1242,10 @@ html[data-calm] .pathbar > i, html[data-calm] a.pathstep, html[data-calm] a.next
 .home-hero .t-wordmark { font-size: clamp(4.5rem, min(21vw, 26vh), 17rem); }
 
 /* ---- FINAL POLISH (2026-11-22 launch audit) ---- */
-/* Readable accent TEXT: the brand blue #1d4ed8 is only 2.9:1 on the near-black page (below the 3:1
-   minimum even for big text). Text uses a lighter shade of the same blue (about 5.5:1); buttons,
-   rings and other filled shapes keep the deep brand blue. */
-.text-accent { color: #6ea0ff; }
+/* Accent TEXT stays a DARK, saturated royal blue (founder: "keep the blue dark", 2026-11-23).
+   #3a72ff is the darkest blue that is still readable on the near-black page (4.77:1, AA for all text).
+   Buttons, rings and filled shapes keep the deep brand blue #1d4ed8 (too dark for text: 2.97:1). */
+.text-accent { color: #3a72ff; }
 /* No lonely last words in headings and lead paragraphs ("...before launch / day."). */
 .t-lead, .t-h1, .t-h2, .t-h3, .t-chunk, .home-hero p { text-wrap: balance; }
 /* phone menu: no default disclosure triangle */
