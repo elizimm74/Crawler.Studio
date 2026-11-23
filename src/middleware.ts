@@ -9,8 +9,8 @@ import { createServerClient } from "@supabase/ssr";
 import { AUTH_ENABLED, SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 import { safePath } from "@/lib/safePath";
 
-const PRIVATE_PAGES = ["/app", "/run", "/tests", "/dashboard", "/admin"];
-const PRIVATE_APIS = ["/api/crawls", "/api/tests", "/api/files"];
+const PRIVATE_PAGES = ["/app", "/run", "/tests", "/dashboard", "/admin", "/settings"];
+const PRIVATE_APIS = ["/api/crawls", "/api/tests", "/api/files", "/api/account", "/api/billing"];
 
 export async function middleware(request: NextRequest) {
   if (!AUTH_ENABLED) return NextResponse.next(); // accounts switched off

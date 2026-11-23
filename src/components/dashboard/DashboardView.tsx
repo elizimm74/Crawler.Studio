@@ -28,13 +28,14 @@ import { PLANS, planName } from "@/lib/plans";
 
 const VIEWS = [
   ["overview", "Overview"],
-  ["tests", "Tests"],
+  ["tests", "Simulations"],
+  ["sites", "My websites"],
   ["fixes", "Fixes"],
   ["minds", "Customer minds"],
   ["playbook", "Playbook"],
 ] as const;
 type ViewId = (typeof VIEWS)[number][0];
-const VIEW_ICON: Record<ViewId, string> = { overview: "overview", tests: "chart", fixes: "fix", minds: "minds", playbook: "playbook" };
+const VIEW_ICON: Record<ViewId, string> = { overview: "overview", tests: "chart", sites: "overview", fixes: "fix", minds: "minds", playbook: "playbook" };
 
 const date = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 function ago(iso: string) {
@@ -131,6 +132,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
   const [view, setView] = useState<ViewId>("overview");
   const [hello, setHello] = useState("Welcome back");
   const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<"all" | "running" | "done" | "error">("all");
   const search = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -173,13 +175,24 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
   const allPcts = done.map((a) => a.pct!).reverse();
   const trendPcts = sum.trend.map((t) => t.pct);
   const trendDelta = trendPcts.length >= 2 ? trendPcts[trendPcts.length - 1] - trendPcts[0] : null;
+  const stateOf = (a: Analysis) => (a.status === "done" ? "done" : a.status === "error" ? "error" : "running");
   const found = useMemo(
     () =>
-      query.trim()
+      (query.trim()
         ? data.analyses.filter((a) => `${a.label} ${a.blocker ?? ""} ${a.kind}`.toLowerCase().includes(query.trim().toLowerCase()))
-        : data.analyses,
-    [query, data.analyses],
+        : data.analyses
+      ).filter((a) => status === "all" || stateOf(a) === status),
+    [query, status, data.analyses],
   );
+  // My websites: every site or store tested, newest first, with its history
+  const sites = useMemo(() => {
+    const map = new Map<string, Analysis[]>();
+    for (const a of data.analyses) if (a.kind === "website" || a.kind === "store") map.set(a.label, [...(map.get(a.label) ?? []), a]);
+    return [...map.entries()].map(([label, list]) => {
+      const finished = list.filter((a) => a.status === "done");
+      return { label, kind: list[0].kind, url: list[0].url, tests: list.length, last: list[0].created_at, latest: finished[0], best: finished.reduce<number | null>((m, a) => (a.pct !== null && (m === null || a.pct > m) ? a.pct : m), null) };
+    });
+  }, [data.analyses]);
   const planLabel = plan.unlimited ? "Admin" : plan.plan === "pack" ? "Paid tests" : `${planName(plan.plan)} plan`;
   const subLine = subscriptionLine(plan.subscription);
   const summary = latest
@@ -232,7 +245,10 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                 <Icon name="play" className="h-4 w-4" /> Test a video or ad
               </Link>
               <Link href="/pricing" className="dash-quick">
-                <Icon name="spark" className="h-4 w-4" /> Get more tests
+                <Icon name="spark" className="h-4 w-4" /> Plans and usage
+              </Link>
+              <Link href="/settings" className="dash-quick">
+                <Icon name="spark" className="h-4 w-4" /> Settings
               </Link>
               {plan.unlimited && (
                 <Link href="/admin/insights" className="dash-quick">
@@ -496,8 +512,22 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                 >
                   {query ? `Tests matching “${query}”` : "Tests"}
                 </Title>
+                <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filter by status">
+                  {(["all", "running", "done", "error"] as const).map((k) => (
+                    <button key={k} type="button" aria-pressed={status === k} onClick={() => setStatus(k)} className="chip">
+                      {k === "all" ? `All ${data.analyses.length}` : k === "running" ? `Running ${data.analyses.filter((a) => stateOf(a) === "running").length}` : k === "done" ? `Completed ${data.analyses.filter((a) => stateOf(a) === "done").length}` : `Failed ${data.analyses.filter((a) => stateOf(a) === "error").length}`}
+                    </button>
+                  ))}
+                </div>
                 {found.length === 0 ? (
-                  <p className="mt-4 text-sm text-faint">{query ? "Nothing matches that search." : "No tests yet. Your first one is free."}</p>
+                  <p className="mt-4 text-sm text-faint">
+                    {query ? "Nothing matches that search." : status !== "all" ? "No simulations with that status." : "No simulations yet. "}
+                    {!query && status === "all" && (
+                      <Link href="/onboarding" className="underline underline-offset-2">
+                        Run your first one free
+                      </Link>
+                    )}
+                  </p>
                 ) : (
                   <ul className="mt-3 divide-y divide-white/[0.06]">
                     {found.map((a) => (
@@ -536,6 +566,48 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                 </Panel>
               )}
             </div>
+          )}
+
+          {/* ===== MY WEBSITES ===== */}
+          {view === "sites" && (
+            <Panel label="My websites">
+              <Title>Websites and stores you tested</Title>
+              {sites.length === 0 ? (
+                <div className="mt-4 text-sm text-faint">
+                  <p>No websites yet. Paste one and see what simulated customers think.</p>
+                  <Link href="/onboarding" className="btn btn-primary mt-4 h-11 px-5 text-sm">
+                    Test a website
+                  </Link>
+                </div>
+              ) : (
+                <ul className="mt-3 divide-y divide-white/[0.06]">
+                  {sites.map((site) => (
+                    <li key={site.label} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{site.label}</p>
+                        <p className="text-xs text-faint">
+                          {site.kind === "store" ? "Online store" : "Website"} · {site.tests} test{site.tests === 1 ? "" : "s"} · last tested {date(site.last)}
+                          {site.best !== null ? ` · best ${Math.round(site.best)}%` : ""}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        {site.latest && (
+                          <Link href={`/run/${site.latest.id}`} className="btn btn-secondary h-10 px-4 text-sm">
+                            Latest report
+                          </Link>
+                        )}
+                        <Link
+                          href={site.latest ? `/app?url=${encodeURIComponent(site.url)}&retest=${site.latest.id}${site.kind === "store" ? "&type=store" : ""}` : `/onboarding?url=${encodeURIComponent(site.url)}`}
+                          className="btn btn-ghost h-10 px-4 text-sm"
+                        >
+                          Re-test
+                        </Link>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Panel>
           )}
 
           {/* ===== FIXES ===== */}

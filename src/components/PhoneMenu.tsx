@@ -29,7 +29,7 @@ export default function PhoneMenu({ signedIn, accounts }: { signedIn: boolean; a
     ["/example", "Example report"],
     ["/pricing", "Pricing"],
     ["/science", "The science"],
-    ...(signedIn ? ([["/dashboard", "Dashboard"], ["/tests", "My tests"]] as [string, string][]) : []),
+    ...(signedIn ? ([["/dashboard", "Dashboard"], ["/tests", "My tests"], ["/settings", "Settings"]] as [string, string][]) : []),
     ...(!signedIn && accounts ? ([["/signin", "Sign in"]] as [string, string][]) : []),
   ];
   return (
