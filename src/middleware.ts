@@ -1,9 +1,13 @@
 // Runs before every page and API request:
-//  1. keeps the visitor's sign-in fresh (Supabase tokens expire hourly)
+//  1. keeps the visitor's sign-in fresh (Supabase tokens expire hourly; the login cookie lasts 400 days,
+//     so people stay signed in on this browser until they sign out)
 //  2. sends signed-out visitors to /signin for the private parts of the app
+//  3. sends SIGNED-IN visitors from the home page / sign-in / sign-up straight to their dashboard
+//     (the landing page is still reachable at /?home=1, linked in the footer)
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { AUTH_ENABLED, SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase/config";
+import { safePath } from "@/lib/safePath";
 
 const PRIVATE_PAGES = ["/app", "/run", "/tests", "/dashboard", "/admin"];
 const PRIVATE_APIS = ["/api/crawls", "/api/tests", "/api/files"];
@@ -29,6 +33,13 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // A redirect must carry any refreshed sign-in cookies too, or the fresh login would be lost on the way.
+  const redirect = (url: URL) => {
+    const r = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((c) => r.cookies.set(c));
+    return r;
+  };
+
   const path = request.nextUrl.pathname;
   const starts = (list: string[]) => list.some((p) => path === p || path.startsWith(p + "/"));
   if (!user && starts(PRIVATE_APIS)) {
@@ -41,7 +52,14 @@ export async function middleware(request: NextRequest) {
     const fromLanding = path === "/app" && request.nextUrl.searchParams.has("url");
     url.pathname = fromLanding ? "/signup" : "/signin";
     url.search = `?next=${encodeURIComponent(path + request.nextUrl.search)}`;
-    return NextResponse.redirect(url);
+    return redirect(url);
+  }
+  // Already signed in? Skip the landing page and the sign-in forms: go straight to the dashboard.
+  const toDashboard = (path === "/" && !request.nextUrl.searchParams.has("home")) || path === "/signin" || path === "/signup";
+  if (user && toDashboard && request.method === "GET") {
+    // From /signin?next=/app?url=... keep going there; otherwise the dashboard. Only our own pages.
+    const target = path === "/" ? "/dashboard" : safePath(request.nextUrl.searchParams.get("next"), "/dashboard");
+    return redirect(new URL(target, request.url));
   }
   // Arrived through a friend's invite link and now signed in? Credit the friend once, then forget the cookie.
   // (The database only accepts brand-new accounts and never your own code.)

@@ -127,6 +127,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <div className="page flex flex-col gap-4 py-6 text-sm text-faint sm:flex-row sm:items-center sm:justify-between">
             <Logo small />
             <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-1">
+              {user && (
+                <Link href="/?home=1" className="hover:text-fg">
+                  Home page
+                </Link>
+              )}
               <Link href="/example" className="hover:text-fg">
                 Example report
               </Link>
