@@ -1,7 +1,7 @@
 // Cleans an audience that came from the browser (saved "customer minds").
 // Never trust the browser: only known options, sane numbers, short text, short lists.
 import { BUDGETS, COMPANY_SIZES, GOALS, MINDSETS, TECH_LEVELS, type Audience, type Goal, type ProductProfile } from "./types";
-import { isProductType } from "./productTypes";
+import { cleanFocus, isProductType } from "./productTypes";
 
 const num = (x: unknown, min: number, max: number, fallback: number) => {
   const n = Number(x);
@@ -68,5 +68,6 @@ export function cleanProfile(x: unknown): ProductProfile | null {
     proof: list(p.proof),
     friction: list(p.friction),
     tryTask: text(p.tryTask, 300),
+    focus: cleanFocus(p.focus),
   };
 }

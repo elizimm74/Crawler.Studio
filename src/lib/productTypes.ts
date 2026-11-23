@@ -42,3 +42,22 @@ const LENS: Partial<Record<ProductType, string>> = {
 export function lensFor(t: unknown): string {
   return isProductType(t) ? (LENS[t] ?? "") : "";
 }
+
+// ---------- What the founder wants to learn (onboarding step 2) ----------
+// Chosen from a FIXED list; only the ids travel to the server, and the prompt gets OUR sentence
+// for each id (never user text), so this can't be used to inject instructions.
+export const FOCUS = {
+  buy: { label: "Would customers buy?", prompt: "whether people would actually buy or sign up, and the single biggest reason they wouldn't" },
+  price: { label: "Is my price reasonable?", prompt: "the price: whether it feels fair for what they get, whether it is easy to find and understand, and any surprise costs" },
+  value: { label: "Is the value clear?", prompt: "whether the page explains what it is, who it is for and why it is better, within the first few seconds" },
+  blockers: { label: "What stops people converting?", prompt: "the exact moment and reason people would leave (missing information, trust, effort, the signup or cart)" },
+  appeal: { label: "Is the product appealing?", prompt: "whether the product itself sounds desirable and different from what they use now" },
+  general: { label: "General review", prompt: "a balanced first-visit review: clarity, trust, price and effort" },
+} as const;
+export type FocusId = keyof typeof FOCUS;
+export const isFocusId = (x: unknown): x is FocusId => typeof x === "string" && Object.prototype.hasOwnProperty.call(FOCUS, x);
+export const cleanFocus = (x: unknown): FocusId[] => [...new Set((Array.isArray(x) ? x : []).filter(isFocusId))].slice(0, 6);
+export function focusLine(ids: unknown): string {
+  const f = cleanFocus(ids);
+  return f.length ? `The founder especially wants to learn about: ${f.map((id) => FOCUS[id].prompt).join("; ")}. Pay extra attention to these in your reasoning, but stay honest about everything else.` : "";
+}

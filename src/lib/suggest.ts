@@ -3,7 +3,7 @@
 //   1. a PRODUCT PROFILE — what it is, who it's for, prices, proof, friction
 //   2. a suggested AUDIENCE, so the form arrives pre-filled
 // The founder can correct both before running. Every persona reads the profile.
-import { lensFor } from "./productTypes";
+import { focusLine, lensFor } from "./productTypes";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { anthropic, assertNotRefused, HAIKU, requireApiKey } from "./ai";
@@ -184,6 +184,7 @@ export function profileToText(p: ProductProfile): string {
     `Prices: ${list(p.prices)}`,
     `Proof: ${list(p.proof)}`,
     `Friction: ${list(p.friction)}`,
+    ...(focusLine(p.focus) ? [focusLine(p.focus)] : []),
   ].join("\n");
 }
 

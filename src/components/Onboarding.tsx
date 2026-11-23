@@ -1,50 +1,87 @@
 "use client";
-// The questions asked BEFORE every test (and as first-run onboarding). Calm steps:
-//   1. What are you launching?  big tiles; picking one moves on by itself
-//   2. Where is it? (the link, or "you'll add screenshots next") + who it's for (optional)
-//   3. FIRST TIME ONLY: "About you" (age, where you heard of us, role, stage, goal). All optional,
-//      one tap each, with Skip. Saved with where they first came from (src/lib/insights.ts) via
-//      save_signup_answers (migration 0018), so the admin insights page can study it.
-// Fewer, bigger questions = more people reach their result. Everything but the link is optional.
-// It's the first thing new visitors see (the home page button), no account needed.
-// The answers are saved on the account (Supabase "user metadata"), which also marks
-// onboarding as done. Signed-out visitors sign up at the end (on the way to the test).
-import { useState } from "react";
+// The questions asked BEFORE every test (and as first-run onboarding). Short and calm:
+//   1. Your website: paste it, we CHECK it (real, public, reachable: /api/check-url), show a small
+//      preview and GUESS the category (you can change it). No website? Test an app, game or video.
+//   2. What do you want to learn? (objectives, several allowed) + who it's for (optional)
+//   3. FIRST TIME ONLY: "About you" (age, where you heard of us...). All optional, with Skip.
+// Then /app takes over: audience (optional), test size, and a confirm screen before anything is used.
+// The URL is never silently dropped: it comes from the home page (?url=) and travels on to /app.
+// Signed-out visitors answer everything, then sign up on the way to the test (answers wait in this tab).
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { Arrow } from "@/components/landing/UrlForm";
 import { AGES, GOALS, HEARD, ROLES, STAGES, firstTouch, type About } from "@/lib/insights";
+import { CATEGORIES, type Category } from "@/lib/category";
+import { FOCUS, type FocusId } from "@/lib/productTypes";
+import { STARTER_CUSTOMERS } from "@/lib/plans";
 
 type Kind = "website" | "app" | "game" | "store" | "video";
-const needsUrl = (k: Kind) => k === "website" || k === "store";
 const WHO = ["Students", "Founders", "Parents", "Small businesses", "Developers", "Everyone"];
+type Check = { ok: true; url: string; host: string; title?: string; category: Category; note?: string } | { ok: false; problem: string };
 
 export default function Onboarding({ startUrl, startKind = "website", mind, preset, firstTime = false }: { startUrl: string; startKind?: Kind; mind?: string; preset?: string; firstTime?: boolean }) {
   const router = useRouter();
-  const [kind, setKind] = useState<Kind>(startKind);
+  const noSite = startKind === "app" || startKind === "game" || startKind === "video";
+  const [kind, setKind] = useState<Kind>(noSite ? startKind : "website");
   const [url, setUrl] = useState(startUrl);
+  const [check, setCheck] = useState<Check | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [category, setCategory] = useState<Category>(startKind === "store" ? "ecommerce" : "other");
+  const [focus, setFocus] = useState<FocusId[]>(["buy"]);
   const [what, setWhat] = useState("");
-  const when = ""; // launch timing is no longer asked (fewer questions)
   const [who, setWho] = useState("");
   const [whoText, setWhoText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [step, setStep] = useState<1 | 2 | 3>(startUrl ? 2 : 1); // a link from the home page skips to step 2
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [about, setAbout] = useState<About>({});
   const steps = firstTime ? 3 : 2;
   const pick = (k: keyof About, v: string) => setAbout((a) => ({ ...a, [k]: a[k] === v ? undefined : v }));
+  const audience = whoText.trim() || who;
+  const site = kind === "website" || kind === "store";
+  const autoChecked = useRef(false);
 
-  const audience = whoText.trim() || who; // their own words win over the chip
-  const canNext = !needsUrl(kind) || url.trim().length > 3;
+  async function runCheck(target = url) {
+    if (target.trim().length < 4) return;
+    setChecking(true);
+    setCheck(null);
+    try {
+      const res = await fetch("/api/check-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: target }) });
+      const data = (await res.json()) as Check;
+      setCheck(data);
+      if (data.ok) {
+        setUrl(data.url.replace(/^https:\/\//, "").replace(/\/$/, ""));
+        if (startKind !== "store" || data.category === "clothing") setCategory(data.category);
+        if (data.category === "app") setKind("app");
+      }
+    } catch {
+      setCheck({ ok: false, problem: "We couldn't check that address right now. You can still continue." });
+    } finally {
+      setChecking(false);
+    }
+  }
+  // Came from the home page with a URL? Check it straight away.
+  useEffect(() => {
+    if (startUrl && !autoChecked.current) {
+      autoChecked.current = true;
+      void runCheck(startUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // "couldn't reach" is allowed through: the real test uses a full browser, which gets into more sites.
+  const unreachable = check && !check.ok && /reach|check that address/.test(check.problem);
+  const canNext = !site || Boolean(check?.ok) || Boolean(unreachable);
 
   async function finish(skipAbout = false) {
     setBusy(true);
-    const answers = { kind, url: needsUrl(kind) ? url : "", what, when, who: audience };
-    // First-time visitors: their "About you" answers + where they first came from (for marketing totals).
-    const signup = firstTime ? { ...(skipAbout ? {} : about), ...firstTouch(), kind } : null; // Skip still saves where they came from
+    const engine = site ? CATEGORIES[category].engine : kind;
+    const testKind: Kind = engine === "app" && site ? "app" : site ? (engine as Kind) : kind;
+    const finalUrl = check?.ok ? check.url : url.trim();
+    const answers = { kind: testKind, url: site ? finalUrl : "", what, when: "", who: audience, category: site ? category : undefined, focus };
+    const signup = firstTime ? { ...(skipAbout ? {} : about), ...firstTouch(), kind: testKind } : null;
     if (AUTH_ENABLED) {
-      // Signed in: save the answers + "onboarded" on the account now.
-      // Signed out: keep them in this tab; the test page saves them right after sign-up.
       const { data } = await supabaseBrowser().auth.getUser();
       if (data.user) {
         await supabaseBrowser().auth.updateUser({ data: { onboarded: true, onboarding: answers } }).catch(() => null);
@@ -57,73 +94,231 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
         }
       }
     }
-    // Website: the analysis starts right away. App: next you upload screenshots.
     const params = new URLSearchParams(
-      kind === "video" ? { kind: "video" } : kind === "app" ? { kind: "app" } : kind === "game" ? { kind: "app", type: "game" } : kind === "store" ? { url: url.trim(), type: "store" } : { url: url.trim() },
+      testKind === "video" ? { kind: "video" } : testKind === "app" ? { kind: "app" } : testKind === "game" ? { kind: "app", type: "game" } : testKind === "store" ? { url: finalUrl, type: "store" } : { url: finalUrl },
     );
     if (audience) params.set("for", audience);
-    if (what.trim()) params.set("what", what.trim());
-    if (mind) params.set("mind", mind); // from the dashboard: "Test with this mind"
+    const whatHint = what.trim() || (category === "clothing" && site ? "A clothing brand" : "");
+    if (whatHint) params.set("what", whatHint);
+    if (focus.length) params.set("focus", focus.join(","));
+    if (mind) params.set("mind", mind);
     if (preset) params.set("preset", preset);
     router.push(`/app?${params}`); // signed out → sign-up first, then the test starts
   }
 
-  function next(e: React.FormEvent) {
-    e.preventDefault();
-    if (!canNext) return;
-    if (firstTime && step === 2) return setStep(3); // first time: one quick "About you" step
-    void finish();
-  }
-
-  const choose = (k: Kind) => {
-    setKind(k);
-    setStep(2);
-  };
-  const current = KINDS.find((k) => k.id === kind)!;
+  const toggleFocus = (id: FocusId) => setFocus((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
+  const nextLabel = kind === "video" ? "Next: add the video" : kind === "app" || kind === "game" ? "Next: add screenshots" : "Continue to the test";
 
   return (
-    <div className="mx-auto max-w-5xl">
-      {/* progress: two thin bars */}
+    <div className="mx-auto max-w-2xl">
       <div className="mx-auto flex max-w-xs gap-2" aria-label={`Step ${step} of ${steps}`}>
         {Array.from({ length: steps }, (_, i) => i + 1).map((i) => (
           <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= step ? "bg-accent" : "bg-line"}`} />
         ))}
       </div>
 
-      {step === 1 ? (
-        <section className="mt-12 text-center" aria-labelledby="ob-q1">
-          <p className="t-label">step 1 of {steps} · takes about a minute</p>
+      {step === 1 && (
+        <section className="mt-12" aria-labelledby="ob-q1">
+          <p className="t-label">step 1 of {steps}</p>
           <h1 id="ob-q1" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-            What are you launching?
+            {site ? "What are we testing?" : kind === "video" ? "Testing a video or ad." : kind === "game" ? "Testing a game." : "Testing a mobile app."}
           </h1>
-          <div className="mt-10 grid grid-cols-2 gap-3 text-left sm:grid-cols-3 lg:grid-cols-5" role="radiogroup" aria-label="What are you launching?">
-            {KINDS.map((k) => (
+
+          {site ? (
+            <>
+              <form
+                className="mt-8 flex flex-col gap-2 sm:flex-row"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (check?.ok) setStep(2);
+                  else void runCheck();
+                }}
+              >
+                <label htmlFor="ob-url" className="sr-only">
+                  Your website address
+                </label>
+                <div className="relative flex-1">
+                  <span className="field-prefix pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-mono text-sm" aria-hidden>
+                    https://
+                  </span>
+                  <input
+                    id="ob-url"
+                    value={url.replace(/^https?:\/\//i, "")}
+                    onChange={(e) => {
+                      setUrl(e.target.value);
+                      setCheck(null);
+                    }}
+                    placeholder="yourwebsite.com"
+                    className="field h-14 pl-20 text-base"
+                    inputMode="url"
+                    autoComplete="url"
+                    autoFocus={!startUrl}
+                    aria-describedby="ob-url-status"
+                  />
+                </div>
+                {!check?.ok && (
+                  <button type="submit" disabled={checking || url.trim().length < 4} className="btn btn-secondary h-14 px-6">
+                    {checking ? "Checking…" : "Check site"}
+                  </button>
+                )}
+              </form>
+
+              <div id="ob-url-status" aria-live="polite" className="mt-4">
+                {checking && <p className="text-sm text-muted">Opening {url.replace(/^https?:\/\//, "")}…</p>}
+                {check && !check.ok && (
+                  <p role="alert" className="rounded-xl border border-line-strong bg-white/[0.03] p-4 text-sm">
+                    {check.problem}
+                  </p>
+                )}
+                {check?.ok && (
+                  <div className="card p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="t-label">site found</p>
+                        <p className="mt-1 truncate text-lg font-medium">{check.title || check.host}</p>
+                        <p className="truncate font-mono text-sm text-muted">{check.url.replace(/^https?:\/\//, "")}</p>
+                      </div>
+                      <button type="button" className="btn btn-text h-10 shrink-0 text-sm" onClick={() => setCheck(null)}>
+                        Edit
+                      </button>
+                    </div>
+                    {check.note && <p className="mt-3 text-sm text-muted">{check.note}</p>}
+                    <fieldset className="mt-5">
+                      <legend className="text-sm font-medium">
+                        What kind of site is it? <span className="font-normal text-faint">our guess, change it if it&apos;s wrong</span>
+                      </legend>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {(Object.keys(CATEGORIES) as Category[])
+                          .filter((c) => c !== "app")
+                          .map((c) => (
+                            <button key={c} type="button" aria-pressed={category === c} onClick={() => setCategory(c)} className="chip">
+                              {CATEGORIES[c].label}
+                            </button>
+                          ))}
+                      </div>
+                      {CATEGORIES[category].engine === "store" && (
+                        <p className="mt-3 text-xs text-faint">Store tests open a product page and add it to the cart. They never check out or pay. (Beta)</p>
+                      )}
+                    </fieldset>
+                  </div>
+                )}
+              </div>
+
+              <button type="button" disabled={!canNext} onClick={() => setStep(2)} className="btn btn-primary mt-8 h-14 w-full text-base">
+                {unreachable && !check?.ok ? "Continue anyway" : "Continue"}
+                <Arrow />
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="mt-6 text-lg text-muted">
+                {kind === "video"
+                  ? "Next you'll drop in your TikTok, Reel, Short or ad. Simulated viewers decide when they'd swipe, and whether they'd tap through."
+                  : kind === "game"
+                  ? "Next you'll drop in screenshots of the first minutes and the shop or game-pass offer, in order. Crawler never logs into your game."
+                  : "Next you'll drop in screenshots of your onboarding and paywall, in order."}
+              </p>
+              <button type="button" onClick={() => setStep(2)} className="btn btn-primary mt-8 h-14 w-full text-base">
+                Continue
+                <Arrow />
+              </button>
+            </>
+          )}
+
+          <div className="mt-10 border-t border-line pt-6">
+            <p className="text-sm text-muted">{site ? "No website? Test something else:" : "Something else?"}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(["website", "app", "game", "video"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  aria-pressed={k === "website" ? site : kind === k}
+                  onClick={() => setKind(k)}
+                  className="chip"
+                >
+                  {k === "website" ? "Website or store" : k === "app" ? "Mobile app (screenshots)" : k === "game" ? "Game (screenshots)" : "Video or ad"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {step === 2 && (
+        <form
+          className="mt-12"
+          aria-labelledby="ob-q2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (firstTime) setStep(3);
+            else void finish();
+          }}
+        >
+          <button type="button" onClick={() => setStep(1)} className="btn btn-text -ml-3 h-10 text-sm">
+            ← Back
+          </button>
+          <p className="t-label mt-4">step 2 of {steps}</p>
+          <h1 id="ob-q2" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
+            What do you want to learn?
+          </h1>
+          <p className="mt-3 text-muted">Pick one or more. Simulated customers pay extra attention to these.</p>
+          <div className="mt-6 grid gap-2 sm:grid-cols-2" role="group" aria-label="What you want to learn">
+            {(Object.keys(FOCUS) as FocusId[]).map((id) => (
               <button
-                key={k.id}
+                key={id}
                 type="button"
-                role="radio"
-                aria-checked={kind === k.id}
-                onClick={() => choose(k.id)}
-                className={`ob-tile group flex min-h-44 flex-col justify-between rounded-2xl border p-5 transition-all duration-200 ${
-                  kind === k.id ? "border-accent bg-white/[0.06]" : "border-line bg-white/[0.025] hover:-translate-y-0.5 hover:border-line-strong hover:bg-white/[0.05]"
+                aria-pressed={focus.includes(id)}
+                onClick={() => toggleFocus(id)}
+                className={`flex min-h-14 items-center gap-3 rounded-xl border px-4 text-left transition-colors ${
+                  focus.includes(id) ? "border-accent bg-accent/10" : "border-line bg-white/[0.02] hover:border-line-strong"
                 }`}
               >
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white/[0.04] text-fg">{k.icon}</span>
-                <span>
-                  <span className="block text-lg font-medium">{k.name}</span>
-                  <span className="mt-1 block min-h-10 text-sm text-muted">{k.hint}</span>
+                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${focus.includes(id) ? "border-accent bg-accent text-white" : "border-line-strong"}`} aria-hidden>
+                  {focus.includes(id) && "✓"}
                 </span>
+                <span className="text-sm font-medium">{FOCUS[id].label}</span>
               </button>
             ))}
           </div>
-        </section>
-      ) : step === 3 ? (
+
+          <fieldset className="mt-10">
+            <legend className="text-sm font-medium">
+              Who is it for? <span className="font-normal text-faint">optional, you can fine-tune the audience later</span>
+            </legend>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {WHO.map((w) => (
+                <button key={w} type="button" aria-pressed={who === w} onClick={() => setWho(who === w ? "" : w)} className="chip">
+                  {w}
+                </button>
+              ))}
+            </div>
+            <input value={whoText} onChange={(e) => setWhoText(e.target.value.slice(0, 200))} placeholder="or in your words, e.g. college students who cook on a budget" className="field mt-3" aria-label="Describe who it is for" />
+            <input
+              value={what}
+              onChange={(e) => setWhat(e.target.value.slice(0, 200))}
+              placeholder={kind === "game" ? "What is it? e.g. an obby game for teens" : category === "clothing" || category === "ecommerce" ? "What do you sell? e.g. streetwear" : "What is it? e.g. a meal planner for busy parents"}
+              className="field mt-3"
+              aria-label="What is it"
+            />
+          </fieldset>
+
+          <button type="submit" disabled={busy || focus.length === 0} className="btn btn-primary mt-10 h-14 w-full text-base">
+            {busy ? "Starting…" : firstTime ? "Next" : nextLabel}
+            {!busy && <Arrow />}
+          </button>
+          <p className="mt-4 text-center text-xs text-faint">
+            Nothing is used yet: you&apos;ll see a summary and confirm before the test runs. Free: 1 test with {STARTER_CUSTOMERS} simulated customers, no card.
+          </p>
+        </form>
+      )}
+
+      {step === 3 && (
         <form
           onSubmit={(e) => {
             e.preventDefault();
             void finish();
           }}
-          className="mx-auto mt-12 max-w-2xl"
+          className="mt-12"
           aria-labelledby="ob-q3"
         >
           <button type="button" onClick={() => setStep(2)} className="btn btn-text -ml-3 h-10 text-sm">
@@ -134,7 +329,6 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
             Quick, about you.
           </h1>
           <p className="mt-3 text-muted">Tap what fits. It helps us build Crawler for people like you.</p>
-
           <Choice legend="Your age" options={Object.fromEntries(AGES.map((a) => [a, a]))} value={about.age} onPick={(v) => pick("age", v)} />
           <Choice legend="Where did you hear about Crawler?" options={HEARD} value={about.heard} onPick={(v) => pick("heard", v)} />
           {about.heard === "other" && (
@@ -149,95 +343,18 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
           <Choice legend="What describes you best?" options={ROLES} value={about.role} onPick={(v) => pick("role", v)} />
           <Choice legend="Where is your product?" options={STAGES} value={about.stage} onPick={(v) => pick("stage", v)} />
           <Choice legend="What do you want most?" options={GOALS} value={about.goal} onPick={(v) => pick("goal", v)} />
-
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <button type="submit" disabled={busy} className="btn btn-primary h-14 flex-1 text-base">
-              {busy ? "Starting…" : kind === "video" ? "Next: add the video" : !needsUrl(kind) ? "Next: add screenshots" : kind === "store" ? "Test my store" : "Test my site"}
+              {busy ? "Starting…" : nextLabel}
               {!busy && <Arrow />}
             </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void finish(true)}
-              className="btn btn-ghost h-14 px-6 text-base"
-            >
+            <button type="button" disabled={busy} onClick={() => void finish(true)} className="btn btn-ghost h-14 px-6 text-base">
               Skip
             </button>
           </div>
           <p className="mt-4 text-center text-xs text-faint">
             Crawler is for people 13 and older. We only look at these answers as totals, never sell them, and never show them publicly.
           </p>
-        </form>
-      ) : (
-        <form onSubmit={next} className="mx-auto mt-12 max-w-xl" aria-labelledby="ob-q2">
-          <button type="button" onClick={() => setStep(1)} className="btn btn-text -ml-3 h-10 text-sm">
-            ← {current.name}
-          </button>
-          <p className="t-label mt-4">step 2 of {steps}</p>
-          <h1 id="ob-q2" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-            {needsUrl(kind) ? (kind === "store" ? "Where's your store?" : "Where does it live?") : kind === "video" ? "Let's see your video." : kind === "game" ? "Let's see your game." : "Let's see your app."}
-          </h1>
-
-          {needsUrl(kind) ? (
-            <div className="relative mt-8">
-              <label htmlFor="ob-url" className="sr-only">
-                {kind === "store" ? "Your store's address" : "Your website's address"}
-              </label>
-              <span className="field-prefix pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 font-mono text-sm" aria-hidden>
-                https://
-              </span>
-              <input
-                id="ob-url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder={kind === "store" ? "yourstore.com" : "yourstartup.com"}
-                className="field h-16 rounded-2xl pl-24 text-lg"
-                inputMode="url"
-                autoFocus
-              />
-            </div>
-          ) : (
-            <p className="mt-6 text-lg text-muted">
-              {kind === "video"
-                ? "Next you'll drop in your TikTok, Reel, Short or ad. Simulated viewers decide when they'd swipe, and whether they'd tap through to your product."
-                : kind === "game"
-                ? "Next you'll drop in screenshots of the first minutes and the shop or game-pass offer, in order. Crawler never logs into your game."
-                : "Next you'll drop in screenshots of your onboarding and paywall, in order."}
-            </p>
-          )}
-
-          <fieldset className="mt-10">
-            <legend className="text-sm font-medium">
-              Who is it for? <span className="font-normal text-faint">optional</span>
-            </legend>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {WHO.map((w) => (
-                <button key={w} type="button" aria-pressed={who === w} onClick={() => setWho(who === w ? "" : w)} className="chip">
-                  {w}
-                </button>
-              ))}
-            </div>
-            <input
-              value={whoText}
-              onChange={(e) => setWhoText(e.target.value)}
-              placeholder="or in your words, e.g. college students who cook on a budget"
-              className="field mt-3"
-              aria-label="Describe who it is for"
-            />
-            <input
-              value={what}
-              onChange={(e) => setWhat(e.target.value)}
-              placeholder={kind === "game" ? "What is it? e.g. an obby game for teens" : kind === "store" ? "What do you sell? e.g. streetwear" : "What is it? e.g. a meal planner for busy parents"}
-              className="field mt-3"
-              aria-label="What is it"
-            />
-          </fieldset>
-
-          <button type="submit" disabled={!canNext || busy} className="btn btn-primary mt-10 h-14 w-full text-base">
-            {busy ? "Starting…" : firstTime ? "Next" : kind === "video" ? "Next: add the video" : !needsUrl(kind) ? "Next: add screenshots" : kind === "store" ? "Test my store" : "Test my site"}
-            {!busy && <Arrow />}
-          </button>
-          <p className="mt-4 text-center text-xs text-faint">Free first test · simulated customers show buying intent, not real purchases.</p>
         </form>
       )}
     </div>
@@ -259,16 +376,3 @@ function Choice({ legend, options, value, onPick }: { legend: string; options: R
     </fieldset>
   );
 }
-
-const ICON = (d: string) => (
-  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d={d} />
-  </svg>
-);
-const KINDS: { id: Kind; name: string; hint: string; icon: React.ReactNode }[] = [
-  { id: "app", name: "Mobile app", hint: "Onboarding + paywall", icon: ICON("M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2") },
-  { id: "game", name: "Game", hint: "Roblox or mobile: first minutes + shop", icon: ICON("M6 9h12a4 4 0 0 1 4 4v1a3 3 0 0 1-5.3 1.9L15 14H9l-1.7 1.9A3 3 0 0 1 2 14v-1a4 4 0 0 1 4-4zM8 11v3M6.5 12.5h3M16 12h.01M18 13.5h.01") },
-  { id: "website", name: "Website", hint: "Landing page, pricing, signup", icon: ICON("M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z") },
-  { id: "store", name: "Online store", hint: "Product page → cart", icon: ICON("M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8zM9 8V6a3 3 0 0 1 6 0v2") },
-  { id: "video", name: "Video or ad", hint: "TikTok, Reels, Shorts, creator deals", icon: ICON("M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM10 9v6l5-3z") },
-];

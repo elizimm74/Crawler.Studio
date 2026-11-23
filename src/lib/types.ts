@@ -109,6 +109,7 @@ export type ProductProfile = {
   proof: string[]; // testimonials, logos, numbers like "10,000 users"
   friction: string[]; // things that slow people down: "card required", "waitlist only"
   tryTask: string; // a first thing a new user would try, e.g. "Find a birthday card template"
+  focus?: import("./productTypes").FocusId[]; // what the founder wants to learn (onboarding), ids from a fixed list
 };
 
 // ---------- Milestone 3: trying the product ----------

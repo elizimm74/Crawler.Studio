@@ -23,6 +23,16 @@ import { DEFAULT_AUDIENCE, PRESETS } from "@/lib/presets";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import type { Audience, Credentials, ExploreSettings, ProductProfile } from "@/lib/types";
+import { FOCUS, cleanFocus } from "@/lib/productTypes";
+import type { PlanInfo } from "@/components/dashboard/usePlan";
+
+// "1 of your free tests" / "250 of 800 left this month" for the confirm screen (from the server's my_plan).
+function usesLine(plan: PlanInfo | null, customers: number) {
+  if (!plan) return "Checking your plan…";
+  if (plan.unlimited) return "Admin: no limit";
+  if (plan.monthly) return `${customers.toLocaleString("en-US")} of ${plan.monthly.left.toLocaleString("en-US")} customers left this month`;
+  return plan.left > 0 ? `1 of your ${plan.left} free test${plan.left === 1 ? "" : "s"}` : "No free tests left: see Pricing";
+}
 
 type CrawlInfo = {
   id: string;
@@ -104,7 +114,18 @@ function Wizard() {
       setCrawl(data.crawl);
       // From onboarding (?for=...): the founder's own "who it's for" beats the AI's guess.
       const forParam = params.get("for");
-      setProfile(forParam && data.profile ? { ...data.profile, whoItsFor: forParam } : data.profile);
+      const whatParam = params.get("what");
+      const focus = cleanFocus((params.get("focus") ?? "").split(","));
+      setProfile(
+        data.profile
+          ? {
+              ...data.profile,
+              ...(forParam ? { whoItsFor: forParam.slice(0, 400) } : {}),
+              ...(whatParam && !data.profile.whatItIs ? { whatItIs: whatParam.slice(0, 600) } : {}),
+              focus: focus.length ? focus : undefined,
+            }
+          : data.profile,
+      );
       setExplore((e) => ({ ...e, task: data.profile?.tryTask || e.task, startUrl: data.crawl.url }));
       if (data.audience) {
         setSuggested(data.audience);
@@ -317,11 +338,16 @@ function Wizard() {
       {step === 3 && crawl && profile && (
         <section className="space-y-8">
           <Heading n={4} title="Ready to launch" sub="Optional: let an AI explorer actually use your product first." />
-          <dl className="card grid divide-y divide-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-            <Summary label="Site" value={crawl.url.replace(/^https?:\/\//, "").replace(/\/$/, "")} />
-            <Summary label="Audience" value={`${customers} · ${presetName}`} />
-            <Summary label="Goal" value={`Would ${profile.goal}`} />
+          <dl className="card grid divide-y divide-line sm:grid-cols-2 sm:[&>*:nth-child(odd)]:border-r sm:[&>*:nth-child(odd)]:border-line">
+            <Summary label="Website" value={crawl.url.replace(/^https?:\/\//, "").replace(/\/$/, "")} />
+            <Summary label="Simulated customers" value={`${customers.toLocaleString("en-US")} · ${presetName}`} />
+            <Summary label="Learning about" value={profile.focus?.length ? profile.focus.map((f) => FOCUS[f].label).join(" · ") : `Would they ${profile.goal}?`} />
+            <Summary label="Uses" value={usesLine(plan, customers)} />
           </dl>
+          <p className="text-sm text-muted">
+            Scope: the landing page{params.get("type") === "store" ? ", a product page and the cart" : ", pricing and signup if we found them"}, on desktop and phone
+            {explore.enabled ? ", plus the AI explorer trying the product" : ""}. Nothing runs until you press the button below.
+          </p>
           <div className="card p-6">
             <ExplorePanel
               settings={explore}
