@@ -32,23 +32,20 @@ export default function Home() {
           <p className="t-lead rise d1 mt-8 max-w-lg px-4">
             100 simulated customers try your app, game, site or store and tell you exactly why they wouldn&apos;t buy, before launch day.
           </p>
-          <div className="rise d2 mt-10">
+          <div className="rise d2 mt-10 flex flex-wrap items-center justify-center gap-3 px-4">
             <Magnetic>
               <Link href="/onboarding" className="btn btn-primary h-14 px-8 text-base">
                 Test my product
                 <Arrow />
               </Link>
             </Magnetic>
+            {/* Crawler's own simulated customers ranked this #1: let people see a whole report before signing up */}
+            <Link href="/example" className="btn btn-secondary h-14 px-6 text-base">
+              See a full report, no sign-up
+            </Link>
           </div>
-          {/* proof of what you get, before any sign-up (made-up example, labelled as such) */}
-          <Link
-            href="/example"
-            className="rise d3 mt-8 flex max-w-[calc(100%-2rem)] flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border border-white/30 px-5 py-2 text-center text-sm text-white/90 hover:bg-white/10"
-          >
-            <span className="t-label">example</span>
-            <span>mealmate.app: 20 of 100 would sign up · top blocker: price hidden</span>
-            <span aria-hidden>→</span>
-          </Link>
+          {/* what people worry about before signing up, answered in one line (all true: keep it that way) */}
+          <p className="rise d3 mt-6 px-4 text-sm text-muted">No card needed · No marketing emails · Results in a few minutes</p>
           </div>
         </ScrollLift>
       </section>

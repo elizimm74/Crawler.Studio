@@ -8,7 +8,7 @@ export default function Page() {
     <div className="paper mx-auto max-w-md space-y-8 px-6 py-12 sm:px-10">
       <div>
         <h1 className="t-h1">Start free</h1>
-        <p className="t-lead mt-4">Your first test is free. No card needed.</p>
+        <p className="t-lead mt-4">Your first test is free. No card needed, no marketing emails, results in a few minutes.</p>
       </div>
       {/* Suspense: the form reads the ?next= part of the address. */}
       <Suspense>

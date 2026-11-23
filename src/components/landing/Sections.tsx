@@ -101,8 +101,9 @@ export function Research() {
 const ROWS = [
   { way: "Guess and launch", time: "0 min", people: "None", cost: "Free", note: "Fast, but you learn after launch day." },
   { way: "Ask friends", time: "Days", people: "Real, but biased", cost: "Free", note: "Friends are polite. They rarely say “I wouldn't pay”." },
-  { way: "Real user testing", time: "Days to weeks", people: "Real strangers", cost: "Paid per person", note: "The gold standard for realism. Slow and costly." },
-  { way: "Crawler", time: "About a minute", people: "Simulated", cost: "Free first test", note: "A fast signal on what to fix first. Not real purchases." },
+  { way: "User testing panels", time: "Days to weeks", people: "Real strangers", cost: "Paid per person", note: "The gold standard for realism. Slow and costly." },
+  { way: "A/B testing", time: "Weeks", people: "Your real visitors", cost: "Tool + traffic", note: "Proves what converts, but only after launch and with lots of visitors." },
+  { way: "Crawler", time: "A few minutes", people: "Simulated", cost: "Free first test", note: "A fast signal on what to fix first, before launch. Not real purchases." },
 ] as const;
 
 export function Compare() {

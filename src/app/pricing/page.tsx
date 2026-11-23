@@ -9,6 +9,7 @@ import ManageBilling from "@/components/ManageBilling";
 import { supabaseServer } from "@/lib/supabase/server";
 import { stripeEnabled } from "@/lib/stripe";
 import BuyButton from "@/components/BuyButton";
+import { Compare } from "@/components/landing/Sections";
 
 export const metadata = { title: "crawler: pricing" };
 
@@ -107,6 +108,11 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
       <p className="t-label mt-6">
         every test: simulated customers · buying intent, not real purchases · secure checkout by Stripe
       </p>
+
+      {/* Crawler's own simulated customers asked for this: how it compares with panels and A/B tests */}
+      <div className="mt-24">
+        <Compare />
+      </div>
     </div>
   );
 }

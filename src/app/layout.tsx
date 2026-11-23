@@ -12,7 +12,9 @@ import Intro from "@/components/landing/Intro";
 
 // Runs before the page is drawn: should the landing intro play? Once per tab,
 // and never for people who turned off animations. (See src/components/landing/Intro.tsx.)
-const INTRO_SCRIPT = `try{var d=document.documentElement,c=localStorage.getItem("crawler-calm")==="1";if(c)d.dataset.calm="1";d.dataset.intro=(c||sessionStorage.getItem("crawler-intro-seen")||matchMedia("(prefers-reduced-motion: reduce)").matches)?"skip":"play"}catch(e){document.documentElement.dataset.intro="skip"}`;
+// The opening claw animation plays once per tab on laptops/desktops only. Phones skip it: phone
+// visitors decide in seconds, and Crawler's own simulated customers flagged ~2s of blank screen.
+const INTRO_SCRIPT = `try{var d=document.documentElement,c=localStorage.getItem("crawler-calm")==="1";if(c)d.dataset.calm="1";d.dataset.intro=(c||sessionStorage.getItem("crawler-intro-seen")||matchMedia("(prefers-reduced-motion: reduce)").matches||matchMedia("(max-width: 767px)").matches)?"skip":"play"}catch(e){document.documentElement.dataset.intro="skip"}`;
 
 // Build every page fresh for each visitor, so the header always shows
 // whether THIS person is signed in.
