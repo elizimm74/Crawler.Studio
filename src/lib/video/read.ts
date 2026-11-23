@@ -3,6 +3,7 @@
 //   - what the first seconds promise (the hook) and when the product first shows
 //   - the product the video promotes + a guess at who it's for
 // The founder checks and corrects all of it on the Review step.
+import { UNTRUSTED_CONTENT } from "../untrusted";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type Anthropic from "@anthropic-ai/sdk";
@@ -52,6 +53,7 @@ export async function readVideo(input: VideoInput, files: { store: BlobStore; pr
   });
   const res = await anthropic.messages.parse({
     model: HAIKU,
+    system: UNTRUSTED_CONTENT,
     max_tokens: 6000,
     output_config: { effort: "low", format: zodOutputFormat(ReadSchema) },
     messages: [{ role: "user", content }],

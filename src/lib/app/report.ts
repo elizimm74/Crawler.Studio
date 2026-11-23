@@ -1,6 +1,7 @@
 // APP TESTS, step 5: Sonnet writes ranked fixes + rewritten paywall copy.
 // Like websites, it only gets the COUNTED summary (never every raw answer),
 // and "how many people could this win back" is counted in code.
+import { UNTRUSTED_CONTENT } from "../untrusted";
 import { z } from "zod";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { anthropic, assertNotRefused, SONNET } from "../ai";
@@ -57,6 +58,7 @@ export async function writeAppAdvice(
 
   const response = await anthropic.beta.messages.parse({
     model: SONNET,
+    system: UNTRUSTED_CONTENT,
     max_tokens: 8000,
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",

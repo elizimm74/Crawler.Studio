@@ -11,6 +11,7 @@
 //    paywall you never reached).
 // Cost tricks (same as websites): screenshots are prompt-cached, so after the
 // first batch they cost ~10% as much.
+import { UNTRUSTED_CONTENT } from "../untrusted";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type Anthropic from "@anthropic-ai/sdk";
@@ -218,7 +219,7 @@ async function evaluateBatch(
       const response = await anthropic.messages.parse({
         model: HAIKU,
         max_tokens: 16000,
-        system: SYSTEM_PROMPT,
+        system: `${SYSTEM_PROMPT}\n\n${UNTRUSTED_CONTENT}`,
         output_config: { effort: "low", format: zodOutputFormat(BatchSchema) },
         messages: [
           {

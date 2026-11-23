@@ -5,6 +5,7 @@
 //  - The page text + screenshots are identical for every batch, so we mark
 //    them for PROMPT CACHING. After the first batch they cost ~10% as much.
 //  - We run batch 1 alone (to fill the cache), then the rest in parallel.
+import { UNTRUSTED_CONTENT } from "./untrusted";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type Anthropic from "@anthropic-ai/sdk";
@@ -201,7 +202,7 @@ async function evaluateBatch(
       const response = await anthropic.messages.parse({
         model: HAIKU,
         max_tokens: 16000,
-        system: SYSTEM_PROMPT,
+        system: `${SYSTEM_PROMPT}\n\n${UNTRUSTED_CONTENT}`,
         output_config: { effort: "low", format: zodOutputFormat(BatchSchema) },
         messages: [
           {

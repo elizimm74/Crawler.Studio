@@ -8,6 +8,7 @@
 //
 // Note: these newer models don't accept "temperature: 0". Consistency comes
 // from strict JSON schemas (the API forces the shape) and low effort instead.
+import { UNTRUSTED_CONTENT } from "../untrusted";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type Anthropic from "@anthropic-ai/sdk";
@@ -106,6 +107,7 @@ export async function readApp(input: AppInput, files: Files): Promise<AppReading
     content.push({ type: "text", text: LABEL_RULES + "\nPut Version B screens in screensB (empty list if there are none).\n\n" + PROFILE_RULES });
     const res = await anthropic.messages.parse({
       model: HAIKU,
+      system: UNTRUSTED_CONTENT,
       max_tokens: 8000,
       output_config: { effort: "low", format: zodOutputFormat(ScreensSchema) },
       messages: [{ role: "user", content }],
@@ -122,6 +124,7 @@ export async function readApp(input: AppInput, files: Files): Promise<AppReading
       content.push({ type: "text", text: `These are ${files.length} consecutive screens from a longer mobile app onboarding (${input.screens.length} screens in total).\n\n` + LABEL_RULES });
       const r = await anthropic.messages.parse({
         model: HAIKU,
+        system: UNTRUSTED_CONTENT,
         max_tokens: 6000,
         output_config: { effort: "low", format: zodOutputFormat(LabelsSchema) },
         messages: [{ role: "user", content }],
@@ -141,6 +144,7 @@ export async function readApp(input: AppInput, files: Files): Promise<AppReading
     content.push({ type: "text", text: `These ${sample.length} screens are a spread-out sample (start, middle, end) of a ${input.screens.length}-screen mobile app onboarding, in order.\n\n` + PROFILE_RULES });
     const res = await anthropic.messages.parse({
       model: HAIKU,
+      system: UNTRUSTED_CONTENT,
       max_tokens: 4000,
       output_config: { effort: "low", format: zodOutputFormat(ProfileSchema) },
       messages: [{ role: "user", content }],
@@ -224,6 +228,7 @@ async function readPaywall(fileList: string[], images: Map<string, string>, tag:
   });
   const res = await anthropic.messages.parse({
     model: SONNET,
+    system: UNTRUSTED_CONTENT,
     max_tokens: 4000,
     output_config: { effort: "low", format: zodOutputFormat(PaywallSchema) },
     messages: [{ role: "user", content }],

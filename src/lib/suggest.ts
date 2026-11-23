@@ -3,6 +3,7 @@
 //   1. a PRODUCT PROFILE — what it is, who it's for, prices, proof, friction
 //   2. a suggested AUDIENCE, so the form arrives pre-filled
 // The founder can correct both before running. Every persona reads the profile.
+import { UNTRUSTED_CONTENT } from "./untrusted";
 import { focusLine, lensFor } from "./productTypes";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
@@ -112,6 +113,7 @@ export async function understandSite(
   const response = await anthropic.messages.parse(
     {
     model: HAIKU,
+    system: UNTRUSTED_CONTENT,
     max_tokens: 4000,
     output_config: { effort: "low", format: zodOutputFormat(UnderstandSchema) },
     messages: [

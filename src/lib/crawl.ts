@@ -16,6 +16,7 @@
 //  8. guessAddresses(): last resort: try common addresses like /pricing
 //
 // Accuracy is measured with practice sites: `npm run bench`.
+import { UNTRUSTED_CONTENT } from "./untrusted";
 import { chromium, devices, type Browser, type Page } from "playwright";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
@@ -553,6 +554,7 @@ async function chooseClicks(
     const response = await anthropic.messages.parse(
       {
       model: HAIKU,
+      system: UNTRUSTED_CONTENT,
       max_tokens: 1000,
       output_config: { effort: "low", format: zodOutputFormat(ChoiceSchema) },
       messages: [

@@ -1,6 +1,7 @@
 // VIDEO TESTS, step 3: simulated viewers scroll into the video and decide, frame by frame,
 // whether to keep watching, then whether to like, share, and tap through to the product.
 // ~25 viewers per Haiku call; the frames are prompt-cached, so later batches cost ~10%.
+import { UNTRUSTED_CONTENT } from "../untrusted";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type Anthropic from "@anthropic-ai/sdk";
@@ -134,7 +135,7 @@ async function evaluateBatch(content: Anthropic.ContentBlockParam[], batch: Vide
       const response = await anthropic.messages.parse({
         model: HAIKU,
         max_tokens: 16000,
-        system: SYSTEM_PROMPT,
+        system: `${SYSTEM_PROMPT}\n\n${UNTRUSTED_CONTENT}`,
         output_config: { effort: "low", format: zodOutputFormat(BatchSchema) },
         messages: [{ role: "user", content: [...content, { type: "text", text: `Personas (${todo.length}):\n${todo.map(describeVideoPersona).join("\n")}` }] }],
       });

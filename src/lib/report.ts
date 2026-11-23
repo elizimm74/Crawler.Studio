@@ -4,6 +4,7 @@
 // Flip counts are calculated in CODE, not guessed by the AI: each fix says
 // which objection categories it solves, and we count the non-buyers who had
 // those objections. "maybe" people are the most likely to actually flip.
+import { UNTRUSTED_CONTENT } from "./untrusted";
 import { z } from "zod";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { anthropic, assertNotRefused, SONNET } from "./ai";
@@ -86,6 +87,7 @@ export async function writeAdvice(
 
   const response = await anthropic.beta.messages.parse({
     model: SONNET,
+    system: UNTRUSTED_CONTENT,
     max_tokens: 8000,
     // If Sonnet declines, the API retries on a suitable fallback model for us.
     betas: ["server-side-fallback-2026-07-01"],

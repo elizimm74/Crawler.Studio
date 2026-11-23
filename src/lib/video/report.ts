@@ -1,6 +1,7 @@
 // VIDEO TESTS, step 5: Sonnet turns the COUNTED results into fixes, new hooks and an honest
 // "why it will / won't spread". It never sees every raw answer, and how many viewers each fix
 // could win back is counted in code (each reason is credited to one fix only).
+import { UNTRUSTED_CONTENT } from "../untrusted";
 import { z } from "zod";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { anthropic, assertNotRefused, SONNET } from "../ai";
@@ -50,6 +51,7 @@ export async function writeVideoAdvice(settings: VideoSettings, profile: Product
 
   const response = await anthropic.beta.messages.parse({
     model: SONNET,
+    system: UNTRUSTED_CONTENT,
     max_tokens: 8000,
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",

@@ -8,6 +8,7 @@
 //     with search citations, so we split the job).
 // The source links come straight from the search results, read by CODE,
 // so they can't be made up.
+import { UNTRUSTED_CONTENT } from "./untrusted";
 import type Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
@@ -49,6 +50,7 @@ export async function checkReputation(
     for (let round = 0; round < 3; round++) {
       response = await anthropic.messages.create({
         model: SONNET,
+        system: UNTRUSTED_CONTENT,
         max_tokens: 4000,
         output_config: { effort: "low" },
         tools: [{ type: "web_search_20260209", name: "web_search", max_uses: MAX_SEARCHES }],
@@ -86,6 +88,7 @@ export async function checkReputation(
     // Step 2: Haiku tidies it into JSON.
     const tidy = await anthropic.messages.parse({
       model: HAIKU,
+      system: UNTRUSTED_CONTENT,
       max_tokens: 1500,
       output_config: { effort: "low", format: zodOutputFormat(ReputationSchema) },
       messages: [
