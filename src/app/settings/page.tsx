@@ -8,6 +8,8 @@ import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { planName } from "@/lib/plans";
 import { subscriptionLine, type PlanData } from "@/lib/dashboard";
 import ManageBilling from "@/components/ManageBilling";
+import { githubEnabled } from "@/lib/github";
+import GitHubSettings from "@/components/settings/GitHubSettings";
 import { DeleteAccount, PasswordForm, SignOutEverywhere } from "@/components/settings/SettingsForms";
 
 export const metadata = { title: "Settings", robots: { index: false } };
@@ -64,6 +66,12 @@ export default async function Settings() {
           {plan?.billing && <ManageBilling className="btn btn-ghost h-11 px-4 text-sm" label="Manage billing (card, invoices, cancel)" />}
         </div>
       </Section>
+
+      {githubEnabled() && (
+        <Section title="GitHub">
+          <GitHubSettings />
+        </Section>
+      )}
 
       <Section title="Notifications">
         <p className="text-sm text-muted">

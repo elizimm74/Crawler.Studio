@@ -390,5 +390,31 @@ test("plan switch: upgrade charges the difference now and fails on a bad card; d
   return ok ? null : up.toString() + " | " + down.toString();
 });
 
+// ---------- GitHub import ----------
+{
+  const { generateKeyPairSync, createVerify } = require("crypto");
+  const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  Object.assign(process.env, { GITHUB_APP_SLUG: "crawler-test", GITHUB_APP_ID: "123", GITHUB_APP_PRIVATE_KEY: privateKey.export({ type: "pkcs1", format: "pem" }).replace(/\n/g, "\\n"), GITHUB_APP_CLIENT_ID: "Iv1.x", GITHUB_APP_CLIENT_SECRET: "s3cret" });
+  const G = require(path.join(lib, "github.js"));
+  test("github: app token is a valid RS256 JWT for the app, under 10 minutes", () => {
+    const t = G.appJwt(1_700_000_000);
+    const [h, b, sig] = t.split(".");
+    const body = JSON.parse(Buffer.from(b, "base64").toString());
+    const ok = createVerify("RSA-SHA256").update(`${h}.${b}`).verify(publicKey, Buffer.from(sig.replace(/-/g, "+").replace(/_/g, "/"), "base64"));
+    return ok && body.iss === "123" && body.exp - body.iat <= 600 ? null : JSON.stringify(body);
+  });
+  test("github: install state only works for the same person, unchanged, within 15 minutes", () => {
+    const now = 1_700_000_000_000;
+    const st = G.signState("user-a", now);
+    const forged = st.replace(/.$/, (c) => (c === "0" ? "1" : "0"));
+    const r = [G.verifyState(st, "user-a", now + 60_000), G.verifyState(st, "user-b", now), G.verifyState(forged, "user-a", now), G.verifyState(st, "user-a", now + 16 * 60_000), G.verifyState(null, "user-a", now)];
+    return JSON.stringify(r) === "[true,false,false,false,false]" ? null : JSON.stringify(r);
+  });
+  test("github: live site = website field, else production deployment, never github.com", () => {
+    const r = [G.pickLiveUrl("mealmate.app", []).url, G.pickLiveUrl(null, ["https://x.vercel.app"]).source, G.pickLiveUrl("https://github.com", []).url, G.pickLiveUrl("javascript:alert(1)", []).url, G.pickLiveUrl("", []).url];
+    return JSON.stringify(r) === '["https://mealmate.app/","deployment",null,null,null]' ? null : JSON.stringify(r);
+  });
+}
+
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);

@@ -2,7 +2,7 @@
 -- One row per (test, fix). Only the owner of the test can read or change its rows (RLS).
 -- fix_key is the fix's title (trimmed, max 200 chars), so it survives re-renders of the report.
 create table if not exists public.fix_status (
-  test_id uuid not null references public.tests(id) on delete cascade,
+  test_id text not null references public.tests(id) on delete cascade,
   fix_key text not null check (char_length(fix_key) between 1 and 200),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   status text not null check (status in ('not_started', 'in_progress', 'completed')),

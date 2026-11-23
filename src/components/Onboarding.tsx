@@ -16,6 +16,7 @@ import { AGES, GOALS, HEARD, ROLES, STAGES, firstTouch, type About } from "@/lib
 import { CATEGORIES, type Category } from "@/lib/category";
 import { FOCUS, type FocusId } from "@/lib/productTypes";
 import { STARTER_CUSTOMERS } from "@/lib/plans";
+import GitHubImport from "@/components/GitHubImport";
 
 type Kind = "website" | "app" | "game" | "store" | "video";
 const WHO = ["Students", "Founders", "Parents", "Small businesses", "Developers", "Everyone"];
@@ -163,6 +164,17 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
                 )}
               </form>
 
+              {!check?.ok && (
+                <div className="mt-3">
+                  <GitHubImport
+                    onPick={(live) => {
+                      const v = live.replace(/^https?:\/\//, "").replace(/\/$/, "");
+                      setUrl(v);
+                      void runCheck(v);
+                    }}
+                  />
+                </div>
+              )}
               <div id="ob-url-status" aria-live="polite" className="mt-4">
                 {checking && <p className="text-sm text-muted">Opening {url.replace(/^https?:\/\//, "")}…</p>}
                 {check && !check.ok && (
