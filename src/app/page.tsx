@@ -31,7 +31,7 @@ export default function Home() {
             Would your customers actually buy?
           </h1>
           <p className="t-lead mt-6 max-w-xl">
-            Test your website with AI-powered customer simulations. Discover what makes people buy, what makes them leave, and exactly what to fix before launch.
+            Paste your link. AI shoppers try your site and tell you exactly why they wouldn&apos;t buy, and what to fix before launch.
           </p>
           <div className="mt-8 max-w-xl">
             <HeroForm />
