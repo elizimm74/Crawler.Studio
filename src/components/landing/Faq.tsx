@@ -1,7 +1,5 @@
 // The honest FAQ at the bottom of the home page. The answers say what Crawler
 // is and isn't, because trust is what makes people try it.
-import Reveal from "../Reveal";
-import SplitReveal from "./motion/SplitReveal";
 
 const QA: [string, string][] = [
   [
@@ -12,7 +10,7 @@ const QA: [string, string][] = [
     "How accurate is it?",
     "The facts are as accurate as you make them: you confirm every price, button and screen before the test runs. Predictions can't be perfect, so we run apps 3 times to show a range, compare against published subscription-app benchmarks, and publish predicted vs real results on our accuracy page.",
   ],
-  ["What does it cost?", "Your first test is free. After that, plans start at $25 a month for 1,000 simulated customers (about 10 tests). Growth ($100) and Scale ($250) add bigger crowds and video/ad tests. Cancel any time."],
+  ["What does it cost?", "Free: 1 test with 25 simulated customers, no card. Invite 3 friends who verify their email to get 1 more test with 100. Paid plans are monthly: Starter $25 (1,000 simulated customers a month, about ten 100-customer tests), Growth $100 (10,000) and Scale $250 (30,000); Growth and Scale add video and ad tests. Allowances reset each billing month. Cancel any time."],
   [
     "Do you test apps too?",
     "Yes. Drop in screenshots of your onboarding and paywall. You get a screen-by-screen drop-off, App Store and Google Play rule checks, an A/B verdict for two paywalls, and rewritten copy.",
@@ -25,11 +23,11 @@ const QA: [string, string][] = [
 
 export default function Faq() {
   return (
-    <Reveal className="mx-auto max-w-3xl">
-      <p className="t-number text-6xl text-accent sm:text-7xl" aria-hidden>
-        ?
-      </p>
-      <SplitReveal text="Fair questions." className="t-chunk mt-4" />
+    <section className="mx-auto max-w-3xl" aria-labelledby="faq-title">
+      <p className="t-label">FAQ</p>
+      <h2 id="faq-title" className="t-h1 mt-3">
+        Fair questions.
+      </h2>
       <div className="mt-10 divide-y divide-line border-y border-line">
         {QA.map(([q, a]) => (
           <details key={q} className="group py-2">
@@ -43,6 +41,6 @@ export default function Faq() {
           </details>
         ))}
       </div>
-    </Reveal>
+    </section>
   );
 }

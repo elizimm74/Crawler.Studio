@@ -11,7 +11,7 @@ import { stripeEnabled } from "@/lib/stripe";
 import BuyButton from "@/components/BuyButton";
 import { Compare } from "@/components/landing/Sections";
 
-export const metadata = { title: "crawler: pricing" };
+export const metadata = { title: "Pricing", description: "Crawler pricing: start free with 1 test of 25 simulated customers. Monthly plans from $25 for 1,000 simulated customers.", alternates: { canonical: "/pricing" } };
 
 export default async function Pricing({ searchParams }: { searchParams: Promise<{ cancelled?: string }> }) {
   const { cancelled } = await searchParams;

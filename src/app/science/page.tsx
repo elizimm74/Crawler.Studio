@@ -8,7 +8,8 @@ import Link from "next/link";
 import { ASSUMPTIONS, FACTS } from "@/components/landing/Science";
 
 export const metadata = {
-  title: "crawler: the science",
+  title: "The science behind AI customer simulations",
+  alternates: { canonical: "/science" },
   description: "The published research behind Crawler's simulated customers, how each one is built, what it's good and bad at, and how we keep you safe.",
 };
 

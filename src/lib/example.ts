@@ -105,7 +105,6 @@ export function exampleWebsiteRun(): Run & { filesPrefix: string } {
       pricingCopy: "Free for 7 days, then $6/month. Cancel anytime in two taps.",
     },
     costs: [],
-    totalCostUsd: 0.031,
     filesPrefix: "example",
   };
 }
@@ -219,6 +218,5 @@ export function exampleAppRun(): AppRun {
       onboardingTip: "Show the finished week before asking for notifications or an account.",
     },
     costs: [],
-    totalCostUsd: 0.12,
   };
 }

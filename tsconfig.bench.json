@@ -18,6 +18,8 @@
     "src/lib/app/validate.ts",
     "src/lib/audience.ts",
     "src/lib/dashboard.ts",
+    "src/lib/category.ts",
+    "src/lib/priority.ts",
     "src/lib/playbook.ts",
     "src/lib/productTypes.ts",
     "src/lib/suggest.ts",

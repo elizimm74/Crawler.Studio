@@ -7,7 +7,8 @@ import { Arrow } from "@/components/landing/UrlForm";
 import { exampleAppRun, exampleWebsiteRun } from "@/lib/example";
 
 export const metadata = {
-  title: "crawler: example report",
+  title: "Sample report (demo data)",
+  alternates: { canonical: "/example" },
   description: "See a full Crawler report for a pretend website and a pretend app: score, drop-off, ranked fixes and rewritten copy.",
 };
 

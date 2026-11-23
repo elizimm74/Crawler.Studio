@@ -9,34 +9,35 @@ import { APP_NAME, SITE_URL } from "@/lib/config";
 import { currentUser } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import Mark from "@/components/Mark";
-import Intro from "@/components/landing/Intro";
 
 // Runs before the page is drawn: should the landing intro play? Once per tab,
 // and never for people who turned off animations. (See src/components/landing/Intro.tsx.)
 // The opening claw animation plays once per tab on laptops/desktops only. Phones skip it: phone
 // visitors decide in seconds, and Crawler's own simulated customers flagged ~2s of blank screen.
-const INTRO_SCRIPT = `try{var d=document.documentElement,c=localStorage.getItem("crawler-calm")==="1";if(c)d.dataset.calm="1";d.dataset.intro=(c||sessionStorage.getItem("crawler-intro-seen")||matchMedia("(prefers-reduced-motion: reduce)").matches||matchMedia("(max-width: 767px)").matches)?"skip":"play"}catch(e){document.documentElement.dataset.intro="skip"}`;
+// 2026-11-23 overhaul: the claw intro is OFF (it held the hero back ~2.8s; the brief asks for no
+// unnecessary animation). Intro.tsx is kept, so it can come back by restoring the old condition here.
+const INTRO_SCRIPT = `try{var d=document.documentElement,c=localStorage.getItem("crawler-calm")==="1";if(c)d.dataset.calm="1";d.dataset.intro="skip"}catch(e){document.documentElement.dataset.intro="skip"}`;
 
 // Build every page fresh for each visitor, so the header always shows
 // whether THIS person is signed in.
 export const dynamic = "force-dynamic";
 
 const DESCRIPTION =
-  "Simulated customers test your website or app before launch day. See what stops people from buying: buying-intent insights, not real purchases.";
+  "AI customer simulations for your website, store or app. See what makes people buy, what makes them leave, and what to fix before launch. Simulated buying intent, not real purchases.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: `${APP_NAME.toLowerCase()}: see what stops customers from buying, before you launch`, template: "%s" },
+  title: { default: "Crawler: AI customer simulations for your website", template: "%s · Crawler" },
   description: DESCRIPTION,
   // The card people see when the link is shared (X, iMessage, Slack...).
   openGraph: {
     type: "website",
     siteName: APP_NAME,
-    title: "See what stops customers from buying, before you launch",
+    title: "Would your customers actually buy? Crawler",
     description: DESCRIPTION,
     images: [{ url: "/api/og/home", width: 1200, height: 630 }],
   },
-  twitter: { card: "summary_large_image", title: "See what stops customers from buying, before you launch", description: DESCRIPTION, images: ["/api/og/home"] },
+  twitter: { card: "summary_large_image", title: "Would your customers actually buy? Crawler", description: DESCRIPTION, images: ["/api/og/home"] },
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -51,7 +52,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       {/* flex column: the footer stays at the bottom even on short pages */}
       <body className="flex min-h-screen flex-col">
         {/* home page only: blue claws scratch a white page open */}
-        <Intro />
         <FirstTouch />
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-bg focus:p-4">
           Skip to content

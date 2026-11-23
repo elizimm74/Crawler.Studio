@@ -12,11 +12,11 @@ type Props = { params: Promise<{ token: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { token } = await params;
   const s = await getShared(token);
-  if (!s) return { title: "crawler", robots: { index: false } };
+  if (!s) return { title: "Shared report", robots: { index: false } };
   const what = s.kind === "app" ? "an app" : (s.host ?? "a website");
   const title = `${s.score} of ${s.total} simulated customers ${s.goal ? `would ${s.goal}` : "would convert"} · ${what}`;
   return {
-    title: `crawler: ${title}`,
+    title: `${title}`,
     description: s.blocker ? `Biggest blocker: ${s.blocker}. Simulated customers show buying intent, not real purchases.` : "Simulated customers show buying intent, not real purchases.",
     robots: { index: false }, // private links stay out of search
     openGraph: { title, images: [{ url: `${SITE_URL}/api/og/${token}`, width: 1200, height: 630 }] },

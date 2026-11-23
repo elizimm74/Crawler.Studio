@@ -7,7 +7,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { DIM_LABELS, advice, pct, type Row } from "@/lib/insights";
 
-export const metadata = { title: "crawler: insights", robots: { index: false } };
+export const metadata = { title: "Insights", robots: { index: false } };
 
 type Insights = { days: number; signups: number; answered: number; tested: number; paid: number; groups: Record<string, Row[]>; other: string[] };
 const PERIODS = [7, 30, 90, 365];

@@ -27,7 +27,9 @@ export function guessCategory(url: string, html = ""): Category {
   if (/(^|\.)apps\.apple\.com$|(^|\.)play\.google\.com$/.test(host)) return "app";
   const shop =
     host.endsWith(".myshopify.com") ||
-    has(h, /cdn\.shopify\.com|shopify\.theme|woocommerce|bigcommerce|squarespace-commerce|"@type"\s*:\s*"product"|add to cart|add to bag/);
+    has(h, /cdn\.shopify\.com|shopify\.theme|woocommerce|bigcommerce|squarespace-commerce|"@type"\s*:\s*"product"|add to cart|add to bag/) ||
+    has(h, /href="[^"]*\/(products?|collections|shop)\/[a-z0-9-]/) ||
+    (has(h, /\b(cart|bag|shop all|free shipping)\b/) && has(h, /[$€£]\s?\d/));
   if (shop) {
     return has(h, /\b(hoodie|t-shirt|tee|streetwear|apparel|clothing|dress|jeans|sneaker|jacket|sweatshirt|joggers)\b/) ? "clothing" : "ecommerce";
   }

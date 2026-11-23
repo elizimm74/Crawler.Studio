@@ -3,7 +3,7 @@
 import PaywallChecker from "@/components/app/PaywallChecker";
 
 export const metadata = {
-  title: "Free App Store paywall checker | crawler",
+  title: "Free App Store paywall checker",
   description:
     "Check your subscription paywall against Apple App Store and Google Play rules in 30 seconds: price, billing period, trial terms, restore purchases, terms and privacy links. Free, no sign-up.",
 };

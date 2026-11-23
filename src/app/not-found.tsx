@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Arrow } from "@/components/landing/UrlForm";
 
-export const metadata = { title: "crawler: page not found" };
+export const metadata = { title: "Page not found" };
 
 export default function NotFound() {
   return (

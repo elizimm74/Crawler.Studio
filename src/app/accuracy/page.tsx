@@ -7,7 +7,8 @@ import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { Arrow } from "@/components/landing/UrlForm";
 
 export const metadata = {
-  title: "crawler: accuracy",
+  title: "Accuracy: simulated vs real results",
+  alternates: { canonical: "/accuracy" },
   description: "Crawler's predictions next to what really happened after launch. Honest numbers, shown publicly.",
 };
 

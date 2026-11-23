@@ -7,7 +7,7 @@ import { SITE_URL } from "@/lib/config";
 import DashboardView from "@/components/dashboard/DashboardView";
 import { analyses, fixQueue, nextMoves, recurringBlockers, type DashboardData, type PlanData, type TestRow, type Trends } from "@/lib/dashboard";
 
-export const metadata = { title: "crawler: dashboard", robots: { index: false } };
+export const metadata = { title: "Dashboard", robots: { index: false } };
 
 export default async function Dashboard({ searchParams }: { searchParams: Promise<{ paid?: string }> }) {
   const { paid } = await searchParams;
