@@ -63,6 +63,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   <NavLink href="/example" className="hidden md:inline-flex">
                     Example
                   </NavLink>
+                  <NavLink href="/science" className="hidden md:inline-flex">
+                    Science
+                  </NavLink>
                   <NavLink href="/pricing" className="hidden sm:inline-flex">
                     Pricing
                   </NavLink>
@@ -82,6 +85,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   <NavLink href="/example" className="hidden md:inline-flex">
                     Example
                   </NavLink>
+                  <NavLink href="/science" className="hidden md:inline-flex">
+                    Science
+                  </NavLink>
                   <NavLink href="/pricing" className="hidden sm:inline-flex">
                     Pricing
                   </NavLink>
@@ -94,6 +100,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <>
                   <NavLink href="/example" className="hidden md:inline-flex">
                     Example
+                  </NavLink>
+                  <NavLink href="/science" className="hidden md:inline-flex">
+                    Science
                   </NavLink>
                   <NavLink href="/pricing" className="hidden sm:inline-flex">
                     Pricing
@@ -124,6 +133,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               </Link>
               <Link href="/tools/paywall-checker" className="hover:text-fg">
                 Free paywall checker
+              </Link>
+              <Link href="/science" className="hover:text-fg">
+                The science
               </Link>
               <Link href="/accuracy" className="hover:text-fg">
                 Accuracy

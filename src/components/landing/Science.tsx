@@ -12,7 +12,7 @@ const PIPELINE = [
   { n: "04", title: "Counted, not guessed", text: "Each person thinks first (first glance, need, dealbreaker, trust), then decides. Code counts the answers, checks they are varied, groups the reasons and ranks the fixes." },
 ] as const;
 
-const FACTS = [
+export const FACTS = [
   { finding: "Visitors decide within about 10 seconds, and skim", who: "Everyone", source: "Nielsen Norman Group" },
   { finding: "The median landing page converts about 6.6% of visitors (SaaS about 3.8%)", who: "Everyone", source: "Unbounce, Q4 2024 (41,000 pages)" },
   { finding: "Forced account creation is a top reason people quit (about 18-19% of abandoners)", who: "Everyone", source: "Baymard Institute" },
@@ -22,7 +22,7 @@ const FACTS = [
   { finding: "Median download-to-trial for subscription apps is about 6.2%", who: "App users", source: "RevenueCat, 2025" },
 ] as const;
 
-const ASSUMPTIONS = [
+export const ASSUMPTIONS = [
   { what: "Share on a phone", value: "Teens 85% · adults 60% · business buyers 35%" },
   { what: "Patience", value: "About 10 sec, 30 sec or a few minutes; teens skew shorter" },
   { what: "Teens and card-required trials", value: "Mostly a dead end (most have no card of their own)" },

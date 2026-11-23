@@ -92,6 +92,18 @@ export default function Features() {
         <Science />
       </div>
 
+      {/* 1c. trust, in words that light up as you scroll, then the full evidence page */}
+      <div className="page text-center">
+        <Manifesto
+          className="text-center"
+          text="Built on *published research*, not vibes. We show you the studies, the method and the *limits*. Crawler won't promise your sales. It shows you *why* people say no, and what to fix *first*."
+        />
+        <Link href="/science" className="btn btn-secondary mt-10">
+          Read the science
+          <Arrow />
+        </Link>
+      </div>
+
       {/* 2. the pinned story: the stage stays, the picture changes as you scroll */}
       <div className="page">
         <PinnedSteps steps={story} />
