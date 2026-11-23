@@ -36,6 +36,7 @@
     "src/lib/netguard.ts",
     "src/lib/normalizeUrl.ts",
     "src/lib/safePath.ts",
-    "src/lib/insights.ts"
+    "src/lib/insights.ts",
+    "src/lib/fixPrompt.ts"
   ]
 }

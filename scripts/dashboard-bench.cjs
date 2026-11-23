@@ -332,5 +332,20 @@ test("Slack daily report lists today's sources, most first", () => {
   return t.includes("Heard about us via: TikTok 3 · X / Twitter 1") ? null : t;
 });
 
+// ---------- "Copy fix prompt" ----------
+const FP = require(path.join(lib, "fixPrompt.js"));
+const fx = (i) => ({ title: `Fix ${i}`, problem: `Problem ${i}`, change: `Change ${i}`, where: "the landing page", winBack: 10 - i });
+test("fix prompt: top 3 in ranked order, context, result, copy and honesty rules", () => {
+  const t = FP.buildFixPrompt({ kind: "website", name: "mealmate.app", url: "https://mealmate.app/", goal: "sign up", result: { yes: 20, total: 100 }, fixes: [1, 2, 3, 4, 5].map(fx), copy: [{ label: "Headline options", items: ["A", " ", "B"] }] });
+  const order = t.indexOf("## Fix 1: Fix 1") < t.indexOf("## Fix 2: Fix 2") && t.indexOf("## Fix 2") < t.indexOf("## Fix 3");
+  const want = ["20 of 100 simulated customers said they would sign up", "not proof", "Do the 3 fixes", "could win back about 9", "Headline options:\n  - A\n  - B", "Do NOT invent testimonials", "TODO", "re-test with Crawler"];
+  const miss = want.filter((w) => !t.includes(w));
+  return order && !t.includes("Fix 4") && !miss.length ? null : "missing: " + miss.join(" | ");
+});
+test("fix prompt: video asks for an edit plan; fewer fixes than asked is fine", () => {
+  const t = FP.buildFixPrompt({ kind: "video", name: "my TikTok", fixes: [fx(1)], topN: 3 });
+  return t.includes("shot-by-shot") && t.includes("Do the fix below") && t.includes("sound off") ? null : t;
+});
+
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);

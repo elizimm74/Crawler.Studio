@@ -19,6 +19,7 @@ import ReportShell from "@/components/report/ReportShell";
 import ReportHero from "@/components/report/ReportHero";
 import ReportRevenue from "@/components/report/ReportRevenue";
 import NextSteps from "@/components/report/NextSteps";
+import CopyFixPrompt from "@/components/report/CopyFixPrompt";
 import FixCard from "@/components/report/FixCard";
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
@@ -104,7 +105,24 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
             />
           ))}
         </div>
-      </section>
+        <CopyFixPrompt
+          input={{
+            kind: isGame ? "game" : "app",
+            name: isGame ? "my game" : "my app",
+            whatItIs: run.profile?.whatItIs,
+            whoItsFor: run.profile?.whoItsFor,
+            goal,
+            result: { yes: middle, total: stats.perSample },
+            fixes: fixes.map((f) => ({ title: f.title, problem: f.problem, change: f.change, where: f.screen > 0 ? `screen ${f.screen}` : "the whole flow", winBack: Math.round((f.atPaywall || f.couldWin) / Math.max(1, stats.samples)) })), // counts add up all crowds: per crowd of 100
+            copy: [
+              { label: "Paywall headlines", items: advice.paywallHeadlines },
+              { label: "Button text", items: advice.ctaOptions },
+              { label: "Trial line", items: [advice.trialLine] },
+              { label: "Onboarding tip", items: [advice.onboardingTip] },
+            ],
+          }}
+        />
+</section>
 
       {/* ---------- 3. Screen by screen ---------- */}
       <section id="screens" className="scroll-mt-32">

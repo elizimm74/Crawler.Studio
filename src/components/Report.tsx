@@ -20,6 +20,7 @@ import ReportShell from "@/components/report/ReportShell";
 import ReportHero from "@/components/report/ReportHero";
 import ReportRevenue from "@/components/report/ReportRevenue";
 import NextSteps from "@/components/report/NextSteps";
+import CopyFixPrompt from "./report/CopyFixPrompt";
 import FixCard from "@/components/report/FixCard";
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
@@ -104,6 +105,23 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
             <FixCard key={i} n={i + 1} title={f.title} change={f.change} win={f.likelyFlip} winLabel={`of ${stats.maybe} maybes`} />
           ))}
         </div>
+        <CopyFixPrompt
+          input={{
+            kind: run.profile?.productType === "store" ? "store" : "website",
+            name: run.url.replace(/^https?:\/\//, "").replace(/\/$/, ""),
+            url: run.url,
+            whatItIs: run.profile?.whatItIs,
+            whoItsFor: run.profile?.whoItsFor,
+            goal,
+            result: { yes: stats.buy, total: stats.total },
+            fixes: fixes.map((f) => ({ title: f.title, problem: f.problem, change: f.change, where: stepNames[f.step] ?? f.step, winBack: f.likelyFlip || f.couldFlip })),
+            copy: [
+              { label: "Headline options", items: advice.headlineOptions },
+              { label: "Subheadline", items: [advice.subheadline] },
+              { label: "Pricing copy", items: [advice.pricingCopy] },
+            ],
+          }}
+        />
         {fixes.length > 3 && (
           <button onClick={() => setMoreFixes(!moreFixes)} className="btn btn-text mt-2 -ml-3">
             {moreFixes ? "Show fewer" : `Show ${fixes.length - 3} more fix${fixes.length - 3 === 1 ? "" : "es"}`}

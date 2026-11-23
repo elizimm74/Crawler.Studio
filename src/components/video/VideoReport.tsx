@@ -6,6 +6,7 @@
 //   4. Will it spread? Fixes, new hooks, why people swiped, their comments, who taps
 // Every number is counted in code (src/lib/video/aggregate.ts); the advice text is written by Sonnet.
 import { useMemo, useState } from "react";
+import CopyFixPrompt from "@/components/report/CopyFixPrompt";
 import QualityNote from "@/components/QualityNote";
 import ShareBox from "@/components/ShareBox";
 import ReportShell from "@/components/report/ReportShell";
@@ -184,7 +185,23 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
             </li>
           ))}
         </ol>
-      </section>
+        <CopyFixPrompt
+          input={{
+            kind: "video",
+            name: `my ${s.platform} video`,
+            whatItIs: run.profile?.whatItIs,
+            whoItsFor: run.profile?.whoItsFor,
+            goal: "tap through to the product",
+            result: { yes: taps, total: stats.perSample },
+            fixes: advice.fixes.map((f) => ({ title: f.title, problem: f.problem, change: f.change, where: f.frame > 0 ? `frame ${f.frame}` : "the whole video", winBack: Math.round(f.couldWin / Math.max(1, stats.samples)) })), // counts add up all crowds: per crowd
+            copy: [
+              { label: "New hooks (first line)", items: advice.hooks },
+              { label: "Captions", items: advice.captions },
+              { label: "Call to action", items: [advice.cta] },
+            ],
+          }}
+        />
+</section>
 
       {/* ---------- 7. New hooks ---------- */}
       <section className="grid gap-4 md:grid-cols-[1.4fr_1fr]">
