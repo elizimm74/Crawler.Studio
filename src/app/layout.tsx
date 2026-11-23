@@ -63,7 +63,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               {user ? (
                 <>
                   <NavLink href="/example" className="hidden md:inline-flex">
-                    Example
+                    Sample report
                   </NavLink>
                   <NavLink href="/science" className="hidden md:inline-flex">
                     Science
@@ -85,7 +85,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               ) : AUTH_ENABLED ? (
                 <>
                   <NavLink href="/example" className="hidden md:inline-flex">
-                    Example
+                    Sample report
                   </NavLink>
                   <NavLink href="/science" className="hidden md:inline-flex">
                     Science
@@ -101,7 +101,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               ) : (
                 <>
                   <NavLink href="/example" className="hidden md:inline-flex">
-                    Example
+                    Sample report
                   </NavLink>
                   <NavLink href="/science" className="hidden md:inline-flex">
                     Science

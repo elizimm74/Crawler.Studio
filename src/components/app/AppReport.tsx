@@ -20,6 +20,9 @@ import ReportHero from "@/components/report/ReportHero";
 import ReportRevenue from "@/components/report/ReportRevenue";
 import NextSteps from "@/components/report/NextSteps";
 import CopyFixPrompt from "@/components/report/CopyFixPrompt";
+import { FixProgress, FixStatusProvider } from "@/components/report/FixStatus";
+import PrintButton from "@/components/report/PrintButton";
+import { priorityFor } from "@/lib/priority";
 import FixCard from "@/components/report/FixCard";
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
@@ -38,7 +41,9 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
   const isGame = run.profile?.productType === "game";
   const kind = isGame ? "game" : "app";
   const newVersionHref = isGame ? "/onboarding?kind=game" : "/onboarding?kind=app";
-  const fixWins = fixes.slice(0, 3).reduce((n, f) => n + (f.atPaywall || f.couldWin), 0);
+  // atPaywall / couldWin add up all crowds: divide by the number of crowds so they match "of 100"
+  const perCrowd = (n: number) => Math.round(n / Math.max(1, stats.samples));
+  const fixWins = fixes.slice(0, 3).reduce((n, f) => n + perCrowd(f.atPaywall || f.couldWin), 0);
   const sections = [
     { id: "answer", label: "Answer" },
     { id: "fixes", label: "Fixes" },
@@ -48,6 +53,7 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
   ];
 
   return (
+    <FixStatusProvider testId={run.id} demo={demo}>
     <ReportShell sections={sections}>
       {/* ---------- 1. The answer ---------- */}
       <ReportHero
@@ -67,16 +73,19 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
         crowdTotal={stats.perSample}
         crowdCaption={`one dot = one simulated customer · the middle of 3 crowds`}
         actions={
-          !demo ? (
-            <>
-              <a href="#share" className="btn btn-primary h-11 px-5 text-sm">
-                Send this score
-              </a>
-              <a href="#fixes" className="btn btn-secondary h-11 px-5 text-sm">
-                See what to fix
-              </a>
-            </>
-          ) : undefined
+          <>
+            {!demo && (
+              <>
+                <a href="#share" className="btn btn-primary h-11 px-5 text-sm">
+                  Send this score
+                </a>
+                <a href="#fixes" className="btn btn-secondary h-11 px-5 text-sm">
+                  See what to fix
+                </a>
+              </>
+            )}
+            <PrintButton />
+          </>
         }
       >
         {stats.benchmark && (
@@ -91,6 +100,9 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
       <section id="fixes" className="scroll-mt-32">
         <p className="t-label">edit these first</p>
         <h2 className="mt-2 text-3xl font-semibold tracking-tight">Fix these first</h2>
+        <div className="mt-3">
+          <FixProgress titles={fixes.map((f) => f.title)} />
+        </div>
         <div className="mt-6 space-y-3" role="list">
           {fixes.map((f, i) => (
             <FixCard
@@ -99,9 +111,12 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
               title={f.title}
               problem={f.problem}
               change={f.change}
-              win={f.atPaywall || f.couldWin}
-              winLabel={f.atPaywall ? "said no at the paywall" : "had this objection"}
+              win={perCrowd(f.atPaywall || f.couldWin)}
+              winLabel={f.atPaywall ? `of ${stats.perSample} said no at the paywall` : `of ${stats.perSample} had this objection`}
               meta={f.screen > 0 ? `screen ${f.screen}` : undefined}
+              priority={priorityFor(Math.round((f.atPaywall || f.couldWin) / Math.max(1, stats.samples)), stats.perSample)}
+              evidence={`About ${Math.round((f.atPaywall || f.couldWin) / Math.max(1, stats.samples))} of ${stats.perSample} simulated customers per crowd ${f.atPaywall ? "said no at the paywall" : "had this objection"}. Expected direction: more people continue.`}
+              tracked
             />
           ))}
         </div>
@@ -296,7 +311,7 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
             yes={middle}
             total={stats.perSample}
             goal={goal}
-            fixes={fixes.map((f) => ({ title: f.title, wins: f.atPaywall || f.couldWin }))}
+            fixes={fixes.map((f) => ({ title: f.title, wins: perCrowd(f.atPaywall || f.couldWin) }))}
             createdAt={run.createdAt}
           />
           <NextSteps kind={kind} fixWins={fixWins} retestHref={newVersionHref} newVersionHref={newVersionHref} />
@@ -310,5 +325,6 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
       <p className="text-center text-xs text-faint">
         Simulated customers show buying intent, not real purchases.      </p>
     </ReportShell>
+    </FixStatusProvider>
   );
 }

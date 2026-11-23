@@ -22,6 +22,9 @@ import ReportRevenue from "@/components/report/ReportRevenue";
 import NextSteps from "@/components/report/NextSteps";
 import CopyFixPrompt from "./report/CopyFixPrompt";
 import FixCard from "@/components/report/FixCard";
+import { FixProgress, FixStatusProvider } from "@/components/report/FixStatus";
+import PrintButton from "@/components/report/PrintButton";
+import { PRIORITIES, priorityFor } from "@/lib/priority";
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 const STEP_NAMES: Record<string, string> = {
@@ -52,11 +55,14 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
   const sections = [
     { id: "answer", label: "Answer" },
     { id: "fixes", label: "Fixes" },
+    { id: "problems", label: "Problems" },
+    { id: "customers", label: "Customers" },
     { id: "details", label: "Details" },
     ...(demo ? [] : [{ id: "revenue", label: "Revenue" }, { id: "next", label: "Next steps" }, { id: "share", label: "Share" }]),
   ];
 
   return (
+    <FixStatusProvider testId={run.id} demo={demo}>
     <ReportShell sections={sections}>
       {/* ---------- 1. The answer ---------- */}
       <ReportHero
@@ -74,16 +80,19 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
         crowdTotal={stats.total}
         crowdCaption={`one dot = one simulated customer · ${stats.buy} said yes, ${stats.maybe} maybe`}
         actions={
-          !demo ? (
-            <>
-              <a href="#share" className="btn btn-primary h-11 px-5 text-sm">
-                Send this score
-              </a>
-              <Link href={retestHref} className="btn btn-secondary h-11 px-5 text-sm">
-                Fix it, then re-test
-              </Link>
-            </>
-          ) : undefined
+          <>
+            {!demo && (
+              <>
+                <a href="#share" className="btn btn-primary h-11 px-5 text-sm">
+                  Send this score
+                </a>
+                <Link href={retestHref} className="btn btn-secondary h-11 px-5 text-sm">
+                  Fix it, then re-test
+                </Link>
+              </>
+            )}
+            <PrintButton />
+          </>
         }
       >
         <VerdictBar buy={stats.buy} maybe={stats.maybe} no={stats.no} goal={goal} />
@@ -100,9 +109,24 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
           </div>
           <span className="t-label hidden sm:inline">ranked by people won back</span>
         </div>
+        <div className="mt-3">
+          <FixProgress titles={fixes.map((f) => f.title)} />
+        </div>
         <div className="mt-6 space-y-3" role="list">
           {shownFixes.map((f, i) => (
-            <FixCard key={i} n={i + 1} title={f.title} change={f.change} win={f.likelyFlip} winLabel={`of ${stats.maybe} maybes`} />
+            <FixCard
+              key={i}
+              n={i + 1}
+              title={f.title}
+              problem={f.problem}
+              change={f.change}
+              win={f.likelyFlip}
+              winLabel={`of ${stats.maybe} maybes`}
+              priority={priorityFor(f.couldFlip, stats.total)}
+              evidence={`${f.couldFlip} of ${stats.total} simulated customers left for a reason this addresses (${f.addresses.join(", ")}); ${f.likelyFlip} of them said "maybe". Expected direction: more people say yes.`}
+              meta={`where: ${stepNames[f.step] ?? f.step}`}
+              tracked
+            />
           ))}
         </div>
         <CopyFixPrompt
@@ -138,6 +162,45 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
           value={worstStep && worstStep.lost > 0 ? stepNames[worstStep.step] : "-"}
           detail={worstStep && worstStep.lost > 0 ? `${worstStep.lost} of ${stats.total} gave up there` : ""}
         />
+      </section>
+
+      {/* ---------- Top problems, by priority (counted in code) ---------- */}
+      <section id="problems" className="scroll-mt-32">
+        <p className="t-label">top problems</p>
+        <h2 className="mt-2 text-3xl font-semibold tracking-tight">What stopped them</h2>
+        <p className="mt-2 text-sm text-muted">Priority comes from how many of the {stats.total} simulated customers each problem affected.</p>
+        <div className="mt-6 grid gap-3 md:grid-cols-2">
+          {PRIORITIES.map((level) => {
+            const items = stats.objections.filter((o) => o.category !== "none" && priorityFor(o.count, stats.total) === level);
+            if (!items.length) return null;
+            return (
+              <div key={level} className="card p-5">
+                <p className={`pill prio prio-${level.toLowerCase()}`}>{level}</p>
+                <ul className="mt-4 space-y-4">
+                  {items.map((o) => (
+                    <li key={o.category}>
+                      <div className="flex justify-between gap-3 text-sm">
+                        <span className="font-medium first-letter:uppercase">{o.category}</span>
+                        <span className="tabular-nums text-muted">
+                          {o.count} customers · {pct(o.count / Math.max(1, stats.total))}
+                        </span>
+                      </div>
+                      {o.examples[0] && <p className="mt-1 text-sm text-muted">“{o.examples[0]}”</p>}
+                      {o.changeMind[0] && <p className="mt-1 text-xs text-faint">Would change their mind: {o.changeMind[0]}</p>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ---------- Every simulated customer ---------- */}
+      <section id="customers" className="scroll-mt-32">
+        <p className="t-label">persona breakdown</p>
+        <h2 className="mt-2 text-3xl font-semibold tracking-tight">Every simulated customer</h2>
+        <CustomerList run={run} goal={goal} />
       </section>
 
       {/* ---------- 4. Details, folded away ---------- */}
@@ -266,7 +329,11 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
       )}
 
       <QualityNote quality={run.quality} />
+      <p className="text-center text-xs text-faint">
+        Simulation result: these are AI-simulated customers. Their buying intent is a strong hint about what to fix, not a real conversion rate.
+      </p>
     </ReportShell>
+    </FixStatusProvider>
   );
 }
 
@@ -335,20 +402,22 @@ function VerdictBar({ buy, maybe, no, goal }: { buy: number; maybe: number; no: 
         <div className="rounded-full bg-line-strong" style={{ width: pct(no / total) }} />
       </div>
       <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-        <Key swatch="bg-accent" label={`Would ${goal}`} n={buy} />
-        <Key swatch="bg-fg" label="Maybe" n={maybe} />
-        <Key swatch="bg-line-strong" label="No" n={no} />
+        <Key swatch="bg-accent" label={`Would ${goal}`} n={buy} total={total} />
+        <Key swatch="bg-fg" label="Maybe" n={maybe} total={total} />
+        <Key swatch="bg-line-strong" label="No" n={no} total={total} />
       </div>
     </div>
   );
 }
 
-function Key({ swatch, label, n }: { swatch: string; label: string; n: number }) {
+function Key({ swatch, label, n, total }: { swatch: string; label: string; n: number; total: number }) {
   return (
     <span className="flex items-center gap-2">
       <span className={`h-2 w-2 rounded-sm ${swatch}`} aria-hidden />
       <span className="text-muted">{label}</span>
-      <span className="tabular-nums">{n}</span>
+      <span className="tabular-nums">
+        {n} <span className="text-faint">· {pct(n / total)}</span>
+      </span>
     </span>
   );
 }
@@ -434,6 +503,80 @@ function Quotes({ best, all, goal }: { best: QuoteItem[]; all: QuoteItem[]; goal
             </button>
           ))}
       </div>
+    </div>
+  );
+}
+
+// Every simulated customer: who they are, their decision, why they came, their objection and reasoning.
+// Filter by decision; 12 at a time so long tests (1,000 customers) stay fast.
+function CustomerList({ run, goal }: { run: Run; goal: string }) {
+  const [filter, setFilter] = useState<"all" | "buy" | "maybe" | "no">("all");
+  const [shown, setShown] = useState(12);
+  const byId = new Map(run.personas.map((p) => [p.id, p]));
+  const rows = run.verdicts.filter((v) => filter === "all" || v.verdict === filter);
+  const word = { buy: `Would ${goal}`, maybe: "Might", no: "Wouldn't" } as const;
+  const pill = { buy: "pill-buy", maybe: "pill-maybe", no: "pill-no" } as const;
+  const count = (k: "buy" | "maybe" | "no") => run.verdicts.filter((v) => v.verdict === k).length;
+  return (
+    <div className="mt-6">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Filter customers by decision">
+        {(["all", "buy", "maybe", "no"] as const).map((f) => (
+          <button
+            key={f}
+            aria-pressed={filter === f}
+            onClick={() => {
+              setFilter(f);
+              setShown(12);
+            }}
+            className="chip"
+          >
+            {f === "all" ? `All ${run.verdicts.length}` : `${word[f]} · ${count(f)}`}
+          </button>
+        ))}
+      </div>
+      <ul className="mt-4 grid gap-3 md:grid-cols-2">
+        {rows.slice(0, shown).map((v) => {
+          const p = byId.get(v.personaId);
+          return (
+            <li key={v.personaId} className="card p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium">
+                    {p ? `${p.age}, ${p.occupation}` : v.personaId}
+                  </p>
+                  {p && (
+                    <p className="text-xs text-faint">
+                      {p.mindset} · budget {p.budget} · {p.device} · came from {p.arrivedFrom}
+                    </p>
+                  )}
+                </div>
+                <span className={`pill ${pill[v.verdict]} shrink-0`}>{word[v.verdict]}</span>
+              </div>
+              <p className="mt-3 text-sm">“{v.quote}”</p>
+              <dl className="mt-3 space-y-1.5 text-sm">
+                {p?.mind?.motivation && <Line k="Why they came" v={p.mind.motivation} />}
+                {v.objection && <Line k={v.verdict === "buy" ? "Small worry" : "Objection"} v={v.objection} />}
+                {v.thought && <Line k="Reasoning" v={v.thought} />}
+                {v.wouldChangeMind && v.verdict !== "buy" && <Line k="Would change their mind" v={v.wouldChangeMind} />}
+              </dl>
+            </li>
+          );
+        })}
+      </ul>
+      {rows.length > shown && (
+        <button onClick={() => setShown((n) => n + 24)} className="btn btn-secondary mt-4 h-11 px-5 text-sm">
+          Show more ({rows.length - shown} left)
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Line({ k, v }: { k: string; v: string }) {
+  return (
+    <div>
+      <dt className="inline text-faint">{k}: </dt>
+      <dd className="inline text-muted">{v}</dd>
     </div>
   );
 }

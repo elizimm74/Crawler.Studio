@@ -1279,3 +1279,25 @@ html[data-calm] .hero-row { animation: none; }
   background: radial-gradient(closest-side, rgb(29 78 216 / 0.28), transparent);
   pointer-events: none;
 }
+
+/* ==================== REPORTS v3 (2026-11-23 overhaul) ==================== */
+/* priority pills: urgency is shown with weight and fill, blue only for the most urgent */
+.prio { font-size: 11px; font-weight: 500; }
+.prio-critical { background: var(--accent); color: #fff; border-color: transparent; }
+.prio-high { background: rgb(255 255 255 / 0.9); color: #0b0c10; border-color: transparent; }
+.prio-medium { border-color: var(--line-strong); color: var(--fg); }
+.prio-low { border-color: var(--line); color: var(--fg-muted); }
+.fixstatus select option { color: #111; }
+
+/* "Download PDF" (print): white paper, no menus or buttons, everything visible */
+@media print {
+  html, body { background: #fff !important; color: #111 !important; }
+  body::before, body::after, header, footer, nav, .report-nav, .btn, button, select, [data-noprint], .dash-rail { display: none !important; }
+  .fixstatus { display: none !important; }
+  * { color: #111 !important; box-shadow: none !important; text-shadow: none !important; backdrop-filter: none !important; animation: none !important; transition: none !important; }
+  .card, .gpanel, .glass, .paper { background: #fff !important; border-color: #ddd !important; }
+  .bg-accent, .prio-critical { background: #1d4ed8 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+  section, li { break-inside: avoid; }
+  a { text-decoration: none !important; }
+}

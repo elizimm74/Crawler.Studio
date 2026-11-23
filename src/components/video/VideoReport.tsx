@@ -5,6 +5,9 @@
 //   3. View range + deal check (only with the account's real recent views; clearly labelled)
 //   4. Will it spread? Fixes, new hooks, why people swiped, their comments, who taps
 // Every number is counted in code (src/lib/video/aggregate.ts); the advice text is written by Sonnet.
+import { FixProgress, FixStatusProvider, FixStatusSelect } from "@/components/report/FixStatus";
+import PrintButton from "@/components/report/PrintButton";
+import { priorityFor } from "@/lib/priority";
 import { useMemo, useState } from "react";
 import CopyFixPrompt from "@/components/report/CopyFixPrompt";
 import QualityNote from "@/components/QualityNote";
@@ -32,7 +35,9 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
   const [target, setTarget] = useState(10);
   const deal = useMemo(() => dealCheck(s.price, run.views ?? null, stats, target), [s.price, run.views, stats, target]);
   const beatFile = (n: number) => s.beats[n - 1]?.file;
-  const fixWins = advice.fixes.slice(0, 3).reduce((n, f) => n + f.couldWin, 0);
+  // couldWin adds up all crowds: divide by the number of crowds so it matches "of 100"
+  const perCrowd = (n: number) => Math.round(n / Math.max(1, stats.samples));
+  const fixWins = advice.fixes.slice(0, 3).reduce((n, f) => n + perCrowd(f.couldWin), 0);
   const sections = [
     { id: "answer", label: "Answer" },
     { id: "curve", label: "Watch curve" },
@@ -42,6 +47,7 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
   ];
 
   return (
+    <FixStatusProvider testId={run.id} demo={demo}>
     <ReportShell wide sections={sections}>
       {/* ---------- 1. The answer ---------- */}
       <section id="answer" className="gpanel dash-hero-glass dash-rise relative scroll-mt-32 overflow-hidden rounded-3xl p-6 sm:p-10">
@@ -160,6 +166,10 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
       {/* ---------- 6. Fixes ---------- */}
       <section id="fixes" className="scroll-mt-32">
         <Head label="edit these first" title="Ranked fixes" sub="Ordered by how many simulated viewers each could win back." />
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <FixProgress titles={advice.fixes.map((f) => f.title)} />
+          <PrintButton />
+        </div>
         <ol className="mt-6 space-y-3">
           {advice.fixes.map((f, i) => (
             <li key={i} className="card grid grid-cols-[auto_minmax(0,1fr)] gap-4 p-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:p-5">
@@ -177,10 +187,17 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
                 <p className="mt-1 font-medium">{f.title}</p>
                 <p className="mt-1 text-sm text-muted">{f.problem}</p>
                 <p className="mt-2 text-sm">{f.change}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className={`pill prio prio-${priorityFor(Math.round(f.couldWin / Math.max(1, stats.samples)), stats.perSample).toLowerCase()}`}>
+                    {priorityFor(Math.round(f.couldWin / Math.max(1, stats.samples)), stats.perSample)}
+                  </span>
+                  <FixStatusSelect title={f.title} />
+                </div>
               </div>
               <p className="col-span-2 text-sm text-muted sm:col-span-1 sm:text-right">
-                <span className="text-2xl font-semibold text-fg tabular-nums">+{f.couldWin}</span>
-                <span className="block text-xs">viewers it could win</span>
+                {/* couldWin adds up all crowds: show it per crowd, like every other number on this page */}
+                <span className="text-2xl font-semibold text-fg tabular-nums">+{Math.round(f.couldWin / Math.max(1, stats.samples))}</span>
+                <span className="block text-xs">of {stats.perSample} viewers it could win</span>
               </p>
             </li>
           ))}
@@ -291,7 +308,7 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
             yes={taps}
             total={stats.perSample}
             goal="tap through"
-            fixes={advice.fixes.map((f) => ({ title: f.title, wins: f.couldWin }))}
+            fixes={advice.fixes.map((f) => ({ title: f.title, wins: perCrowd(f.couldWin) }))}
             createdAt={run.createdAt}
           />
           <NextSteps kind="video" fixWins={fixWins} retestHref="/onboarding?kind=video" newVersionHref="/onboarding?kind=video" />
@@ -303,6 +320,7 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
         pre-post gut check: it compares versions well, but real feeds decide real views.
       </p>
     </ReportShell>
+    </FixStatusProvider>
   );
 }
 
