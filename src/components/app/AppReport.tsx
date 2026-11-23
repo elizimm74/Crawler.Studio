@@ -308,8 +308,7 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
 
       <QualityNote quality={run.quality} />
       <p className="text-center text-xs text-faint">
-        Simulated customers show buying intent, not real purchases. Cost of this test: ${run.totalCostUsd?.toFixed(3) ?? "?"}.
-      </p>
+        Simulated customers show buying intent, not real purchases.      </p>
     </ReportShell>
   );
 }

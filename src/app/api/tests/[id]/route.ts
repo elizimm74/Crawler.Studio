@@ -4,6 +4,7 @@
 // Row Level Security: you only ever get your own tests.
 import { NextResponse } from "next/server";
 import { requireUser, jsonError } from "@/lib/supabase/api";
+import { stripCosts } from "@/lib/stripCosts";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireUser();
@@ -27,7 +28,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       filesPrefix,
     });
   }
-  const run = row.data as Record<string, unknown> | null;
+  const run = stripCosts(row.data) as Record<string, unknown> | null; // costs are private
   if (row.status === "error" && (!run || !("stats" in run))) {
     return NextResponse.json({ status: "error", error: row.error ?? "The test failed.", filesPrefix });
   }

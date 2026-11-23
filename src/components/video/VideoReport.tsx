@@ -301,7 +301,6 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
       <p className="text-xs leading-relaxed text-faint">
         Simulated viewers saw {s.beats.length} still frames{s.script ? " plus the words you typed" : ""}, not the moving video or its sound. Treat this as a
         pre-post gut check: it compares versions well, but real feeds decide real views.
-        {run.totalCostUsd ? ` Cost of this test: $${run.totalCostUsd.toFixed(3)}.` : ""}
       </p>
     </ReportShell>
   );

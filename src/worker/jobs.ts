@@ -6,6 +6,7 @@ import { publicUrlProblem } from "../lib/netguard";
 import { understandSite, EMPTY_PROFILE } from "../lib/suggest";
 import { runTest, type Run } from "../lib/pipeline";
 import { logRunCost } from "../lib/cost";
+import { stripCosts } from "../lib/stripCosts";
 import { decryptJson } from "../lib/crypto";
 import type { BlobStore } from "../lib/blobs";
 import type { Audience, Crawl, Credentials, ExploreSettings, ProductProfile } from "../lib/types";
@@ -85,7 +86,7 @@ export async function analyzeJob(job: Job, ctx: Ctx) {
   }
   const { error: saveError } = await ctx.db
     .from("crawls")
-    .update({ status: "done", data, updated_at: now() })
+    .update({ status: "done", data: stripCosts(data), updated_at: now() })
     .eq("id", job.ref_id);
   if (saveError) throw new Error(`couldn't save crawl: ${saveError.message}`);
 }
@@ -114,7 +115,7 @@ async function analyzeAppJob(job: Job, ctx: Ctx, input: AppInput) {
       suggestError: (err as Error).message,
     };
   }
-  const { error } = await ctx.db.from("crawls").update({ status: "done", data, updated_at: now() }).eq("id", job.ref_id);
+  const { error } = await ctx.db.from("crawls").update({ status: "done", data: stripCosts(data), updated_at: now() }).eq("id", job.ref_id);
   if (error) throw new Error(`couldn't save app analysis: ${error.message}`);
 }
 
@@ -183,7 +184,7 @@ export async function runJob(job: Job, ctx: Ctx) {
       total: run.stats?.total ?? run.personas.length,
       cost_usd: run.totalCostUsd ?? null,
       progress: null,
-      data: run,
+      data: stripCosts(run),
       updated_at: now(),
     })
     .eq("id", job.ref_id);
@@ -237,7 +238,7 @@ async function runAppJob(job: Job, ctx: Ctx, crawlId: string, settings: TestSett
       total: run.stats?.perSample ?? settings.count ?? 100,
       cost_usd: run.totalCostUsd ?? null,
       progress: null,
-      data: run,
+      data: stripCosts(run),
       updated_at: now(),
     })
     .eq("id", job.ref_id);
@@ -267,7 +268,7 @@ async function analyzeVideoJob(job: Job, ctx: Ctx, input: VideoInput) {
       suggestError: (err as Error).message,
     };
   }
-  const { error } = await ctx.db.from("crawls").update({ status: "done", data, updated_at: now() }).eq("id", job.ref_id);
+  const { error } = await ctx.db.from("crawls").update({ status: "done", data: stripCosts(data), updated_at: now() }).eq("id", job.ref_id);
   if (error) throw new Error(`couldn't save video analysis: ${error.message}`);
 }
 
@@ -316,7 +317,7 @@ async function runVideoJob(job: Job, ctx: Ctx, crawlId: string, settings: TestSe
       total: perSample,
       cost_usd: run.totalCostUsd ?? null,
       progress: null,
-      data: run,
+      data: stripCosts(run),
       updated_at: now(),
     })
     .eq("id", job.ref_id);

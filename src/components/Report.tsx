@@ -266,7 +266,6 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
       )}
 
       <QualityNote quality={run.quality} />
-      {run.totalCostUsd !== undefined && <p className="t-label">run cost ${run.totalCostUsd.toFixed(4)}</p>}
     </ReportShell>
   );
 }

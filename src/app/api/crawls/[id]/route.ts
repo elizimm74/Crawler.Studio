@@ -2,6 +2,7 @@
 // Row Level Security: you only ever get your own crawls.
 import { NextResponse } from "next/server";
 import { requireUser, jsonError } from "@/lib/supabase/api";
+import { stripCosts } from "@/lib/stripCosts";
 import { fileUrl } from "@/lib/urls";
 import type { CrawlData } from "@/worker/jobs";
 import type { AppAnalysis } from "@/lib/app/types";
@@ -14,6 +15,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const { data: row } = await auth.supabase.from("crawls").select("status, error, data").eq("id", id).maybeSingle();
   if (!row) return jsonError("Analysis not found.", 404);
   if (row.status !== "done") return NextResponse.json({ status: row.status, error: row.error });
+  row.data = stripCosts(row.data); // costs are private
 
   // App test: the labeled screens + paywall facts, with links to the images.
   if ((row.data as { kind?: string }).kind === "app") {
