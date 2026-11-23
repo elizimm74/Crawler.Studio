@@ -7,7 +7,9 @@ import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { PLANS, allowanceLabel, per100Label, planName, priceLabel } from "@/lib/plans";
 import ManageBilling from "@/components/ManageBilling";
 import { supabaseServer } from "@/lib/supabase/server";
-import { stripeEnabled } from "@/lib/stripe";
+import { paidPlan, stripeEnabled } from "@/lib/stripe";
+import SwitchPlanButton from "@/components/SwitchPlanButton";
+import { INVITES_TO_UNLOCK, STARTER_CUSTOMERS, TEST_SIZES, type Plan } from "@/lib/plans";
 import BuyButton from "@/components/BuyButton";
 import { Compare } from "@/components/landing/Sections";
 
@@ -33,8 +35,8 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
       <p className="t-label">pricing</p>
       <h1 className="t-h1 mt-4">Pay for the crowd you need.</h1>
       <p className="t-lead mt-4 max-w-xl">
-        Every plan gives you simulated customers each month. A test uses as many as it simulates: 100 for a quick read,
-        up to 1,000 for a big launch. Cancel any time.
+        Plans are measured in simulated customers. A test uses as many as it simulates: 100 for a quick read, up to 1,000
+        for a big launch. Every plan includes the full report, ranked fixes, the fix tracker, the copy-fix prompt and PDF export.
       </p>
 
       {cancelled && (
@@ -56,7 +58,7 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
             <div key={p.id} className={`card flex flex-col p-6 ${p.id === "starter" ? "border-fg" : ""}`}>
               <div className="flex items-center justify-between">
                 <p className="font-medium">{p.name}</p>
-                {p.id === "starter" && <span className="pill pill-buy">one launch a month</span>}
+                {p.id === "starter" && <span className="pill pill-buy">recommended</span>}
               </div>
               <p className="mt-6 flex items-baseline gap-2">
                 <span className="t-number text-5xl">{priceLabel(p)}</span>
@@ -65,6 +67,14 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
               <p className="mt-1 text-sm text-faint">{allowanceLabel(p)}</p>
               {!free && <p className="text-xs text-faint">{per100Label(p)}</p>}
               <p className="mt-4 text-sm text-muted">{p.note}</p>
+              <dl className="mt-6 space-y-2 border-t border-line pt-6 text-sm">
+                {planFacts(p).map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-3">
+                    <dt className="text-faint">{k}</dt>
+                    <dd className="text-right">{v}</dd>
+                  </div>
+                ))}
+              </dl>
               <ul className="mt-6 flex-1 space-y-2 border-t border-line pt-6 text-sm">
                 {p.features.map((f) => (
                   <li key={f} className="flex gap-2">
@@ -85,8 +95,10 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
                 <span className="btn btn-ghost mt-8 w-full cursor-default" aria-disabled>
                   Your plan
                 </span>
+              ) : current && paidPlan(current) ? (
+                <SwitchPlanButton planId={p.id} planName={p.name} price={p.priceUsd} upgrade={p.priceUsd > (paidPlan(current)?.priceUsd ?? 0)} />
               ) : current ? (
-                <ManageBilling className="btn btn-secondary mt-8 w-full" label="Cancel, then switch" />
+                <ManageBilling className="btn btn-secondary mt-8 w-full" label="Manage billing" />
               ) : user || !AUTH_ENABLED ? (
                 <BuyButton planId={p.id as "starter" | "growth" | "scale"} label={`Subscribe · ${priceLabel(p)}/month`} primary={p.id === "starter"} />
               ) : (
@@ -115,6 +127,28 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
       </div>
     </div>
   );
+}
+
+// The exact numbers for each plan, in one place (all from src/lib/plans.ts, which matches the database).
+function planFacts(p: Plan): [string, string][] {
+  const n = (x: number) => x.toLocaleString("en-US");
+  if (p.priceUsd === 0)
+    return [
+      ["Billing", "Free, no card"],
+      ["Tests included", `1 (+1 for ${INVITES_TO_UNLOCK} verified invites)`],
+      ["Customers per test", `${STARTER_CUSTOMERS} (100 after invites)`],
+      ["Resets", "No, one-time"],
+      ["Video / ad tests", "No"],
+    ];
+  return [
+    ["Billing", "Monthly, cancel any time"],
+    ["Customers per month", n(p.customers)],
+    ["Customers per test", `${TEST_SIZES[0]} to ${n(TEST_SIZES[TEST_SIZES.length - 1])}, you choose`],
+    ["Tests per month", `about ${Math.floor(p.customers / 100)} of 100, or ${Math.floor(p.customers / 1000)} of 1,000`],
+    ["Resets", "Every billing month, no carry-over"],
+    ["Video / ad tests", p.ads ? "Yes" : "No (Growth and up)"],
+    ["Extra usage", "Not sold: upgrade instead"],
+  ];
 }
 
 function Check() {

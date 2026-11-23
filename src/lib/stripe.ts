@@ -58,10 +58,15 @@ export function checkoutForm(
   return f;
 }
 
-async function stripe<T>(path: string, form?: URLSearchParams, method = "POST"): Promise<T> {
+async function stripe<T>(path: string, form?: URLSearchParams, method = "POST", idempotencyKey?: string): Promise<T> {
   const res = await fetch(`https://api.stripe.com/v1/${path}`, {
     method,
-    headers: { Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`, "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+      // the same key twice = Stripe does it once (no double charges on a double click or retry)
+      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+    },
     body: method === "GET" ? undefined : form,
   });
   const data = (await res.json().catch(() => ({}))) as T & { error?: { message?: string } };
@@ -190,4 +195,46 @@ export function readPayment(event: unknown): Payment | null {
     currency: String(inv.currency ?? "usd"),
     paidAt: new Date((Number.isFinite(paid) && paid > 0 ? paid : Date.now() / 1000) * 1000).toISOString(),
   };
+}
+
+
+// ---------- Switching plans (upgrade / downgrade) ----------
+// Upgrades charge the difference for the rest of the month NOW (and fail if the card fails, so nobody
+// gets a bigger plan without paying). Downgrades take effect now and the unused part becomes a credit
+// on the next invoice. The webhook then saves the new plan (customer.subscription.updated).
+export function switchForm(plan: PaidPlan, from: PaidPlan, userId: string, itemId: string, productId: string): URLSearchParams {
+  const up = plan.priceUsd > from.priceUsd;
+  const f = new URLSearchParams();
+  f.set("items[0][id]", itemId);
+  f.set("items[0][price_data][currency]", "usd");
+  f.set("items[0][price_data][product]", productId);
+  f.set("items[0][price_data][unit_amount]", String(Math.round(plan.priceUsd * 100)));
+  f.set("items[0][price_data][recurring][interval]", "month");
+  f.set("metadata[user_id]", userId);
+  f.set("metadata[plan_id]", plan.id);
+  f.set("proration_behavior", up ? "always_invoice" : "create_prorations");
+  if (up) f.set("payment_behavior", "error_if_incomplete");
+  f.set("cancel_at_period_end", "false"); // switching means they're staying
+  return f;
+}
+
+type StripeSub = { id: string; status: string; metadata?: Record<string, string>; items?: { data?: { id: string }[] } };
+
+export async function switchPlan(subId: string, plan: PaidPlan, userId: string): Promise<void> {
+  const sub = await stripe<StripeSub>(`subscriptions/${encodeURIComponent(subId)}`, undefined, "GET");
+  if (sub.metadata?.user_id !== userId) throw new Error("subscription does not belong to this user"); // never touch someone else's
+  if (!["active", "trialing"].includes(sub.status)) throw new Error(`subscription is ${sub.status}`);
+  const from = paidPlan(sub.metadata?.plan_id);
+  if (!from) throw new Error("unknown current plan");
+  if (from.id === plan.id) return;
+  const item = sub.items?.data?.[0]?.id;
+  if (!item) throw new Error("subscription has no item");
+  // a product named after the NEW plan, so invoices say what they're paying for
+  const product = await stripe<{ id: string }>(
+    "products",
+    new URLSearchParams({ name: `Crawler ${plan.name} (${plan.customers.toLocaleString("en-US")} simulated customers a month)` }),
+    "POST",
+    `product-${subId}-${plan.id}`,
+  );
+  await stripe(`subscriptions/${encodeURIComponent(subId)}`, switchForm(plan, from, userId, item, product.id), "POST", `switch-${subId}-${plan.id}-${Math.floor(Date.now() / 60_000)}`);
 }

@@ -379,5 +379,16 @@ test("cleanProfile keeps only known objectives", () => {
   return JSON.stringify(p.focus) === '["buy","blockers"]' ? null : JSON.stringify(p.focus);
 });
 
+test("plan switch: upgrade charges the difference now and fails on a bad card; downgrade credits; right price + metadata", () => {
+  const S = require(path.join(lib, "stripe.js"));
+  const up = S.switchForm(S.paidPlan("growth"), S.paidPlan("starter"), "u1", "si_1", "prod_1");
+  const down = S.switchForm(S.paidPlan("starter"), S.paidPlan("scale"), "u1", "si_1", "prod_1");
+  const ok =
+    up.get("proration_behavior") === "always_invoice" && up.get("payment_behavior") === "error_if_incomplete" &&
+    up.get("items[0][price_data][unit_amount]") === "10000" && up.get("metadata[plan_id]") === "growth" && up.get("items[0][id]") === "si_1" &&
+    down.get("proration_behavior") === "create_prorations" && !down.get("payment_behavior") && down.get("items[0][price_data][unit_amount]") === "2500";
+  return ok ? null : up.toString() + " | " + down.toString();
+});
+
 console.log(`\nDashboard bench: ${pass}/${total}`);
 if (pass < total) process.exit(1);
