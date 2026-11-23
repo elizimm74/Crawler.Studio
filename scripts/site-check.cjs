@@ -161,7 +161,9 @@ const record = (r) => {
   });
   await flow("pricing: 4 plans with the same numbers as the code", async () => {
     await p.goto(BASE + "/pricing", { waitUntil: "networkidle" });
-    for (const t of ["$0", "$25", "$100", "$250", "1,000", "10,000", "30,000", "No (Growth and up)"]) await p.getByText(t, { exact: false }).first().waitFor({ timeout: 3000 });
+    for (const t of ["1 test with 25 simulated customers", "1,000 simulated customers a month", "10,000 simulated customers a month", "30,000 simulated customers a month", "$2.50 per 100 customers", "$1.00 per 100 customers", "Video, ad and creator tests", "renew automatically"]) await p.getByText(t, { exact: false }).first().waitFor({ timeout: 3000 });
+    const prices = await p.locator(".plan-card").evaluateAll((cards) => cards.map((c) => c.textContent.match(/\$\s*(\d+)\s*\/?\s*(month)?/)?.[1]));
+    if (prices.join(",") !== "0,25,100,250") throw new Error(`prices on cards: ${prices.join(",")}`);
   });
   await flow("sample report: fix tracker saves a status (demo: in this browser)", async () => {
     await p.goto(BASE + "/example", { waitUntil: "networkidle" });

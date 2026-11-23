@@ -57,7 +57,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           Skip to content
         </a>
         <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-md">
-          <div className="page flex h-16 items-center justify-between gap-4">
+          <div className="home-wide flex h-16 items-center justify-between gap-4">
             <Logo />
             <nav className="flex items-center gap-1 text-sm" aria-label="Main">
               {user ? (
@@ -124,7 +124,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </main>
 
         <footer className="border-t border-line">
-          <div className="page flex flex-col gap-4 py-6 text-sm text-faint sm:flex-row sm:items-center sm:justify-between">
+          <div className="home-wide flex flex-col gap-4 py-6 text-sm text-faint sm:flex-row sm:items-center sm:justify-between">
             <Logo small />
             <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-1">
               {user && (
