@@ -2,6 +2,8 @@
 import { Suspense } from "react";
 import AuthForm from "@/components/AuthForm";
 
+export const metadata = { title: "Sign in", description: "Sign in to Crawler to run AI customer simulations and see your reports.", robots: { index: false } };
+
 export default function Page() {
   // The form sits on a sheet of torn paper (.paper in globals.css).
   return (

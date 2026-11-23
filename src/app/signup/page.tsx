@@ -2,6 +2,8 @@
 import { Suspense } from "react";
 import AuthForm from "@/components/AuthForm";
 
+export const metadata = { title: "Start free", description: "Create a free Crawler account: 1 test with 25 simulated customers, no card needed.", alternates: { canonical: "/signup" } };
+
 export default function Page() {
   // The form sits on a sheet of torn paper (.paper in globals.css).
   return (

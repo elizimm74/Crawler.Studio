@@ -107,7 +107,7 @@ export default function SciencePage() {
             <article key={p.title} className="card p-5 sm:p-6">
               <p className="t-label">{p.venue}</p>
               <h3 className="mt-2 font-medium">
-                <a href={p.href} target="_blank" rel="noopener noreferrer" className="underline decoration-line-strong underline-offset-4 hover:decoration-fg">
+                <a href={p.href} target="_blank" rel="noopener noreferrer" className="inline-block py-2 underline decoration-line-strong underline-offset-4 hover:decoration-fg">
                   {p.title}
                 </a>
               </h3>

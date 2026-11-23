@@ -44,6 +44,10 @@ export default function ReportHero({
           <span className="pulse-dot shrink-0" aria-hidden />
           <span className="truncate">{label}</span>
         </span>
+        {/* the page's one heading, for screen readers and search engines (the big number is the visual headline) */}
+        <h1 className="sr-only">
+          {label} {tag}: {value} of {total} simulated customers {headline}
+        </h1>
         <span className="t-label shrink-0">{tag}</span>
       </div>
       <div className="mt-8 grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_280px]">
