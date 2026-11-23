@@ -41,6 +41,13 @@ export function checkoutForm(
   f.set("line_items[0][price_data][unit_amount]", String(Math.round(plan.priceUsd * 100)));
   f.set("line_items[0][price_data][recurring][interval]", "month");
   f.set("line_items[0][price_data][product_data][name]", `Crawler ${plan.name} (${plan.customers.toLocaleString("en-US")} simulated customers a month)`);
+  // Shown under the plan name on Stripe's checkout page.
+  f.set(
+    "line_items[0][price_data][product_data][description]",
+    `Test your website, app, game or store on simulated customers before launch. ${plan.ads ? "Includes video, ad and creator tests. " : ""}Resets every month.`,
+  );
+  // Shown above the Subscribe button (honest renewal note).
+  f.set("custom_text[submit][message]", "Crawler renews monthly until you cancel. Cancel any time from Manage billing on your dashboard. Simulated customers show buying intent, not real purchases.");
   // The webhook reads WHO and WHICH PLAN from the subscription's metadata (set here, by our server).
   f.set("metadata[user_id]", user.id);
   f.set("metadata[plan_id]", plan.id);
