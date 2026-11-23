@@ -1328,3 +1328,84 @@ html:has(.bleed-full), body:has(.bleed-full) { overflow-x: clip; }
 .plan-badge { border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: rgb(29 78 216 / 0.25); color: #bcd2ff; }
 .plan-cta > div { margin-top: 0 !important; }  /* BuyButton / SwitchPlanButton bring their own top margin */
 .plan-cta .btn { width: 100%; border-radius: 999px; min-height: 48px; }
+
+/* ==================== DASHBOARD v7 "Fastlane-style light workspace" (2026-11-23) ====================
+   Calm, professional: light grey page, white panels with hairline borders and a soft shadow,
+   small uppercase mono labels, mono numbers on quiet tiles, ONE blue accent. No glows/glass/blobs.
+   The site header + footer are hidden on the dashboard (it has its own rail with logo + sign out). */
+body:has(.dash-app) > header,
+body:has(.dash-app) > footer,
+body:has(.dash-app) > a[href="#main"] { display: none; }
+html:has(.dash-app), body:has(.dash-app) { background: #f6f6f7 !important; }
+body:has(.dash-app)::before, body:has(.dash-app)::after { display: none !important; }
+body:has(.dash-app) main { padding-bottom: 0 !important; }
+
+.dash-app,
+.dash-app .card,
+.dash-app .card-raised,
+.dash-app .paper,
+.dash-app .glass,
+.dash-app .gpanel {
+  --bg: #f6f6f7;
+  --bg-subtle: #f3f3f5;
+  --bg-raised: #ffffff;
+  --surface: #ffffff;
+  --fg: #121316;
+  --fg-muted: #555a66;
+  --fg-faint: #858a96;
+  --line: #e7e7eb;
+  --line-strong: #d6d7dc;
+  --accent: #1d4ed8;
+  --accent-hover: #2563eb;
+  --accent-fg: #ffffff;
+  --accent-ink: #1d4ed8;
+  color: var(--fg);
+}
+.dash-app { background: #f6f6f7; min-height: 100dvh; }
+.dash-app::before, .dash-app::after { display: none !important; }
+
+/* surfaces */
+.dash-app .fl-panel,
+.dash-app .card,
+.dash-app .card-raised,
+.dash-app .gpanel,
+.dash-app .glass {
+  background: #ffffff !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgb(18 19 22 / 0.04), 0 12px 32px -18px rgb(18 19 22 / 0.12) !important;
+  backdrop-filter: none !important;
+  animation: none !important;
+}
+.dash-app .gpanel::before, .dash-app .gpanel::after { display: none !important; }
+.fl-tile { background: #f6f6f8; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.fl-label { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-faint); }
+.fl-num { font-family: var(--font-mono); font-weight: 500; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--fg); }
+.fl-chip { display: inline-flex; align-items: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid var(--line-strong); background: #fff; border-radius: 999px; padding: 4px 12px; font-size: 12px; color: var(--fg); }
+
+/* rail */
+.fl-rail { background: #fbfbfc; border-right: 1px solid var(--line); }
+@media (max-width: 1023px) { .fl-rail { border-right: 0; border-bottom: 1px solid var(--line); background: #f6f6f7; } }
+.dash-app .dash-pill { background: #ffffff !important; border: 1px solid var(--line) !important; box-shadow: 0 1px 2px rgb(18 19 22 / 0.06) !important; border-radius: 10px; }
+.dash-app .dash-quick { color: var(--fg-muted); border-radius: 10px; }
+.dash-app .dash-quick:hover { color: var(--fg); background: #f0f0f2; }
+.dash-app .dash-active { background: #ffffff; border: 1px solid var(--line); color: var(--fg) !important; }
+
+/* search + controls */
+.fl-search { background: #ffffff; border: 1px solid var(--line); box-shadow: 0 1px 2px rgb(18 19 22 / 0.04); }
+.fl-search:focus-within { border-color: var(--line-strong); }
+.dash-app .btn-secondary { background: #ffffff !important; color: var(--fg) !important; border: 1px solid var(--line-strong) !important; box-shadow: 0 1px 2px rgb(18 19 22 / 0.05) !important; }
+.dash-app .btn-secondary:hover { background: #f6f6f7 !important; }
+.dash-app .btn-text, .dash-app .btn-ghost { color: var(--fg-muted); }
+.dash-app .btn-text:hover, .dash-app .btn-ghost:hover { color: var(--fg); }
+.dash-app .btn-primary { box-shadow: 0 1px 2px rgb(29 78 216 / 0.25) !important; background: #1d4ed8 !important; }
+.dash-app .btn-primary:hover { background: #2563eb !important; }
+.dash-app .field, .dash-app input:not([type=range]):not([type=checkbox]), .dash-app select, .dash-app textarea { background: #ffffff; color: var(--fg); border-color: var(--line-strong); }
+.dash-app .chip { background: #ffffff; color: var(--fg-muted); border: 1px solid var(--line-strong); }
+.dash-app .chip[aria-pressed="true"] { background: #121316; color: #ffffff; border-color: #121316; }
+.dash-app .pill { border-color: var(--line-strong); color: var(--fg-muted); }
+.dash-app kbd { border-color: var(--line-strong); background: #fff; }
+.dash-app .text-accent { color: #1d4ed8; }
+.dash-app ::selection { background: rgb(29 78 216 / 0.18); }
+/* no drifting glows or count-in motion here */
+.dash-app .dash-rise, .dash-app .pulse-dot { animation: none !important; }

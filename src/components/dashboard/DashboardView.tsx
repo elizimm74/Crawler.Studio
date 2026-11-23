@@ -1,6 +1,9 @@
 "use client";
-// The dashboard (v6, 2026-11-20, founder: "pages to the far left, projected revenue and more,
-// super fancy and premium, animations and glass UI"):
+// The dashboard (v7, 2026-11-23, founder: "looks like AI slop, make it professional like Fastlane;
+// no site menu at the top"). A calm LIGHT workspace: white panels with hairline borders, small
+// uppercase mono labels, mono numbers in quiet stat tiles, one blue accent. The site header and
+// footer are hidden here (globals.css: body:has(.dash-app)); the rail has the logo + Settings + Sign out.
+// (Earlier v6 notes:)
 //   rail     a full-height glass sidebar flush with the left edge: you, the 5 views (a pill glides
 //            between them), quick actions, your plan (phones: a tab row)
 //   top      search your tests (⌘K or /) + ONE main button: New test
@@ -18,12 +21,12 @@ import MindsSection from "./MindsSection";
 import PlaybookSection, { PlayCard } from "./PlaybookSection";
 import InviteCard from "./InviteCard";
 import RevenuePanel, { useRevenue } from "./RevenuePanel";
-import { useTween } from "./useTween";
-import { Bar, Crowd, Icon, Spark, TrendChart } from "./viz";
+import { Bar, Icon, TrendChart } from "./viz";
 import { money } from "@/lib/revenue";
 import { PLAYS } from "@/lib/playbook";
 import { subscriptionLine, summarize, type Analysis, type DashboardData } from "@/lib/dashboard";
 import ManageBilling from "@/components/ManageBilling";
+import Mark from "@/components/Mark";
 import { PLANS, planName } from "@/lib/plans";
 
 const VIEWS = [
@@ -48,45 +51,41 @@ function ago(iso: string) {
 const pctOf = (a: Analysis) => (a.pct === null ? "–" : `${a.pct}%`);
 
 // A glass panel. A soft blue spotlight follows the cursor over it (CSS variables --mx / --my).
-function Panel({ children, className = "", label, i = 0 }: { children: React.ReactNode; className?: string; label?: string; i?: number }) {
-  const ref = useRef<HTMLElement>(null);
+// A plain white panel with a hairline border (the Fastlane-style surface).
+function Panel({ children, className = "", label, flush = false }: { children: React.ReactNode; className?: string; label?: string; i?: number; flush?: boolean }) {
   return (
-    <section
-      ref={ref}
-      aria-label={label}
-      onPointerMove={(e) => {
-        const r = ref.current?.getBoundingClientRect();
-        if (!r) return;
-        ref.current!.style.setProperty("--mx", `${e.clientX - r.left}px`);
-        ref.current!.style.setProperty("--my", `${e.clientY - r.top}px`);
-      }}
-      style={{ animationDelay: `${i * 70}ms` }}
-      className={`gpanel dash-rise p-5 sm:p-6 ${className}`}
-    >
+    <section aria-label={label} className={`fl-panel ${flush ? "" : "p-5 sm:p-6"} ${className}`}>
       {children}
     </section>
   );
 }
 
 // A headline number tile: counts up when it appears, with a little chart under it.
-function Kpi({ label, value, format, sub, spark, id, i }: { label: string; value: number | null; format: (n: number) => string; sub: React.ReactNode; spark: number[]; id: string; i: number }) {
-  const n = useTween(value ?? 0, 1000);
+// A headline number: mono digits on a quiet tile, a label and one line of context.
+function Kpi({ label, value, format, sub }: { label: string; value: number | null; format: (n: number) => string; sub: React.ReactNode; spark?: number[]; id?: string; i?: number }) {
   return (
-    <Panel i={i} className="gkpi">
-      <p className="text-xs text-faint">{label}</p>
-      <p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums sm:text-4xl">{value === null ? "–" : format(n)}</p>
-      <p className="mt-1 min-h-4 text-xs text-faint">{sub}</p>
-      <div className="mt-3">
-        <Spark values={spark} id={id} />
-      </div>
-    </Panel>
+    <div className="fl-panel p-5">
+      <p className="fl-label">{label}</p>
+      <p className="fl-num mt-3 text-3xl sm:text-[2.1rem]">{value === null ? "–" : format(value)}</p>
+      <p className="mt-2 min-h-4 text-xs text-faint">{sub}</p>
+    </div>
+  );
+}
+
+// A small Fastlane-style stat tile: a mono value and a tiny caption.
+function Tile({ n, k, text = false }: { n: string; k: string; text?: boolean }) {
+  return (
+    <div className="fl-tile">
+      <p className={`${text ? "truncate text-base font-medium first-letter:uppercase" : "fl-num text-xl"}`}>{n}</p>
+      <p className="mt-1 text-[11px] text-faint">{k}</p>
+    </div>
   );
 }
 
 function Title({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <h2 className="text-sm font-medium text-white/70">{children}</h2>
+      <h2 className="fl-label">{children}</h2>
       {action}
     </div>
   );
@@ -109,11 +108,11 @@ function Thumb({ a, size = "h-11 w-11" }: { a: Analysis; size?: string }) {
   if (a.thumb && !broken) {
     return (
       // eslint-disable-next-line @next/next/no-img-element -- a private signed screenshot, not a static asset
-      <img src={a.thumb} alt="" loading="lazy" onError={() => setBroken(true)} className={`${size} shrink-0 rounded-xl border border-white/10 bg-[#0c0d12] object-cover object-top`} />
+      <img src={a.thumb} alt="" loading="lazy" onError={() => setBroken(true)} className={`${size} shrink-0 rounded-xl border border-line bg-subtle object-cover object-top`} />
     );
   }
   return (
-    <span className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-base font-medium`} aria-hidden>
+    <span className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-line bg-subtle text-base font-medium`} aria-hidden>
       {a.kind === "app" || a.kind === "game" || a.kind === "video" ? <Icon name={a.kind === "video" ? "play" : "phone"} /> : a.label.charAt(0).toUpperCase()}
     </span>
   );
@@ -205,20 +204,16 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
 
   return (
     // The wrapper breaks out of the page's centered column so the rail sits on the far left of the screen.
-    <div className="dash dash-stage -mt-12 sm:-mt-16 -mb-24 lg:relative lg:left-1/2 lg:w-screen lg:-translate-x-1/2">
+    <div className="dash dash-app -mt-12 sm:-mt-16 -mb-24 lg:relative lg:left-1/2 lg:w-screen lg:-translate-x-1/2">
       <div className="grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[272px_minmax(0,1fr)]">
         {/* ================= the rail: far left, full height, glass ================= */}
-        <aside className="dash-rail min-w-0 px-4 pt-6 sm:px-6 lg:sticky lg:top-16 lg:h-[calc(100dvh-4rem)] lg:overflow-y-auto lg:px-4 lg:py-6">
+        <aside className="fl-rail min-w-0 px-4 pt-4 sm:px-6 lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto lg:px-4 lg:py-5">
           <div className="hidden h-full flex-col lg:flex">
-            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#1d4ed8] text-base font-semibold text-white shadow-[0_8px_24px_-8px_#1d4ed8]">{initial}</span>
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-medium">{data.name}</span>
-                <span className="block truncate text-xs text-faint">{planLabel}</span>
-              </span>
-            </div>
+            <Link href="/?home=1" className="flex h-10 items-center gap-2 px-2 text-[15px] font-semibold tracking-tight" aria-label="Crawler home">
+              <Mark size={20} className="text-accent" /> crawler
+            </Link>
 
-            <p className="mt-7 px-3 text-[11px] uppercase tracking-[0.14em] text-faint">Workspace</p>
+            <p className="fl-label mt-8 px-3">Workspace</p>
             <nav aria-label="Dashboard" className="relative mt-2">
               {/* the pill that glides to the selected view (each item is 44px + 4px gap) */}
               <span aria-hidden className="dash-pill" style={{ transform: `translateY(${idx * 48}px)` }} />
@@ -228,7 +223,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                   type="button"
                   onClick={() => pick(id)}
                   aria-current={view === id ? "page" : undefined}
-                  className={`relative z-10 mb-1 flex h-11 w-full items-center gap-3 rounded-xl px-3 text-sm transition-colors duration-200 ${view === id ? "text-white" : "text-white/55 hover:text-white"}`}
+                  className={`relative z-10 mb-1 flex h-11 w-full items-center gap-3 rounded-lg px-3 text-sm transition-colors duration-150 ${view === id ? "font-medium text-fg" : "text-muted hover:text-fg"}`}
                 >
                   <Icon name={VIEW_ICON[id]} className="h-4 w-4" />
                   {label}
@@ -236,7 +231,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
               ))}
             </nav>
 
-            <p className="mt-7 px-3 text-[11px] uppercase tracking-[0.14em] text-faint">Quick actions</p>
+            <p className="fl-label mt-8 px-3">Actions</p>
             <div className="mt-2 space-y-1">
               <Link href="/onboarding" className="dash-quick">
                 <Icon name="plus" className="h-4 w-4" /> New test <kbd className="ml-auto font-mono text-[10px] text-faint">N</kbd>
@@ -250,6 +245,9 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
               <Link href="/settings" className="dash-quick">
                 <Icon name="spark" className="h-4 w-4" /> Settings
               </Link>
+              <Link href="/example" className="dash-quick">
+                <Icon name="chart" className="h-4 w-4" /> Sample report
+              </Link>
               {plan.unlimited && (
                 <Link href="/admin/insights" className="dash-quick">
                   <Icon name="spark" className="h-4 w-4" /> Insights (admin)
@@ -258,7 +256,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
             </div>
 
             <div className="mt-auto pt-8">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur">
+              <div className="fl-panel p-4">
                 {plan.monthly && !plan.unlimited ? (
                   <>
                     <div className="flex items-baseline justify-between text-sm">
@@ -282,7 +280,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                     )}
                   </>
                 )}
-                {subLine && <p className={`mt-3 text-xs ${subLine.warn ? "text-white" : "text-faint"}`}>{subLine.text}</p>}
+                {subLine && <p className={`mt-3 text-xs ${subLine.warn ? "text-fg" : "text-faint"}`}>{subLine.text}</p>}
                 {plan.billing && <ManageBilling className="mt-2 text-xs text-faint underline underline-offset-2 transition-colors hover:text-fg" />}
                 {!plan.unlimited && plan.plan === "free" && !plan.billing && (
                   <button type="button" onClick={() => pick("fixes")} className="mt-3 text-xs text-faint transition-colors hover:text-fg">
@@ -290,17 +288,41 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                   </button>
                 )}
               </div>
+              {/* who's signed in + sign out (the site header is hidden on the dashboard) */}
+              <div className="mt-3 flex items-center gap-3 rounded-xl px-2 py-2">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white">{initial}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{data.name}</span>
+                  <span className="block truncate text-xs text-faint">{planLabel}</span>
+                </span>
+                <a href="/auth/signout" className="text-xs text-faint transition-colors hover:text-fg">
+                  Sign out
+                </a>
+              </div>
             </div>
           </div>
-          {/* phones: a tab row instead of the rail */}
-          <nav aria-label="Dashboard views" className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 lg:hidden">
+          {/* phones: a small top bar + a tab row instead of the rail */}
+          <div className="flex h-12 items-center justify-between lg:hidden">
+            <Link href="/?home=1" className="flex items-center gap-2 font-semibold tracking-tight" aria-label="Crawler home">
+              <Mark size={20} className="text-accent" /> crawler
+            </Link>
+            <div className="flex items-center gap-1 text-sm">
+              <Link href="/settings" className="btn btn-text h-10 px-3 text-sm">
+                Settings
+              </Link>
+              <a href="/auth/signout" className="btn btn-text h-10 px-3 text-sm">
+                Sign out
+              </a>
+            </div>
+          </div>
+          <nav aria-label="Dashboard views" className="-mx-4 mt-2 flex gap-1 overflow-x-auto px-4 pb-1 lg:hidden">
             {VIEWS.map(([id, label]) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => pick(id)}
                 aria-current={view === id ? "page" : undefined}
-                className={`flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-sm ${view === id ? "dash-active text-white" : "text-white/55"}`}
+                className={`flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-sm ${view === id ? "dash-active text-fg" : "text-muted"}`}
               >
                 {label}
               </button>
@@ -312,7 +334,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
         <div className="min-w-0 space-y-6 px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pt-8 [&>*]:mx-auto [&>*]:max-w-[1180px]">
           {/* top bar: search + the ONE main button */}
           <div className="flex items-center gap-3">
-            <label className="gsearch flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl px-4">
+            <label className="fl-search flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl px-4">
               <Icon name="search" className="h-4 w-4 shrink-0 text-faint" />
               <span className="sr-only">Search your tests</span>
               <input
@@ -323,9 +345,9 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                   if (e.target.value && view !== "tests") pick("tests");
                 }}
                 placeholder="Search tests…"
-                className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-faint focus:outline-none"
+                className="min-w-0 flex-1 bg-transparent text-sm text-fg placeholder:text-faint focus:outline-none"
               />
-              <kbd className="hidden rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px] text-faint sm:block">⌘K</kbd>
+              <kbd className="hidden rounded border border-line px-1.5 py-0.5 font-mono text-[10px] text-faint sm:block">⌘K</kbd>
             </label>
             <Link href="/onboarding" className="btn btn-primary h-11 shrink-0 px-5 text-sm">
               <Icon name="plus" className="h-4 w-4" /> New test
@@ -333,14 +355,14 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           </div>
 
           {subLine?.warn && (
-            <p role="status" className="gpanel flex flex-wrap items-center gap-3 p-4 text-sm">
+            <p role="status" className="fl-panel flex flex-wrap items-center gap-3 p-4 text-sm">
               <span className="font-medium">{subLine.text}</span>
               {plan.billing && <ManageBilling className="btn btn-secondary h-9 px-4 text-sm" label="Update card" />}
             </p>
           )}
 
           {paid && (
-            <p role="status" className="gpanel p-4 text-sm">
+            <p role="status" className="fl-panel p-4 text-sm">
               <span className="font-medium">Payment received. Thank you!</span>{" "}
               <span className="text-muted">
                 Your {planName(paid)} plan is on: {(PLANS.find((p) => p.id === paid)?.customers ?? 0).toLocaleString("en-US")} simulated customers this month. Refresh in a few seconds if it hasn&apos;t shown up yet. It renews monthly until you cancel in Manage billing.
@@ -351,57 +373,66 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           {/* ===== OVERVIEW ===== */}
           {view === "overview" && (
             <>
-              {/* hero: greeting + sentence on the left, the latest test's 100 simulated customers on the right */}
-              <Panel label="Latest result" className="dash-hero-glass overflow-hidden p-6 sm:p-8">
-                <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
-                  <div className="min-w-0">
-                    <p className="text-sm text-faint">
-                      {hello}, {data.name}
-                    </p>
-                    <h1 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{summary}</h1>
-                    <div className="mt-6 flex flex-wrap items-center gap-2">
-                      {latest ? (
-                        <>
-                          <Link href={`/run/${latest.id}`} className="btn btn-secondary h-11 px-5 text-sm">
+              {/* header: greeting + one sentence from the person's latest result */}
+              <div className="flex flex-wrap items-end justify-between gap-6 pt-2">
+                <div className="min-w-0">
+                  <p className="fl-label">
+                    {hello}, {data.name}
+                  </p>
+                  <h1 className="mt-3 max-w-3xl text-[1.75rem] font-semibold leading-tight tracking-tight sm:text-[2.1rem]">{summary}</h1>
+                </div>
+                {!latest && (
+                  <div className="flex gap-2">
+                    <Link href="/onboarding" className="btn btn-primary h-11 px-5 text-sm">
+                      Start free test
+                    </Link>
+                    <Link href="/example" className="btn btn-secondary h-11 px-5 text-sm">
+                      See an example
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {latest && (
+                <Panel label="Latest result" flush>
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3 sm:px-6">
+                    <p className="fl-label">Latest result</p>
+                    <span className="fl-chip">{latest.label}</span>
+                  </div>
+                  <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+                    <div className="flex items-center gap-5">
+                      <span className="hidden sm:block">
+                        <Thumb a={latest} size="h-24 w-24" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="fl-num text-5xl">
+                          {latest.score ?? "–"}
+                          <span className="text-2xl text-faint">/{latest.total ?? 100}</span>
+                        </p>
+                        <p className="mt-1 text-sm text-muted">simulated {latest.kind === "video" ? "viewers would tap through" : `customers would ${latest.goal ?? "buy"}`}</p>
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <Link href={`/run/${latest.id}`} className="btn btn-primary h-10 px-4 text-sm">
                             Open report
                           </Link>
                           {latest.kind === "website" || latest.kind === "store" ? (
-                            <Link href={`/app?url=${encodeURIComponent(latest.url)}&retest=${latest.id}${latest.kind === "store" ? "&type=store" : ""}`} className="btn btn-text h-11 text-sm">
+                            <Link href={`/app?url=${encodeURIComponent(latest.url)}&retest=${latest.id}${latest.kind === "store" ? "&type=store" : ""}`} className="btn btn-secondary h-10 px-4 text-sm">
                               Re-test
                             </Link>
                           ) : null}
-                          <Delta n={latest.delta} suffix=" pts vs last test" />
-                          {latest.blocker && <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-muted">blocker: {latest.blocker}</span>}
-                        </>
-                      ) : (
-                        <>
-                          <Link href="/onboarding" className="btn btn-primary h-11 px-5 text-sm">
-                            Start free test
-                          </Link>
-                          <Link href="/example" className="btn btn-text h-11 text-sm">
-                            See an example
-                          </Link>
-                        </>
-                      )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 self-center sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+                      <Tile n={latest.pct === null ? "–" : `${latest.pct}%`} k="said yes" />
+                      <Tile n={latest.delta === null ? "first" : `${latest.delta > 0 ? "+" : ""}${latest.delta}`} k="pts vs last test" />
+                      <Tile n={latest.blocker ?? "–"} k="#1 blocker" text />
+                      <Tile n={data.fixes[0] ? `+${data.fixes[0].wins}` : "–"} k="top fix could win" />
                     </div>
                   </div>
-                  <div className="mx-auto w-full max-w-[300px]">
-                    {latest ? (
-                      <>
-                        <Crowd yes={latest.score ?? 0} total={latest.total ?? 100} />
-                        <p className="mt-3 flex items-center gap-2 text-xs text-faint">
-                          <span className="pulse-dot" aria-hidden />
-                          {latest.score} of {latest.total} simulated {latest.kind === "video" ? "viewers" : "customers"} · {latest.label}
-                        </p>
-                      </>
-                    ) : (
-                      <Crowd yes={0} total={100} />
-                    )}
-                  </div>
-                </div>
-              </Panel>
+                </Panel>
+              )}
 
-              {/* four count-up tiles */}
+              {/* four headline numbers */}
               <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <Kpi
                   i={1}
@@ -425,10 +456,10 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                 <Panel label="Next fixes" i={5}>
                   <Title action={data.fixes.length ? <ViewAll onClick={() => pick("fixes")} /> : undefined}>Next fixes</Title>
                   {data.fixes.length ? (
-                    <ol className="mt-3 divide-y divide-white/[0.06]">
+                    <ol className="mt-3 divide-y divide-line">
                       {data.fixes.slice(0, 3).map((f, i) => (
                         <li key={f.title}>
-                          <Link href={`/run/${f.testId}`} className="group flex items-center gap-3 py-3.5 transition-colors hover:text-white">
+                          <Link href={`/run/${f.testId}`} className="group flex items-center gap-3 py-3.5 transition-colors hover:text-fg">
                             <span className="w-5 font-mono text-xs text-faint">{String(i + 1).padStart(2, "0")}</span>
                             <span className="min-w-0 flex-1 text-sm">{f.title}</span>
                             {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#1d4ed8]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
@@ -465,10 +496,10 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                 <Panel label="Recent tests" i={7} className="lg:col-span-2 xl:col-span-1">
                   <Title action={data.analyses.length ? <ViewAll onClick={() => pick("tests")} /> : undefined}>Recent tests</Title>
                   {data.analyses.length ? (
-                    <ul className="mt-3 divide-y divide-white/[0.06]">
+                    <ul className="mt-3 divide-y divide-line">
                       {data.analyses.slice(0, 4).map((a) => (
                         <li key={a.id}>
-                          <Link href={`/run/${a.id}`} className="flex items-center gap-3 py-2.5 transition-colors hover:text-white">
+                          <Link href={`/run/${a.id}`} className="flex items-center gap-3 py-2.5 transition-colors hover:text-fg">
                             <Thumb a={a} size="h-9 w-9" />
                             <span className="min-w-0 flex-1">
                               <span className="block truncate text-sm">{a.label}</span>
@@ -489,7 +520,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
 
               {/* invite: one quiet line (the full card lives on the Fixes view) */}
               {!plan.unlimited && plan.plan === "free" && (
-                <div className="gpanel flex flex-wrap items-center justify-between gap-3 px-5 py-4 text-sm">
+                <div className="fl-panel flex flex-wrap items-center justify-between gap-3 px-5 py-4 text-sm">
                   <span className="text-muted">
                     Invite {plan.referrals.needed} friends to unlock 100-customer tests · {plan.referrals.count}/{plan.referrals.needed} joined
                   </span>
@@ -529,10 +560,10 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                     )}
                   </p>
                 ) : (
-                  <ul className="mt-3 divide-y divide-white/[0.06]">
+                  <ul className="mt-3 divide-y divide-line">
                     {found.map((a) => (
                       <li key={a.id}>
-                        <Link href={`/run/${a.id}`} className="flex items-center gap-4 py-3 transition-colors hover:text-white">
+                        <Link href={`/run/${a.id}`} className="flex items-center gap-4 py-3 transition-colors hover:text-fg">
                           <Thumb a={a} />
                           <span className="min-w-0 flex-1">
                             <span className="block truncate font-medium">{a.label}</span>
@@ -580,7 +611,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                   </Link>
                 </div>
               ) : (
-                <ul className="mt-3 divide-y divide-white/[0.06]">
+                <ul className="mt-3 divide-y divide-line">
                   {sites.map((site) => (
                     <li key={site.label} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center">
                       <div className="min-w-0 flex-1">
@@ -619,7 +650,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                   {data.fixes.length === 0 ? (
                     <p className="mt-4 text-sm text-faint">Run a test and your ranked fixes land here.</p>
                   ) : (
-                    <ol className="mt-3 divide-y divide-white/[0.06]">
+                    <ol className="mt-3 divide-y divide-line">
                       {data.fixes.map((f, i) => (
                         <li key={f.title} className="flex items-start gap-4 py-4">
                           <span className="w-5 pt-0.5 font-mono text-xs text-faint">{String(i + 1).padStart(2, "0")}</span>

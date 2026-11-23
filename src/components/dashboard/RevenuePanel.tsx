@@ -97,7 +97,7 @@ export default function RevenuePanel({ latest, rev }: { latest: Analysis | undef
           </p>
         </div>
         {p.upsidePerMonth > 0 && (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-right backdrop-blur">
+          <div className="rounded-2xl border border-line bg-subtle px-4 py-3 text-right">
             <p className="text-xs text-faint">if you ship your top fixes</p>
             <p className="mt-1 text-2xl font-semibold tabular-nums text-fg">+{money(p.upsidePerMonth)}/mo</p>
             <p className="text-xs text-faint">{money(year)} over 12 months</p>
@@ -152,7 +152,7 @@ export default function RevenuePanel({ latest, rev }: { latest: Analysis | undef
         </div>
       </div>
 
-      <p className="mt-6 border-t border-white/10 pt-4 text-xs leading-relaxed text-faint">
+      <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-faint">
         A what-if, not a forecast. It multiplies your latest test ({latest.pct}% of simulated customers said yes) by the numbers you typed
         {touched ? "" : " (these are example numbers: change them to yours)"} and by how many yeses really act, which is our assumption ({Math.round(DEFAULT_REAL_SHARE * 100)}% by default; people say yes far more
         often than they pay). It assumes steady traffic, one payment per customer, and that the top fixes ship after {FIX_MONTH} months. Real results will differ.
@@ -190,18 +190,18 @@ function RevenueChart({ p }: { p: RevenueProjection }) {
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75].map((f) => (
-          <line key={f} x1={L} x2={W - R} y1={T + f * (H - T - B)} y2={T + f * (H - T - B)} stroke="#fff" strokeOpacity="0.06" />
+          <line key={f} x1={L} x2={W - R} y1={T + f * (H - T - B)} y2={T + f * (H - T - B)} stroke="currentColor" strokeOpacity="0.06" />
         ))}
         <path d={area} fill="url(#rev-fill)" className="fade-in" />
-        <path d={line(p.asIs)} fill="none" stroke="#fff" strokeOpacity="0.5" strokeWidth="2" strokeLinecap="round" strokeDasharray="2 6" />
-        <line x1={x(FIX_MONTH)} x2={x(FIX_MONTH)} y1={T} y2={H - B} stroke="#fff" strokeOpacity="0.25" strokeDasharray="3 5" />
-        <text x={x(FIX_MONTH) + 6} y={T + 10} fill="#fff" fillOpacity="0.55" fontSize="11" fontFamily="var(--font-mono)">
+        <path d={line(p.asIs)} fill="none" stroke="currentColor" strokeOpacity="0.5" strokeWidth="2" strokeLinecap="round" strokeDasharray="2 6" />
+        <line x1={x(FIX_MONTH)} x2={x(FIX_MONTH)} y1={T} y2={H - B} stroke="currentColor" strokeOpacity="0.25" strokeDasharray="3 5" />
+        <text x={x(FIX_MONTH) + 6} y={T + 10} fill="currentColor" fillOpacity="0.55" fontSize="11" fontFamily="var(--font-mono)">
           fixes ship
         </text>
         <path d={line(p.fixed)} fill="none" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="trend-line" pathLength={1} />
-        <circle cx={x(MONTHS)} cy={y(p.yearFixed)} r="5" fill="#fff" className="fade-in" />
+        <circle cx={x(MONTHS)} cy={y(p.yearFixed)} r="5" fill="currentColor" className="fade-in" />
         {[0, 3, 6, 9, 12].map((m) => (
-          <text key={m} x={x(m)} y={H - 6} textAnchor={m === 0 ? "start" : m === MONTHS ? "end" : "middle"} fill="#fff" fillOpacity="0.4" fontSize="11" fontFamily="var(--font-mono)">
+          <text key={m} x={x(m)} y={H - 6} textAnchor={m === 0 ? "start" : m === MONTHS ? "end" : "middle"} fill="currentColor" fillOpacity="0.4" fontSize="11" fontFamily="var(--font-mono)">
             {m === 0 ? "now" : `m${m}`}
           </text>
         ))}
@@ -211,7 +211,7 @@ function RevenueChart({ p }: { p: RevenueProjection }) {
           <i className="inline-block h-0.5 w-5 rounded bg-[#2563eb]" /> with fixes · {money(p.yearFixed)}
         </span>
         <span className="flex items-center gap-2">
-          <i className="inline-block h-0.5 w-5 rounded border-t-2 border-dotted border-white/50" /> as is · {money(p.yearAsIs)}
+          <i className="inline-block h-0.5 w-5 rounded border-t-2 border-dotted border-faint" /> as is · {money(p.yearAsIs)}
         </span>
       </figcaption>
     </figure>

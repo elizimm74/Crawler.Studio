@@ -19,7 +19,7 @@ export function Crowd({ yes, total, size = "lg" }: { yes: number; total: number;
       {Array.from({ length: n }, (_, i) => (
         <span
           key={i}
-          className={`crowd-dot aspect-square rounded-full ${i < lit ? "bg-white" : "border border-white/15"}`}
+          className={`crowd-dot aspect-square rounded-full ${i < lit ? "bg-fg" : "border border-line"}`}
           style={{ animationDelay: `${i * 12}ms` }}
         />
       ))}
@@ -32,7 +32,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString("en-US", { m
 export function TrendChart({ points }: { points: { pct: number; date: string }[] }) {
   if (points.length < 2) {
     return (
-      <div className="flex h-44 items-center justify-center rounded-xl border border-dashed border-white/15 text-center text-sm text-white/60">
+      <div className="flex h-44 items-center justify-center rounded-xl border border-dashed border-line text-center text-sm text-muted">
         Run this product again after a fix to see your trend.
       </div>
     );
@@ -48,25 +48,25 @@ export function TrendChart({ points }: { points: { pct: number; date: string }[]
       <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={`Score trend: ${points.map((p) => p.pct + "%").join(", ")}`}>
         <defs>
           <linearGradient id="trend-fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#fff" stopOpacity="0.18" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+            <stop offset="0" stopColor="currentColor" stopOpacity="0.07" />
+            <stop offset="1" stopColor="currentColor" stopOpacity="0" />
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75].map((f) => (
-          <line key={f} x1={P} x2={W - P} y1={P + f * (H - P * 2)} y2={P + f * (H - P * 2)} stroke="#fff" strokeOpacity="0.06" />
+          <line key={f} x1={P} x2={W - P} y1={P + f * (H - P * 2)} y2={P + f * (H - P * 2)} stroke="currentColor" strokeOpacity="0.06" />
         ))}
         <path d={area} fill="url(#trend-fill)" />
-        <path d={line} fill="none" stroke="#fff" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="trend-line" pathLength={1} />
+        <path d={line} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="trend-line" pathLength={1} />
         {points.map((p, i) => (
           <g key={i}>
-            <circle cx={x(i)} cy={y(p.pct)} r={i === points.length - 1 ? 6 : 4} fill={i === points.length - 1 ? "#fff" : "#000"} stroke="#fff" strokeWidth="2" />
-            <text x={x(i)} y={y(p.pct) - 12} textAnchor="middle" fill="#fff" fontSize="13" fontFamily="var(--font-mono)">
+            <circle cx={x(i)} cy={y(p.pct)} r={i === points.length - 1 ? 6 : 4} fill={i === points.length - 1 ? "currentColor" : "var(--bg-raised, #fff)"} stroke="currentColor" strokeWidth="2" />
+            <text x={x(i)} y={y(p.pct) - 12} textAnchor="middle" fill="currentColor" fontSize="13" fontFamily="var(--font-mono)">
               {p.pct}%
             </text>
           </g>
         ))}
       </svg>
-      <figcaption className="mt-1 flex justify-between font-mono text-[11px] text-white/50">
+      <figcaption className="mt-1 flex justify-between font-mono text-[11px] text-muted">
         <span>{shortDate(points[0].date)}</span>
         <span>{shortDate(points[points.length - 1].date)}</span>
       </figcaption>
@@ -76,8 +76,8 @@ export function TrendChart({ points }: { points: { pct: number; date: string }[]
 
 export function Bar({ pct, delay = 0 }: { pct: number; delay?: number }) {
   return (
-    <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-      <div className="bar-grow h-full rounded-full bg-white" style={{ width: `${Math.max(2, Math.min(100, pct))}%`, animationDelay: `${delay}ms` }} />
+    <div className="h-1.5 overflow-hidden rounded-full bg-line">
+      <div className="bar-grow h-full rounded-full bg-fg" style={{ width: `${Math.max(2, Math.min(100, pct))}%`, animationDelay: `${delay}ms` }} />
     </div>
   );
 }
@@ -137,7 +137,7 @@ export function Ring({ pct, label }: { pct: number; label: string }) {
   return (
     <div className="relative h-36 w-36 shrink-0" role="img" aria-label={`${Math.round(p)}% ${label}`}>
       <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-        <circle cx="60" cy="60" r={r} fill="none" stroke="rgb(255 255 255 / 0.1)" strokeWidth="9" />
+        <circle cx="60" cy="60" r={r} fill="none" stroke="var(--line-strong)" strokeWidth="9" />
         <circle cx="60" cy="60" r={r} fill="none" stroke="url(#ring-g)" strokeWidth="9" strokeLinecap="round" strokeDasharray={`${(p / 100) * c} ${c}`} className="ring-draw" />
         <defs>
           <linearGradient id="ring-g" x1="0" x2="1">
@@ -148,7 +148,7 @@ export function Ring({ pct, label }: { pct: number; label: string }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
         <span className="text-3xl font-semibold tracking-tight">{Math.round(p)}%</span>
-        <span className="mt-1 max-w-[6rem] text-[11px] leading-tight text-white/60">{label}</span>
+        <span className="mt-1 max-w-[6rem] text-[11px] leading-tight text-muted">{label}</span>
       </div>
     </div>
   );
