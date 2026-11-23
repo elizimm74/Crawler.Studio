@@ -1,7 +1,7 @@
 -- 0021: "Delete my account" from Settings (2026-11-23 overhaul).
 -- What it does: deletes the person's login; everything tied to it (tests, crawls, saved audiences,
 -- messages, fix status, answers...) goes with it through ON DELETE CASCADE. Stored screenshots are
--- removed by the web route before this is called.
+-- removed by the web route right after this succeeds.
 -- What it keeps: ONLY a one-way hash of the email address (deleted_accounts), so deleting and
 -- re-signing up can't be used to get another free test. The hash can't be turned back into the email.
 -- Safety: refuses while a paid plan is active (cancel first, so nobody keeps being charged).

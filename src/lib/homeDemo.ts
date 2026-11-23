@@ -7,7 +7,13 @@ import type { SampleData } from "@/components/landing/home/SampleReport";
 
 const short = (s: string, n = 90) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
+// Built once per server process (it never changes), not on every visit.
+let cached: { hero: HeroDemo; sample: SampleData } | null = null;
 export function homeDemo(): { hero: HeroDemo; sample: SampleData } {
+  return (cached ??= buildHomeDemo());
+}
+
+function buildHomeDemo(): { hero: HeroDemo; sample: SampleData } {
   const run = exampleWebsiteRun();
   const s = run.stats!;
   const byId = new Map(run.personas.map((p) => [p.id, p]));
