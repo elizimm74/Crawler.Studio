@@ -32,32 +32,32 @@ export default function Home() {
   return (
     <div className="v14 bleed-full">
       {/* ================= HERO ================= */}
-      <section className="hero14 home-wide pb-20 pt-10 text-center sm:pt-16" aria-labelledby="hero-title">
-        <Link href="/example" className="badge14 rise">
-          <span className="badge14-dot" aria-hidden />
-          <span>
-            AI customer simulation<span className="hidden sm:inline"> for websites, stores, apps and ads</span>
-          </span>
-          <span className="text-faint" aria-hidden>
-            →
-          </span>
-        </Link>
-        <h1 id="hero-title" className="h14 rise d1 mx-auto mt-7 max-w-6xl">
+      <section className="hero14 home-wide pb-16 pt-12 sm:pt-20" aria-labelledby="hero-title">
+        <h1 id="hero-title" className="h14 rise d1 max-w-6xl">
           Meet your customers <span className="hl14 sm:block">before they meet your website.</span>
         </h1>
-        <p className="lead14 rise d2 mx-auto mt-6 max-w-2xl">
-          Crawler sends 100 AI-simulated customers through your site. See who would buy, why the rest leave, and exactly what to fix, in minutes.
-        </p>
-        <div className="rise d3 mx-auto mt-9 max-w-2xl">
-          <div className="url14">
-            <HeroForm cta="Run free simulation" />
+        <div className="rise d2 mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="max-w-2xl">
+            <p className="lead14">Crawler sends 100 AI-simulated customers through your site. See who would buy, why the rest leave, and exactly what to fix, in minutes.</p>
+            <div className="url14 mt-8">
+              <HeroForm cta="Run free simulation" />
+            </div>
+            <p className="mt-4 text-sm text-faint">
+              No credit card · Free: 1 test with {STARTER_CUSTOMERS} simulated customers ·{" "}
+              <Link href="#report" className="text-muted underline-offset-4 hover:text-fg hover:underline">
+                See a sample report
+              </Link>
+            </p>
           </div>
-          <p className="mt-4 text-sm text-faint">
-            No credit card · Free: 1 test with {STARTER_CUSTOMERS} simulated customers ·{" "}
-            <Link href="#report" className="text-muted underline-offset-4 hover:text-fg hover:underline">
-              See a sample report
-            </Link>
-          </p>
+          <Link href="/example" className="badge14 self-start justify-self-start lg:self-end">
+            <span className="badge14-dot" aria-hidden />
+            <span>
+              Websites, stores, apps <span className="text-faint">and ads</span>
+            </span>
+            <span className="text-faint" aria-hidden>
+              →
+            </span>
+          </Link>
         </div>
         <div className="rise d4 relative mt-16 text-left">
           <div className="stage14" aria-hidden />
@@ -75,18 +75,29 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ================= STATEMENT (two-tone, like Linear's) ================= */}
+      <section className="home-wide py-16 sm:py-24" aria-label="What Crawler is">
+        <Reveal>
+          <p className="statement14 max-w-5xl">
+            A focus group that never sleeps. <span className="text-faint">Crawler sends simulated customers through your launch before real ones arrive, so the first people to hit the price, the signup or the cart are ones who can tell you why they left.</span>
+          </p>
+        </Reveal>
+      </section>
+
       {/* ================= HOW IT WORKS ================= */}
       <section id="how" className="home-wide scroll-mt-24 py-20 sm:py-28" aria-labelledby="how-title">
         <Head eyebrow="How it works" id="how-title" title="From a link to a list of fixes." sub="No setup, no tracking code, no real visitors needed." />
-        <ol className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <ol className="steps14 mt-14">
           {STEPS.map((st, k) => (
-            <li key={st.title} className="h-full">
-              <Reveal delay={k * 90} className="tile14 h-full">
-                <div className="tile14-visual" aria-hidden>
+            <li key={st.title} className="steps14-item">
+              <Reveal delay={k * 90}>
+                <p className="steps14-label">
+                  <i aria-hidden /> Step {k + 1}
+                </p>
+                <div className="tile14-visual mt-6" aria-hidden>
                   {st.visual}
                 </div>
-                <p className="mt-6 text-[12px] font-medium text-accent-ink">0{k + 1}</p>
-                <h3 className="mt-1 text-lg font-semibold tracking-tight">{st.title}</h3>
+                <h3 className="mt-6 text-lg font-medium tracking-tight">{st.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{st.body}</p>
               </Reveal>
             </li>
@@ -144,17 +155,20 @@ export default function Home() {
       {/* ================= WHAT CRAWLER ANALYZES ================= */}
       <section className="home-wide py-20 sm:py-28" aria-labelledby="areas-title">
         <Head eyebrow="What Crawler analyzes" id="areas-title" title="Everything a first-time visitor judges." sub="On desktop and on a phone, from the first screen to the cart or signup." />
-        <ul className="grid14 mt-14">
+        <ul className="bento14 mt-14">
           {AREAS.map(([title, body, icon], k) => (
-            <li key={title} className="grid14-cell">
-              <span className="icon14" aria-hidden>
-                <Icon d={icon} />
-              </span>
-              <h3 className="mt-5 font-semibold tracking-tight">{title}</h3>
+            <li key={title} className={`bento14-cell ${k < 2 ? "is-big" : ""}`}>
+              {k === 0 && <MiniPricing />}
+              {k === 1 && <MiniObjections data={s.objections} />}
+              {k > 1 && (
+                <span className="icon14" aria-hidden>
+                  <Icon d={icon} />
+                </span>
+              )}
+              <h3 className={`${k < 2 ? "mt-8" : "mt-5"} font-medium tracking-tight`}>
+                {title} <span className="text-faint">→</span>
+              </h3>
               <p className="mt-1.5 text-sm leading-relaxed text-muted">{body}</p>
-              <span className="grid14-n" aria-hidden>
-                {String(k + 1).padStart(2, "0")}
-              </span>
             </li>
           ))}
         </ul>
@@ -273,13 +287,50 @@ export default function Home() {
 }
 
 function Head({ eyebrow, id, title, sub }: { eyebrow: string; id: string; title: string; sub?: string }) {
+  // Linear-style split header: label + title on the left, the one-line explanation on the right.
   return (
-    <div className="mx-auto max-w-3xl text-center">
-      <p className="eyebrow14">{eyebrow}</p>
-      <h2 id={id} className="h2-14 mt-4">
-        {title}
-      </h2>
-      {sub && <p className="mx-auto mt-4 max-w-xl text-muted">{sub}</p>}
+    <div className="head14">
+      <div>
+        <p className="eyebrow14">{eyebrow}</p>
+        <h2 id={id} className="h2-14 mt-4 max-w-xl">
+          {title}
+        </h2>
+      </div>
+      {sub && <p className="max-w-md text-muted lg:pb-2">{sub}</p>}
+    </div>
+  );
+}
+
+// Bento card visuals: tiny pieces of real Crawler UI (demo data), not illustrations.
+function MiniPricing() {
+  return (
+    <div className="bento14-visual" aria-hidden>
+      <div className="mini-plan">
+        <span className="text-[12px] text-faint">Pro plan</span>
+        <span className="mini-blur">$••</span>
+        <span className="mini-flag">Price hidden until signup</span>
+      </div>
+      <div className="mini-plan is-dim">
+        <span className="text-[12px] text-faint">Team</span>
+        <span className="text-[13px] text-muted">Contact sales</span>
+      </div>
+    </div>
+  );
+}
+function MiniObjections({ data }: { data: { category: string; pct: number }[] }) {
+  return (
+    <div className="bento14-visual !block" aria-hidden>
+      {data.slice(0, 3).map((o) => (
+        <div key={o.category} className="mb-3 last:mb-0">
+          <div className="flex justify-between text-[12px]">
+            <span className="capitalize text-fg">{o.category}</span>
+            <span className="text-faint">{o.pct}%</span>
+          </div>
+          <div className="sim-meter">
+            <i style={{ width: `${o.pct}%` }} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -353,14 +404,14 @@ const STEPS = [
 ];
 
 const AREAS: [string, string, string][] = [
-  ["Product pages", "Do visitors understand exactly what they'd get?", "M4 5h16v14H4zM4 9h16M8 13h5"],
   ["Pricing", "Can they find it, read it, and does it feel fair?", "M12 3v18M16.5 7.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 2.6 4.5 3.2 4.5 1.5 4.5 3.3-2 3-4.5 3-4.5-1.3-4.5-3"],
+  ["Purchase objections", "Each customer's main reason not to buy, grouped and counted.", "M12 8v5M12 16.5v.5M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"],
+  ["Product pages", "Do visitors understand exactly what they'd get?", "M4 5h16v14H4zM4 9h16M8 13h5"],
   ["Website design", "Does it look professional on laptop and phone?", "M3 5h18v11H3zM8 20h8M12 16v4"],
   ["Trust signals", "Reviews, proof, policies and contact details: there or missing.", "M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"],
   ["Navigation", "Can they find pricing, signup or the product page?", "M4 6h16M4 12h10M4 18h6"],
   ["Checkout experience", "Cart, sign-up fields, account walls. Never pays.", "M5 6h15l-2 8H7L5 3H3M9 20a1 1 0 1 0 0-.01M17 20a1 1 0 1 0 0-.01"],
   ["Messaging", "Is the main promise clear, specific and believable?", "M4 5h16v11H8l-4 4z"],
-  ["Purchase objections", "Each customer's main reason not to buy, grouped and counted.", "M12 8v5M12 16.5v.5M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"],
 ];
 
 const USES = [

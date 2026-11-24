@@ -2068,3 +2068,45 @@ html[data-calm] .reveal .rp-grow { transform: none; }
   .personas14::-webkit-scrollbar { display: none; }
   .personas14 > li { flex: 0 0 82%; scroll-snap-align: start; }
 }
+
+/* =================================================================================================
+   v14.1 (2026-11-24, founder: "pull designs from framer.com and linear.app, same guidelines").
+   Taken: Linear's left-aligned hero with a calmer medium-weight headline, its two-tone statement
+   paragraph, split section headers and the timeline row; Framer's bento cards that hold small
+   pieces of real UI. NOT taken: their customer logos/quotes (Crawler has none yet), art, photos.
+   ================================================================================================= */
+.h14 { font-size: clamp(2.6rem, 5.4vw, 4.6rem) !important; font-weight: 500 !important; letter-spacing: -0.045em; line-height: 1.02; text-wrap: balance; }
+.h2-14 { font-weight: 500 !important; letter-spacing: -0.04em; }
+.lead14 { text-wrap: pretty; }
+.hero14::before { inset: -6rem -50vw auto -50vw; -webkit-mask-image: radial-gradient(55% 70% at 30% 15%, #000 15%, transparent 75%); mask-image: radial-gradient(55% 70% at 30% 15%, #000 15%, transparent 75%); }
+
+/* Linear-style statement: big, two-tone, calm */
+.statement14 { font-size: clamp(1.6rem, 3.2vw, 2.6rem); line-height: 1.18; font-weight: 500; letter-spacing: -0.03em; color: var(--fg); text-wrap: pretty; }
+
+/* split section header: title left, explanation right */
+.head14 { display: grid; gap: 20px; align-items: end; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+@media (min-width: 1024px) { .head14 { grid-template-columns: minmax(0, 1fr) auto; } }
+
+/* timeline steps: a hairline with a dot per step */
+.steps14 { display: grid; gap: 40px; }
+@media (min-width: 768px) { .steps14 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .steps14 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; } .steps14-item { padding-right: 28px; } .steps14-item + .steps14-item { padding-left: 28px; border-left: 1px solid var(--line); } }
+.steps14-label { position: relative; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-faint); }
+.steps14-label i { height: 8px; width: 8px; border-radius: 99px; background: #3867ff; box-shadow: 0 0 0 4px rgb(56 103 255 / 0.18); }
+
+/* Framer-style bento: two big cards with real UI, six small ones */
+.bento14 { display: grid; gap: 12px; }
+@media (min-width: 640px) { .bento14 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .bento14 { grid-template-columns: repeat(6, minmax(0, 1fr)); } .bento14-cell { grid-column: span 2; } .bento14-cell.is-big { grid-column: span 3; } }
+@media (min-width: 640px) and (max-width: 1023px) { .bento14-cell.is-big { grid-column: 1 / -1; } }
+.bento14-cell { padding: 26px; border-radius: 18px; background: #0d1220; border: 1px solid var(--line); transition: border-color 0.35s var(--ease), background 0.35s var(--ease); }
+.bento14-cell:hover { border-color: rgb(255 255 255 / 0.18); background: #0f1526; }
+.bento14-cell:hover .icon14 { background: #3867ff; color: #fff; }
+.bento14-visual { display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 14px; background: #0a0e19; border: 1px solid var(--line); }
+.mini-plan { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; background: #121a2b; border: 1px solid var(--line); }
+.mini-plan.is-dim { opacity: 0.6; }
+.mini-blur { font-size: 18px; font-weight: 600; color: #fff; filter: blur(3px); }
+.mini-flag { margin-left: auto; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 99px; color: #c8d6ff; background: rgb(56 103 255 / 0.2); border: 1px solid rgb(56 103 255 / 0.35); }
+
+/* Linear's product window: a faint light edge along the top */
+.sim::before, .rp::before { content: ""; position: absolute; inset: 0 0 auto; height: 1px; z-index: 2; background: linear-gradient(90deg, transparent, rgb(169 194 255 / 0.55), transparent); pointer-events: none; }
