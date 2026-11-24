@@ -11,6 +11,11 @@ import AppWindow, { Props } from "@/components/landing/ed/AppWindow";
 import Explorer, { type ExplorerGroups } from "@/components/landing/ed/Explorer";
 import ReportWindow from "@/components/landing/ed/ReportWindow";
 import Toc from "@/components/landing/ed/Toc";
+import CrowdModel from "@/components/landing/ed/CrowdModel";
+import DecisionPath from "@/components/landing/ed/DecisionPath";
+import Tilt from "@/components/landing/ed/Tilt";
+import Reveal from "@/components/Reveal";
+import SmoothScroll from "@/components/landing/motion/SmoothScroll";
 import Faq from "@/components/landing/Faq";
 import { ASSUMPTIONS, FACTS } from "@/components/landing/Science";
 import { homeDemo } from "@/lib/homeDemo";
@@ -78,7 +83,17 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <dl className="spec absolute -bottom-10 left-[-1rem] z-10 w-[72%] sm:left-[-2.5rem]">
+          {/* floating glass chips (demo numbers) */}
+          <span className="glass-chip float-a absolute -left-6 top-10 z-20 hidden sm:inline-flex">
+            <i className="h-2 w-2 rounded-full bg-[#1f5eff]" /> {demo.sample.total} simulated customers
+          </span>
+          <span className="glass-chip float-b absolute -right-4 top-[46%] z-20 hidden sm:inline-flex">
+            Biggest blocker · {demo.sample.objections[0]?.category} {demo.sample.objections[0]?.pct}%
+          </span>
+          <span className="glass-chip float-c absolute -bottom-16 right-2 z-20 hidden sm:inline-flex">
+            Fix #1 · +{demo.sample.fixes[0]?.winBack ?? 0} could win back
+          </span>
+          <dl className="spec glass-spec absolute -bottom-10 left-[-1rem] z-10 w-[72%] sm:left-[-2.5rem]">
             <p className="mb-1 inline-block rounded-full bg-[#dedede] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#3a3a3a]">{p ? p.label.split(",").slice(0, 2).join(",") : "24, student"}</p>
             {[
               ["Came from", "a TikTok video"],
@@ -257,9 +272,9 @@ export default function Home() {
                     </Link>
                   </div>
                 </div>
-                <div className="mt-14">
+                <Reveal className="mt-14">
                   <Explorer groups={groups} />
-                </div>
+                </Reveal>
               </div>
 
               <div id="minds" className="scroll-mt-28 max-w-2xl">
@@ -291,6 +306,18 @@ export default function Home() {
                 </div>
               </div>
 
+              <div className="scroll-mt-28">
+                <div className="max-w-2xl">
+                  <h3 className="text-[1.75rem] tracking-tight">Five steps before every decision.</h3>
+                  <p className="mt-4 text-[17px] leading-relaxed text-white/85">
+                    Every simulated customer thinks it through in the same order a real visitor does: what they see first, whether they need it, their dealbreaker, whether they trust it, and then a decision in their own words.
+                  </p>
+                </div>
+                <Reveal className="mt-10">
+                  <DecisionPath />
+                </Reveal>
+              </div>
+
               <div id="counting" className="scroll-mt-28">
                 <div className="max-w-2xl">
                   <h3 className="text-[1.75rem] tracking-tight">Every decision is counted in code.</h3>
@@ -298,7 +325,10 @@ export default function Home() {
                     The AI only plays the customers. Counting is plain code: who would buy, who left where, which reasons repeat, and how many people each fix could win back. Re-test with the same customers and see exactly who changed their mind.
                   </p>
                 </div>
-                <div className="mt-10 grid gap-4 md:grid-cols-2">
+                <Reveal className="mt-10">
+                  <CrowdModel points={demo.crowd} />
+                </Reveal>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div className="dpanel p-6">
                     <p className="text-[19px] tracking-tight">Buy rate by mindset</p>
                     <p className="mt-1 text-sm text-white/45">Demo data · {demo.sample.total} simulated customers</p>
@@ -382,7 +412,9 @@ export default function Home() {
             </Link>
           </div>
           <div className="lg:-mr-[max(0px,calc((100vw-88rem)/2+3rem))]">
-            <ReportWindow data={demo.sample} />
+            <Reveal>
+              <ReportWindow data={demo.sample} />
+            </Reveal>
           </div>
         </div>
       </section>
@@ -409,6 +441,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+      {/* soft, inertial scrolling (mouse / trackpad only; off for reduced motion) */}
+      <SmoothScroll />
     </div>
   );
 }
@@ -416,14 +450,16 @@ export default function Home() {
 // One "caption + window" row: the caption on one side, the window running off the other edge.
 function Row({ n, title, text, children, flip = false, id }: { n: string; title: string; text: string; children: React.ReactNode; flip?: boolean; id?: string }) {
   return (
-    <section id={id} className="scroll-mt-24 pt-28" aria-label={title}>
+    <section id={id} className="scroll-mt-24 pt-36 sm:pt-44" aria-label={title}>
       <div className={`grid items-center gap-10 lg:gap-16 ${flip ? "lg:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)]" : "lg:grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)]"}`}>
         <div className={`px-4 sm:px-8 ${flip ? "lg:order-2 lg:pl-0 lg:pr-[max(3rem,calc((100vw-88rem)/2+3rem))]" : "lg:pr-0 lg:pl-[max(3rem,calc((100vw-88rem)/2+3rem))]"}`}>
           <p className="font-mono text-xs text-faint">{n}</p>
           <p className="mt-2 text-[1.6rem] leading-tight tracking-tight">{title}</p>
           <p className="mt-4 text-[15px] leading-relaxed text-muted">{text}</p>
         </div>
-        <div className={`min-w-0 ${flip ? "lg:order-1" : ""} ${flip ? "pr-4 sm:pr-8 lg:pr-0" : "pl-4 sm:pl-8 lg:pl-0"}`}>{children}</div>
+        <Reveal className={`min-w-0 ${flip ? "lg:order-1" : ""} ${flip ? "pr-4 sm:pr-8 lg:pr-0" : "pl-4 sm:pl-8 lg:pl-0"}`}>
+          <Tilt max={3}>{children}</Tilt>
+        </Reveal>
       </div>
     </section>
   );

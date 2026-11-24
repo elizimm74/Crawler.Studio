@@ -8,12 +8,14 @@ import type { SampleData } from "@/components/landing/home/SampleReport";
 const short = (s: string, n = 90) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
 // Built once per server process (it never changes), not on every visit.
-let cached: { hero: HeroDemo; sample: SampleData } | null = null;
-export function homeDemo(): { hero: HeroDemo; sample: SampleData } {
+export type CrowdPoint = { v: "buy" | "maybe" | "no"; mindset: string };
+type HomeDemo = { hero: HeroDemo; sample: SampleData; crowd: CrowdPoint[] };
+let cached: HomeDemo | null = null;
+export function homeDemo(): HomeDemo {
   return (cached ??= buildHomeDemo());
 }
 
-function buildHomeDemo(): { hero: HeroDemo; sample: SampleData } {
+function buildHomeDemo(): HomeDemo {
   const run = exampleWebsiteRun();
   const s = run.stats!;
   const byId = new Map(run.personas.map((p) => [p.id, p]));
@@ -40,7 +42,10 @@ function buildHomeDemo(): { hero: HeroDemo; sample: SampleData } {
   }));
   const host = run.url.replace(/^https?:\/\//, "");
   const seg = (key: string, label: string) => ({ label, rows: (s.segments[key] ?? []).filter((r) => r.n >= 3).slice(0, 5).map((r) => ({ value: r.value, n: r.n, buyRate: r.buyRate })) });
+  // one point per simulated customer: their decision and mindset (for the crowd model picture)
+  const crowd: CrowdPoint[] = run.verdicts.map((v) => ({ v: v.verdict, mindset: byId.get(v.personaId)?.mindset ?? "other" }));
   return {
+    crowd,
     hero: {
       host,
       total: s.total,

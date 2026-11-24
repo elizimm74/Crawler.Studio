@@ -6,6 +6,9 @@
 // src/components/landing/Science.tsx (FACTS), which mirrors docs/persona-research.md.
 import Link from "next/link";
 import { ASSUMPTIONS, FACTS } from "@/components/landing/Science";
+import CrowdModel from "@/components/landing/ed/CrowdModel";
+import DecisionPath from "@/components/landing/ed/DecisionPath";
+import { homeDemo } from "@/lib/homeDemo";
 
 export const metadata = {
   title: "The science behind AI customer simulations",
@@ -128,6 +131,19 @@ export default function SciencePage() {
       </section>
 
       {/* 2. how each customer is built */}
+      {/* the model, visualised (dark panel, same pieces as the home page) */}
+      <section className="band-dark mt-20 rounded-[28px] p-5 sm:p-8" aria-labelledby="model">
+        <p className="t-label">The model, visualised</p>
+        <h2 id="model" className="t-h2 mt-3">
+          A crowd, then five steps,
+          <span className="block text-faint">then a count.</span>
+        </h2>
+        <div className="mt-8 space-y-6">
+          <CrowdModel points={homeDemo().crowd} />
+          <DecisionPath />
+        </div>
+      </section>
+
       <section className="mt-20" aria-labelledby="method">
         <p className="t-label">02 · our method</p>
         <h2 id="method" className="t-h2 mt-3">How each simulated customer is built</h2>
