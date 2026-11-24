@@ -1696,3 +1696,29 @@ html[data-calm] .cm-dot, html[data-calm] .tilt, html[data-calm] .glass-tile { tr
 .serif { font-family: var(--font-sans); font-style: normal; font-weight: 700; letter-spacing: -0.03em; }
 .t-wordmark, .marquee-word { font-family: var(--font-sans); font-weight: 800; }
 .font-mono, .fl-num, .win-num, .t-number { font-variant-numeric: tabular-nums; }
+
+/* ================================================================================================
+   v13.2 NATURE PHOTOS + GREEN DASHBOARD (2026-11-24, founder: "make the dashboard match the new
+   green look" + nature behind things "like aaru", then: real photos, not drawings).
+   - <Nature /> (src/components/Nature.tsx) = a real public-domain/CC0 photo, object-fit cover.
+   - The dashboard: green active item, green bars/score, a photo banner behind the greeting, and
+     the rail's colour now runs the full height of the page.
+   ================================================================================================ */
+.nature { transform: scale(1.02); transition: transform 1.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.scene:hover .nature { transform: scale(1.05); } /* a slow, gentle push-in on hover */
+@media (prefers-reduced-motion: reduce) { .nature, .scene:hover .nature { transition: none; transform: none; } }
+html[data-calm] .nature { transition: none; }
+/* the old painted grain sits on top of the photo: keep it faint */
+.scene::after { z-index: 1; opacity: 0.08; }
+.scene > .win { z-index: 2; }
+
+@media (min-width: 1024px) {
+  .dash-app > .grid { background: linear-gradient(to right, #fbfbfc 0, #fbfbfc 271px, var(--line) 271px, var(--line) 272px, transparent 272px); }
+  .dash-app .fl-rail { border-right: 0; background: transparent; }
+}
+.dash-app .dash-pill { background: #e8f8ee !important; border-color: #bfe9cc !important; box-shadow: none !important; }
+.dash-app nav[aria-label="Dashboard"] button[aria-current="page"] { color: #0b5e28; }
+.dash-app .dash-active { background: #e8f8ee; border-color: #bfe9cc; color: #0b5e28 !important; }
+.dash-banner { min-height: 13rem; }
+/* more landscape around the drawn windows (aaru-style framing) */
+@media (min-width: 640px) { .scene { padding: 64px 0 0 64px; } .scene-left { padding: 64px 64px 0 0; } }

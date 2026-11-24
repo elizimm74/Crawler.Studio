@@ -19,7 +19,7 @@ export function Crowd({ yes, total, size = "lg" }: { yes: number; total: number;
       {Array.from({ length: n }, (_, i) => (
         <span
           key={i}
-          className={`crowd-dot aspect-square rounded-full ${i < lit ? "bg-fg" : "border border-line"}`}
+          className={`crowd-dot aspect-square rounded-full ${i < lit ? "bg-[#02aa3d]" : "border border-line"}`}
           style={{ animationDelay: `${i * 12}ms` }}
         />
       ))}
@@ -77,7 +77,7 @@ export function TrendChart({ points }: { points: { pct: number; date: string }[]
 export function Bar({ pct, delay = 0 }: { pct: number; delay?: number }) {
   return (
     <div className="h-1.5 overflow-hidden rounded-full bg-line">
-      <div className="bar-grow h-full rounded-full bg-fg" style={{ width: `${Math.max(2, Math.min(100, pct))}%`, animationDelay: `${delay}ms` }} />
+      <div className="bar-grow h-full rounded-full bg-[#02aa3d]" style={{ width: `${Math.max(2, Math.min(100, pct))}%`, animationDelay: `${delay}ms` }} />
     </div>
   );
 }

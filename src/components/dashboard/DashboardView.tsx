@@ -26,6 +26,7 @@ import { money } from "@/lib/revenue";
 import { PLAYS } from "@/lib/playbook";
 import { subscriptionLine, summarize, type Analysis, type DashboardData } from "@/lib/dashboard";
 import ManageBilling from "@/components/ManageBilling";
+import Nature from "@/components/Nature";
 import Mark from "@/components/Mark";
 import { PLANS, planName } from "@/lib/plans";
 
@@ -112,7 +113,7 @@ function Thumb({ a, size = "h-11 w-11" }: { a: Analysis; size?: string }) {
     );
   }
   return (
-    <span className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-line bg-subtle text-base font-medium`} aria-hidden>
+    <span className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-[#bfe9cc] bg-[#e8f8ee] text-base font-medium text-[#0b5e28]`} aria-hidden>
       {a.kind === "app" || a.kind === "game" || a.kind === "video" ? <Icon name={a.kind === "video" ? "play" : "phone"} /> : a.label.charAt(0).toUpperCase()}
     </span>
   );
@@ -374,15 +375,18 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           {view === "overview" && (
             <>
               {/* header: greeting + one sentence from the person's latest result */}
-              <div className="flex flex-wrap items-end justify-between gap-6 pt-2">
-                <div className="min-w-0">
-                  <p className="fl-label">
+              {/* a real nature photo behind the greeting (see Nature.tsx) */}
+              <div className="dash-banner relative flex flex-wrap items-end justify-between gap-6 overflow-hidden rounded-2xl border border-line px-6 py-8 sm:px-8 sm:py-10">
+                <Nature kind="ridge" position="50% 62%" />
+                <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/65 to-white/10" />
+                <div className="relative z-10 min-w-0">
+                  <p className="fl-label !text-[#0b5e28]">
                     {hello}, {data.name}
                   </p>
                   <h1 className="mt-3 max-w-3xl text-[1.75rem] font-semibold leading-tight tracking-tight sm:text-[2.1rem]">{summary}</h1>
                 </div>
                 {!latest && (
-                  <div className="flex gap-2">
+                  <div className="relative z-10 flex gap-2">
                     <Link href="/onboarding" className="btn btn-primary h-11 px-5 text-sm">
                       Start free test
                     </Link>
@@ -405,7 +409,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                         <Thumb a={latest} size="h-24 w-24" />
                       </span>
                       <div className="min-w-0">
-                        <p className="fl-num text-5xl">
+                        <p className="fl-num text-5xl" style={{ color: "#02aa3d" }}>
                           {latest.score ?? "–"}
                           <span className="text-2xl text-faint">/{latest.total ?? 100}</span>
                         </p>

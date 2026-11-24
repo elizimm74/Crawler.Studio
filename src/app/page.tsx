@@ -21,6 +21,7 @@ import { ASSUMPTIONS, FACTS } from "@/components/landing/Science";
 import { homeDemo } from "@/lib/homeDemo";
 import { STARTER_CUSTOMERS } from "@/lib/plans";
 import { FOCUS } from "@/lib/productTypes";
+import Nature from "@/components/Nature";
 
 export const metadata = {
   title: { absolute: "Crawler: AI customer simulations for your website" },
@@ -72,15 +73,12 @@ export default function Home() {
         <div className="rise d2 relative mx-auto w-full max-w-[26rem]" aria-label="An example simulated customer">
           <span className="tag absolute left-4 top-0 z-20 -translate-y-1/2 bg-[#02aa3d] text-[#052e16]">Simulated customer</span>
           <div className="scene scene-dusk aspect-[4/5] w-[78%] !p-0" aria-hidden>
+            <Nature kind="grass" />
             <div className="absolute inset-x-6 bottom-6 font-mono text-[11px] text-white/80">example · demo data</div>
           </div>
           <div className="absolute right-0 top-[-1.5rem] h-28 w-28" aria-hidden>
             <div className="scene scene-moss h-full w-full !rounded-2xl !p-0">
-              <div className="relative z-10 grid h-full grid-cols-5 gap-1.5 p-3">
-                {Array.from({ length: 25 }, (_, i) => (
-                  <span key={i} className={`aspect-square rounded-full ${i % 4 === 0 ? "bg-white" : "bg-white/30"}`} />
-                ))}
-              </div>
+              <Nature kind="leaf" />
             </div>
           </div>
           {/* floating glass chips (demo numbers) */}
@@ -425,19 +423,22 @@ export default function Home() {
 
       {/* ================= FINAL CTA ================= */}
       <section className="home-wide pb-24" aria-labelledby="final-title">
-        <div className="scene scene-dusk !p-0">
-          <div className="relative z-10 px-6 py-20 text-center text-white sm:px-12 sm:py-28">
-            <h2 id="final-title" className="t-h1 text-white">
+        <div className="scene scene-sky !p-0">
+          <Nature kind="ridge" position="50% 40%" />
+          {/* a soft light glow behind the words so they stay readable over the landscape */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_42%,rgba(255,255,255,0.75),transparent_75%)]" aria-hidden />
+          <div className="relative z-10 px-6 pb-36 pt-20 text-center text-fg sm:px-12 sm:pb-44 sm:pt-28">
+            <h2 id="final-title" className="t-h1 text-fg">
               Stop guessing.
-              <span className="block text-white/70">
-                Start <span className="serif">validating.</span>
+              <span className="block text-black/55">
+                Start <span className="serif text-[#0b5e28]">validating.</span>
               </span>
             </h2>
-            <p className="mx-auto mt-5 max-w-md text-white/80">Paste your website and see what your simulated customers think in a few minutes.</p>
-            <div className="band-dark mx-auto mt-8 max-w-xl rounded-[22px] !bg-black/40 p-2 backdrop-blur">
+            <p className="mx-auto mt-5 max-w-md text-black/70">Paste your website and see what your simulated customers think in a few minutes.</p>
+            <div className="band-dark mx-auto mt-8 max-w-xl rounded-[22px] !bg-black/80 p-2 backdrop-blur">
               <HeroForm cta="Run Your First Simulation" id="final-url" />
             </div>
-            <p className="mt-4 text-sm text-white/70">No credit card required to get started.</p>
+            <p className="mt-4 inline-block rounded-full bg-white/80 px-3 py-1 text-sm text-black/75 backdrop-blur">No credit card required to get started.</p>
           </div>
         </div>
       </section>
