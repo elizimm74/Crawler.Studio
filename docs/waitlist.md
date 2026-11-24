@@ -16,6 +16,39 @@ day you run one command and everyone gets the launch email.
 4. **Launch day:** `npm run waitlist:send` emails everyone who hasn't unsubscribed and hasn't already
    got it. It records who it emailed, so running it twice never sends twice to the same person.
 
+## Make the launch email actually work (checklist, in order)
+
+Do these on your own computer, once. Ask a parent or guardian for the steps marked (adult).
+
+1. **(adult) Make a Resend account** at resend.com and log in.
+2. **Add your domain.** In Resend: Domains > Add Domain > `crawler.studio`. Resend shows a few DNS
+   records (two TXT records for SPF and DKIM, and one MX record on a `send` subdomain).
+3. **Add those records where crawler.studio's DNS is managed** (the company you bought the domain
+   from, e.g. Squarespace: DNS settings). Copy each record exactly. Then go back to Resend and click
+   Verify. Wait until it says **Verified** (can take up to an hour). Don't send before this.
+4. **Create an API key.** In Resend: API Keys > Create API Key > permission "Sending access" > copy it
+   once (it is only shown once).
+5. **Write `.env.local`** in the project folder (never commit it):
+   ```
+   RESEND_API_KEY=re_...
+   MAIL_FROM="Crawler <hello@crawler.studio>"
+   MAIL_ADDRESS="Your company or name, PO Box 123, City, State ZIP"
+   LAUNCH_URL=https://crawler.studio
+   WAITLIST_SITE=https://elizimm74.github.io/Study
+   SUPABASE_SECRET_KEY=...            (the same one the worker uses)
+   NEXT_PUBLIC_SUPABASE_URL=https://txoimqedwfsuxoqiguop.supabase.co
+   ```
+   `WAITLIST_SITE` is where the unsubscribe page lives. Keep GitHub Pages turned on, or the
+   unsubscribe link in every email breaks.
+6. **Check the list is there:** `npm run waitlist:send` (dry run, sends nothing). It should print the
+   number of people waiting.
+7. **Send one test to yourself:** `npm run waitlist:send -- --test you@yourmail.com`. Open it on a phone.
+   Check the links work and the unsubscribe page shows a button.
+8. **Launch:** `npm run waitlist:send -- --send`. It sends one at a time and records who got it, so a
+   second run never double-sends.
+
+**Not automatic:** nothing is sent when the site goes live. You have to run step 8 yourself on launch day.
+
 ## See your list
 
 Supabase dashboard > project **crawler** > Table Editor > `waitlist`. You can download it as a CSV
