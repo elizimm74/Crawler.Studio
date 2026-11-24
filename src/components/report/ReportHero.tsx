@@ -62,7 +62,7 @@ export default function ReportHero({
           {pills.length > 0 && (
             <div className="mt-5 flex flex-wrap gap-2">
               {pills.map((p) => (
-                <span key={p.text} className={`rounded-full border px-3 py-1 text-xs ${p.warn ? "border-white/25 bg-white/[0.08] text-fg" : "border-white/10 bg-white/[0.04] text-muted"}`}>
+                <span key={p.text} className={`rounded-full border px-3 py-1 text-xs ${p.warn ? "border-line-strong bg-subtle text-fg" : "border-line bg-subtle text-muted"}`}>
                   {p.text}
                 </span>
               ))}

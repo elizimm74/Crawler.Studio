@@ -39,7 +39,7 @@ export default function PhoneMenu({ signedIn, accounts }: { signedIn: boolean; a
           <path d="M3 5h12M3 9h12M3 13h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
         </svg>
       </summary>
-      <div className="absolute right-0 top-12 z-50 flex w-56 flex-col rounded-xl border border-line-strong p-2 shadow-2xl" style={{ background: "#101116" }}>
+      <div className="absolute right-0 top-12 z-50 flex w-56 flex-col rounded-xl border border-line-strong p-2 shadow-2xl" style={{ background: "#ffffff" }}>
         {links.map(([href, label]) => (
           <Link key={href} href={href} className="flex min-h-11 items-center rounded-lg px-3 text-sm hover:bg-subtle" aria-current={path === href ? "page" : undefined}>
             {label}

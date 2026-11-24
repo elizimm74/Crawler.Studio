@@ -253,7 +253,7 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
               <span className="text-sm font-medium capitalize">{o.category}</span>
               <div>
                 <div className="flex items-center gap-3">
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-subtle">
                     <div className="bar-grow h-full rounded-full bg-accent" style={{ width: `${Math.max(2, o.pct * 100)}%` }} />
                   </div>
                   <span className="w-12 text-right text-sm tabular-nums text-muted">{pct(o.pct)}</span>
@@ -271,7 +271,7 @@ export default function VideoReport({ run, demo = false }: { run: VideoRun & { f
         <ul className="mt-6 grid gap-3 sm:grid-cols-2">
           {stats.quotes.slice(0, allComments ? 60 : 8).map((q) => (
             <li key={q.personaId} className="flex gap-3 rounded-2xl border border-line p-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.07] text-xs font-medium text-muted">{avatar(run, q.personaId)}</span>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-subtle text-xs font-medium text-muted">{avatar(run, q.personaId)}</span>
               <div className="min-w-0">
                 <p className="text-xs text-faint">
                   {who(run, q.personaId)}
@@ -342,7 +342,7 @@ function Tile({ label, value, sub, bar }: { label: string; value: string; sub: s
       <p className="t-label">{label}</p>
       <p className="mt-3 text-4xl font-semibold tracking-tight tabular-nums">{value}</p>
       <p className="mt-1 text-xs text-faint">{sub}</p>
-      <div className="mt-4 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+      <div className="mt-4 h-1 overflow-hidden rounded-full bg-subtle">
         <div className="bar-grow h-full rounded-full bg-accent" style={{ width: `${Math.max(2, bar * 100)}%` }} />
       </div>
     </div>
@@ -364,7 +364,7 @@ function PhoneHook({ src, hook }: { src: string; hook: Range }) {
   const c = 2 * Math.PI * r;
   return (
     <div className="relative mx-auto w-[200px] md:w-full">
-      <div className="relative aspect-[9/16] overflow-hidden rounded-[28px] border border-white/15 bg-black shadow-[0_30px_80px_-20px_rgb(0_0_0/0.8)]">
+      <div className="relative aspect-[9/16] overflow-hidden rounded-[28px] border border-line bg-black shadow-[0_30px_80px_-20px_rgb(0_0_0/0.8)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {src && <img src={src} alt="The first frame of your video" className="h-full w-full object-cover opacity-80" />}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-4">
@@ -375,7 +375,7 @@ function PhoneHook({ src, hook }: { src: string; hook: Range }) {
             </svg>
             <div>
               <p className="text-2xl font-semibold tabular-nums">{pct(hook.mid)}</p>
-              <p className="text-[11px] leading-tight text-white/70">stopped scrolling</p>
+              <p className="text-[11px] leading-tight text-muted">stopped scrolling</p>
             </div>
           </div>
         </div>
@@ -427,7 +427,7 @@ function WatchCurve({ run, img }: { run: VideoRun; img: (f: string) => string })
           <g>
             <line x1={x(drop.t)} x2={x(drop.t)} y1={P} y2={H - P} stroke="#fff" strokeOpacity="0.3" strokeDasharray="3 4" />
             <rect x={Math.min(x(drop.t) + 6, W - 170)} y={P} width="160" height="24" rx="12" fill="#f5f6f8" />
-            <text x={Math.min(x(drop.t) + 6, W - 170) + 80} y={P + 16} textAnchor="middle" fill="#08090d" fontSize="12" fontWeight="600">
+            <text x={Math.min(x(drop.t) + 6, W - 170) + 80} y={P + 16} textAnchor="middle" fill="var(--bg)" fontSize="12" fontWeight="600">
               {pct(drop.left / Math.max(1, stats.total))} swiped at {drop.t.toFixed(1)}s
             </text>
           </g>
@@ -451,10 +451,10 @@ function RangeBar({ low, likely, high, usual }: { low: number; likely: number; h
   const at = (v: number) => `${(v / max) * 100}%`;
   return (
     <div className="relative mt-6 h-10" aria-hidden>
-      <div className="absolute inset-x-0 top-4 h-1.5 rounded-full bg-white/[0.06]" />
+      <div className="absolute inset-x-0 top-4 h-1.5 rounded-full bg-subtle" />
       <div className="absolute top-4 h-1.5 rounded-full bg-accent/60" style={{ left: at(low), width: `calc(${at(high)} - ${at(low)})` }} />
       <span className="absolute top-2.5 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-[#08090d] bg-white" style={{ left: at(likely) }} />
-      <span className="absolute top-0 h-9 w-px bg-white/40" style={{ left: at(usual) }} />
+      <span className="absolute top-0 h-9 w-px bg-faint" style={{ left: at(usual) }} />
       <span className="absolute top-8 -translate-x-1/2 font-mono text-[10px] text-faint" style={{ left: at(usual) }}>
         usual
       </span>
@@ -509,7 +509,7 @@ function SegmentList({ title, items }: { title: string; items: { name: string; v
         {items.map((s) => (
           <li key={s.name} className="grid grid-cols-[110px_minmax(0,1fr)_48px] items-center gap-3 text-sm">
             <span className="truncate capitalize text-muted">{s.name}</span>
-            <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+            <div className="h-1.5 overflow-hidden rounded-full bg-subtle">
               <div className="bar-grow h-full rounded-full bg-white" style={{ width: `${Math.max(2, (s.tapRate / max) * 100)}%` }} />
             </div>
             <span className="text-right tabular-nums">{pct(s.tapRate)}</span>

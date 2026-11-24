@@ -178,7 +178,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
               <div id="ob-url-status" aria-live="polite" className="mt-4">
                 {checking && <p className="text-sm text-muted">Opening {url.replace(/^https?:\/\//, "")}…</p>}
                 {check && !check.ok && (
-                  <p role="alert" className="rounded-xl border border-line-strong bg-white/[0.03] p-4 text-sm">
+                  <p role="alert" className="rounded-xl border border-line-strong bg-subtle p-4 text-sm">
                     {check.problem}
                   </p>
                 )}
@@ -282,7 +282,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
                 aria-pressed={focus.includes(id)}
                 onClick={() => toggleFocus(id)}
                 className={`flex min-h-14 items-center gap-3 rounded-xl border px-4 text-left transition-colors ${
-                  focus.includes(id) ? "border-accent bg-accent/10" : "border-line bg-white/[0.02] hover:border-line-strong"
+                  focus.includes(id) ? "border-accent bg-accent/10" : "border-line bg-subtle hover:border-line-strong"
                 }`}
               >
                 <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${focus.includes(id) ? "border-accent bg-accent text-white" : "border-line-strong"}`} aria-hidden>

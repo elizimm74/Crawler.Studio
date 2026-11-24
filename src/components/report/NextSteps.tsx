@@ -96,7 +96,7 @@ export default function NextSteps({
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {ideas.map((c) => (
           <Link key={c.title} href={c.href} className="gpanel nextcard">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-subtle">
               <Icon name={c.icon} className="h-[18px] w-[18px]" />
             </span>
             <p className="mt-2 font-medium">{c.title}</p>
@@ -108,7 +108,7 @@ export default function NextSteps({
         ))}
         {free ? (
           <Link href="/dashboard#fixes" className="gpanel nextcard">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-subtle">
               <Icon name="spark" className="h-[18px] w-[18px]" />
             </span>
             <p className="mt-2 font-medium">Unlock full 100-customer tests</p>
@@ -121,7 +121,7 @@ export default function NextSteps({
           </Link>
         ) : (
           <Link href="/pricing" className="gpanel nextcard">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-subtle">
               <Icon name="bolt" className="h-[18px] w-[18px]" />
             </span>
             <p className="mt-2 font-medium">Keep testing as you fix</p>

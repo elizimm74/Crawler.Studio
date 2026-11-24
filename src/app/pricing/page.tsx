@@ -54,7 +54,7 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
           const rec = p.id === "starter";
           const copy = PLAN_COPY[p.id];
           return (
-            <div key={p.id} className={`plan-card flex flex-col rounded-3xl border p-7 ${rec ? "plan-rec" : "border-line bg-white/[0.02]"}`}>
+            <div key={p.id} className={`plan-card flex flex-col rounded-3xl border p-7 ${rec ? "plan-rec" : "border-line bg-subtle"}`}>
               <div className="flex min-h-8 items-center justify-between gap-2">
                 <p className="text-lg font-medium">{p.name}</p>
                 {rec && <span className="plan-badge">Recommended</span>}

@@ -89,7 +89,7 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
         }
       >
         {stats.benchmark && (
-          <p className="mt-8 border-t border-white/10 pt-4 text-sm text-muted">
+          <p className="mt-8 border-t border-line pt-4 text-sm text-muted">
             <span className="font-medium text-fg">Reality check: </span>
             {stats.benchmark.note} <span className="text-faint">Source: {stats.benchmark.source}.</span>
           </p>

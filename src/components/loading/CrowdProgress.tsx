@@ -65,7 +65,7 @@ export default function CrowdProgress({ stage, done, total, seconds }: { stage: 
           {Array.from({ length: shown }, (_, i) => (
             <span
               key={i}
-              className={`aspect-square rounded-full transition-colors duration-500 ${i < lit ? "bg-white" : i < lit + 4 && done < total ? "crowd-next border border-accent" : "border border-white/12"}`}
+              className={`aspect-square rounded-full transition-colors duration-500 ${i < lit ? "bg-white" : i < lit + 4 && done < total ? "crowd-next border border-accent" : "border border-line"}`}
             />
           ))}
         </div>

@@ -56,7 +56,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-bg focus:p-4">
           Skip to content
         </a>
-        <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-md">
+        <header className="site-header sticky top-0 z-40">
           <div className="home-wide flex h-16 items-center justify-between gap-4">
             <Logo />
             <nav className="flex items-center gap-1 text-sm" aria-label="Main">
@@ -78,7 +78,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   <form action="/auth/signout" method="post" className="hidden sm:block">
                     <button className="btn btn-text text-sm">Sign out</button>
                   </form>
-                  <Link href="/app" className="btn btn-secondary ml-1 text-sm">
+                  <Link href="/onboarding" className="btn btn-primary ml-1 h-10 px-5 text-sm">
                     New test
                   </Link>
                 </>
@@ -94,7 +94,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     Pricing
                   </NavLink>
                   <NavLink href="/signin">Sign in</NavLink>
-                  <Link href="/signup" className="btn btn-secondary ml-1 text-sm">
+                  <Link href="/signup" className="btn btn-primary ml-1 h-10 px-5 text-sm">
                     Start free
                   </Link>
                 </>
@@ -109,8 +109,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   <NavLink href="/pricing" className="hidden sm:inline-flex">
                     Pricing
                   </NavLink>
-                  <Link href="/app" className="btn btn-secondary ml-1 text-sm">
-                    Open app
+                  <Link href="/onboarding" className="btn btn-primary ml-1 h-10 px-5 text-sm">
+                    Start free
                   </Link>
                 </>
               )}
@@ -161,7 +161,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 function Logo({ small }: { small?: boolean }) {
   return (
     <Link href="/" className={`inline-flex min-h-11 items-center gap-2 font-medium tracking-tight text-fg ${small ? "text-sm" : "text-[17px]"}`}>
-      <Mark size={small ? 18 : 26} className="text-white" />
+      <Mark size={small ? 18 : 24} className="text-fg" />
       {APP_NAME.toLowerCase()}
     </Link>
   );

@@ -238,7 +238,7 @@ export default function VideoWizard() {
                       role="radio"
                       aria-checked={placement === p}
                       onClick={() => setPlacement(p)}
-                      className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${placement === p ? "border-accent bg-white/[0.06]" : "border-line hover:border-line-strong"}`}
+                      className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${placement === p ? "border-accent bg-subtle" : "border-line hover:border-line-strong"}`}
                     >
                       <span>
                         <span className="block text-sm font-medium">{PLACEMENT_LABEL[p]}</span>
@@ -270,11 +270,11 @@ export default function VideoWizard() {
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <p className="t-label">the hook · first 2 seconds</p>
               {productAt >= 0 ? (
-                <span className={`rounded-full border px-3 py-1 text-xs ${late ? "border-white/20 text-fg" : "border-line text-muted"}`}>
+                <span className={`rounded-full border px-3 py-1 text-xs ${late ? "border-line-strong text-fg" : "border-line text-muted"}`}>
                   product shows at {productAt.toFixed(1)}s{late ? " · people who swipe earlier never see it" : ""}
                 </span>
               ) : (
-                <span className="rounded-full border border-white/20 px-3 py-1 text-xs">the product never clearly shows</span>
+                <span className="rounded-full border border-line-strong px-3 py-1 text-xs">the product never clearly shows</span>
               )}
             </div>
             <textarea value={hook} onChange={(e) => setHook(e.target.value)} rows={2} className="field mt-3 text-lg" aria-label="What the first seconds promise" />
@@ -448,9 +448,9 @@ function VideoDrop({ file, frames, busy, onPick, duration }: { file: File | null
         onDragOver={(e) => (e.preventDefault(), setOver(true))}
         onDragLeave={() => setOver(false)}
         onDrop={(e) => (e.preventDefault(), setOver(false), take(e.dataTransfer.files))}
-        className={`relative flex w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-colors duration-150 ${over ? "border-accent bg-white/[0.05]" : "border-line-strong hover:border-fg"}`}
+        className={`relative flex w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-colors duration-150 ${over ? "border-accent bg-subtle" : "border-line-strong hover:border-fg"}`}
       >
-        <span className="flex h-12 w-12 items-center justify-center rounded-full border border-line bg-white/[0.04]" aria-hidden>
+        <span className="flex h-12 w-12 items-center justify-center rounded-full border border-line bg-subtle" aria-hidden>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M7 4.5v15l12-7.5z" />
           </svg>

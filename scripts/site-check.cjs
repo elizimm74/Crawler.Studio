@@ -139,16 +139,19 @@ const record = (r) => {
     await p.getByRole("button", { name: /Mobile app \(screenshots\)/ }).click();
     await p.getByRole("heading", { name: /Testing a mobile app/ }).waitFor();
   });
-  await flow("home: sample report tabs switch and the customer filter works", async () => {
+  await flow("home: the report window's 'View as' switch changes the view", async () => {
     await p.goto(BASE + "/", { waitUntil: "networkidle" });
     await p.getByRole("tab", { name: "Customers" }).click();
-    const all = await p.locator('[role=tabpanel] li').count();
-    await p.getByRole("button", { name: /^Would buy/ }).click();
-    const buys = await p.locator('[role=tabpanel] li').count();
-    if (!(buys > 0 && buys < all)) throw new Error(`all=${all} buys=${buys}`);
+    await p.getByText("Would buy", { exact: true }).first().waitFor({ timeout: 3000 });
     await p.getByRole("tab", { name: "Fixes" }).click();
-    await p.getByText(/Could win back about/).first().waitFor();
-    return `${all} customers, ${buys} buyers`;
+    await p.getByText("Show the price on the homepage").first().waitFor({ timeout: 3000 });
+    await p.getByRole("tab", { name: "Fix prompt" }).click();
+    await p.getByText(/Do NOT invent testimonials/).first().waitFor({ timeout: 3000 });
+  });
+  await flow("home: the research explorer switches groups and items", async () => {
+    await p.getByRole("tab", { name: "Assumptions" }).click();
+    await p.getByRole("option", { name: /Patience/ }).click();
+    await p.getByText("Labelled assumption").first().waitFor({ timeout: 3000 });
   });
   await flow("home: FAQ answers open", async () => {
     await p.getByText("What does it cost?").click();

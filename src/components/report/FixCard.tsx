@@ -64,7 +64,7 @@ export default function FixCard({
         {win !== undefined && win > 0 && (
           <div className="winpill self-start" aria-label={`${win} ${winLabel ?? "could be won back"}`}>
             <span className="text-2xl font-semibold tabular-nums">+{win}</span>
-            <span className="text-center text-[11px] leading-tight text-white/65">{winLabel ?? "could be won back"}</span>
+            <span className="text-center text-[11px] leading-tight text-muted">{winLabel ?? "could be won back"}</span>
           </div>
         )}
       </div>
