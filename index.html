@@ -20,21 +20,21 @@
 <meta name="theme-color" content="#08090d" />
 <link rel="icon" href="src/app/icon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@900&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  :root { --bg: #08090d; --fg: #f5f6f8; --muted: #b4b8c6; --faint: #8d92a4; --blue: #22c55e; --blue-hi: #16a34a; --line: rgb(255 255 255 / .1); }
+  :root { --bg: #08090d; --fg: #f5f6f8; --muted: #b4b8c6; --faint: #8d92a4; --blue: #02aa3d; --blue-hi: #018f33; --line: rgb(255 255 255 / .1); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body { background: var(--bg); color: var(--fg); font-family: Geist, system-ui, sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
   body::before { /* one soft deep-blue glow at the top, nothing else */
     content: ""; position: absolute; inset: 0 0 auto 0; height: 720px; z-index: -1; pointer-events: none;
-    background: radial-gradient(700px 380px at 20% 0, rgb(34 197 94 / .26), transparent 70%), radial-gradient(520px 340px at 88% 14%, rgb(34 197 94 / .12), transparent 70%);
+    background: radial-gradient(700px 380px at 20% 0, rgb(2 170 61 / .26), transparent 70%), radial-gradient(520px 340px at 88% 14%, rgb(2 170 61 / .12), transparent 70%);
   }
   [hidden] { display: none !important; } /* so a layout rule can never un-hide something */
   a { color: inherit; }
   :focus-visible { outline: 2px solid #f5f6f8; outline-offset: 3px; border-radius: 6px; }
   .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
-  .label { font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: .06em; color: var(--faint); text-transform: lowercase; }
+  .label { font-family: Geist, sans-serif; font-size: 12px; letter-spacing: .06em; color: var(--faint); text-transform: lowercase; }
   h1, h2 { font-weight: 600; letter-spacing: -.035em; line-height: 1.04; }
   h2 { font-size: clamp(1.9rem, 4.4vw, 3rem); }
 
@@ -54,12 +54,12 @@
 
   /* buttons + form */
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 0 26px; border-radius: 12px; border: 0; cursor: pointer; font: 600 16px Geist, system-ui, sans-serif; color: #fff;
-    background: var(--blue); box-shadow: 0 12px 34px -12px #22c55e, inset 0 1px 0 rgb(255 255 255 / .2); transition: transform .2s, background .2s; }
+    background: var(--blue); box-shadow: 0 12px 34px -12px #02aa3d, inset 0 1px 0 rgb(255 255 255 / .2); transition: transform .2s, background .2s; }
   .btn:hover { background: var(--blue-hi); transform: translateY(-1px); }
   .btn:disabled { opacity: .6; cursor: progress; transform: none; }
   .field { width: 100%; min-height: 50px; padding: 0 16px; border-radius: 12px; background: rgb(255 255 255 / .05); border: 1px solid rgb(255 255 255 / .14); color: #fff; font: 400 16px Geist, system-ui, sans-serif; }
   .field::placeholder { color: var(--faint); }
-  .field:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgb(34 197 94 / .35); }
+  .field:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgb(2 170 61 / .35); }
   .form { display: grid; gap: 10px; margin-top: 28px; max-width: 460px; }
   .form label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 6px; }
   .small { font-size: 13px; color: var(--faint); }
@@ -94,7 +94,7 @@
   .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .card { padding: 24px; transition: transform .25s, border-color .25s; }
   .card:hover { transform: translateY(-3px); border-color: rgb(255 255 255 / .22); }
-  .card .n { font-family: "Geist Mono", monospace; font-size: 12px; color: var(--faint); }
+  .card .n { font-family: Geist, sans-serif; font-size: 12px; color: var(--faint); }
   .card h3 { margin-top: 12px; font-size: 20px; font-weight: 600; letter-spacing: -.02em; line-height: 1.2; }
   .card p { margin-top: 8px; color: var(--muted); font-size: 15.5px; }
   .why { display: grid; gap: 40px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }

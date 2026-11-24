@@ -70,7 +70,7 @@ export default function Home() {
 
         {/* a simulated customer's spec sheet over a painted tile (example) */}
         <div className="rise d2 relative mx-auto w-full max-w-[26rem]" aria-label="An example simulated customer">
-          <span className="tag absolute left-4 top-0 z-20 -translate-y-1/2 bg-[#22c55e] text-[#052e16]">Simulated customer</span>
+          <span className="tag absolute left-4 top-0 z-20 -translate-y-1/2 bg-[#02aa3d] text-[#052e16]">Simulated customer</span>
           <div className="scene scene-dusk aspect-[4/5] w-[78%] !p-0" aria-hidden>
             <div className="absolute inset-x-6 bottom-6 font-mono text-[11px] text-white/80">example · demo data</div>
           </div>
@@ -85,7 +85,7 @@ export default function Home() {
           </div>
           {/* floating glass chips (demo numbers) */}
           <span className="glass-chip float-a absolute -left-6 top-10 z-20 hidden sm:inline-flex">
-            <i className="h-2 w-2 rounded-full bg-[#22c55e]" /> {demo.sample.total} simulated customers
+            <i className="h-2 w-2 rounded-full bg-[#02aa3d]" /> {demo.sample.total} simulated customers
           </span>
           <span className="glass-chip float-b absolute -right-4 top-[46%] z-20 hidden sm:inline-flex">
             Biggest blocker · {demo.sample.objections[0]?.category} {demo.sample.objections[0]?.pct}%
@@ -182,7 +182,7 @@ export default function Home() {
               ["A2", "Price-checkers", "Compare against free apps and notes. Leave if the price is hidden or needs a card upfront."],
               ["A3", "Skeptics", "Burned by a trial before. Look for reviews, real people and an easy way to cancel."],
             ].map(([id, t, d], i) => (
-              <div key={id} className={`win-card p-3 ${i === 0 ? "!border-[#22c55e]" : ""}`}>
+              <div key={id} className={`win-card p-3 ${i === 0 ? "!border-[#02aa3d]" : ""}`}>
                 <div className="flex items-center justify-between">
                   <span className="win-num">{id}</span>
                 </div>

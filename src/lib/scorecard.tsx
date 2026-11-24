@@ -15,9 +15,9 @@ export type Shared = {
   high: number | null;
 };
 
-const BLUE = "#16a34a"; // brand green (white text sits on it)
+const BLUE = "#018f33"; // brand green (white text sits on it)
 
-// The site's chunky headline font (Archivo 900), fetched once and kept in memory.
+// The site's chunky headline font (Geist 800, the site's only font), fetched once and kept in memory.
 // If Google Fonts can't be reached, the image still draws, just in a plainer font.
 let fontPromise: Promise<ArrayBuffer | null> | null = null;
 function loadFont() {
@@ -25,7 +25,7 @@ function loadFont() {
     try {
       // An old browser name makes Google return a plain .ttf file (the image maker can't read woff2).
       const css = await (
-        await fetch("https://fonts.googleapis.com/css2?family=Archivo:wght@900", {
+        await fetch("https://fonts.googleapis.com/css2?family=Geist:wght@800", {
           headers: { "User-Agent": "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; de-at) AppleWebKit/533.21.1 (KHTML, like Gecko) Version/5.0.5 Safari/533.21.1" },
         })
       ).text();
@@ -45,10 +45,10 @@ async function options() {
   return {
     width: 1200,
     height: 630,
-    fonts: data ? [{ name: "Archivo", data, weight: 900 as const, style: "normal" as const }] : [],
+    fonts: data ? [{ name: "Geist", data, weight: 800 as const, style: "normal" as const }] : [],
   };
 }
-const HEAVY = "Archivo, sans-serif"; // used on the big words only
+const HEAVY = "Geist, sans-serif"; // used on the big words only
 
 // Three tilted claw scratches (the logo), as simple rotated bars.
 function Claws({ color }: { color: string }) {

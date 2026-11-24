@@ -14,15 +14,15 @@
 <meta name="description" content="100 simulated customers try your app, game, site or store and show you exactly why they wouldn't buy, before launch day." />
 <link rel="icon" href="src/app/icon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@900&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  :root { --blue: #22c55e; --ink: #04061a; --text: #fff; --muted: rgb(255 255 255 / .74); --faint: rgb(255 255 255 / .58); }
+  :root { --blue: #02aa3d; --ink: #04061a; --text: #fff; --muted: rgb(255 255 255 / .74); --faint: rgb(255 255 255 / .58); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
     min-height: 100vh; color: var(--text); font-family: Geist, system-ui, sans-serif; line-height: 1.55; -webkit-font-smoothing: antialiased;
     background: radial-gradient(1200px 800px at 15% -10%, #2f44e8 0%, transparent 60%),
-                radial-gradient(900px 700px at 100% 20%, #22c55e 0%, transparent 60%),
+                radial-gradient(900px 700px at 100% 20%, #02aa3d 0%, transparent 60%),
                 radial-gradient(800px 600px at 50% 110%, #0d1666 0%, transparent 70%), var(--ink);
     background-attachment: fixed; overflow-x: hidden;
   }
@@ -51,8 +51,8 @@
   .btn:hover { transform: translateY(-1px); }
   .btn.white { background: #fff; color: var(--blue); box-shadow: 0 12px 30px -10px rgb(0 0 0 / .5); }
   .btn.glassy { color: #fff; background: rgb(255 255 255 / .1); border: 1px solid rgb(255 255 255 / .25); }
-  .label { font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: .04em; color: var(--faint); text-transform: lowercase; }
-  h1, h2, .big { font-family: Archivo, sans-serif; font-weight: 900; letter-spacing: -.05em; line-height: .92; }
+  .label { font-family: Geist, sans-serif; font-size: 12px; letter-spacing: .04em; color: var(--faint); text-transform: lowercase; }
+  h1, h2, .big { font-family: Geist, sans-serif; font-weight: 800; letter-spacing: -.05em; line-height: .92; }
   .hero { padding: 90px 0 60px; display: grid; gap: 40px; grid-template-columns: 1.15fr .85fr; align-items: center; }
   .hero h1 { font-size: clamp(3.2rem, 9vw, 7.5rem); letter-spacing: -.065em; }
   .hero p.lead { margin-top: 20px; font-size: clamp(1.05rem, 2vw, 1.3rem); color: var(--muted); max-width: 34ch; }
@@ -62,22 +62,22 @@
   .crowd { display: grid; grid-template-columns: repeat(10, 1fr); gap: 7px; margin-top: 16px; }
   .crowd span { aspect-ratio: 1; border-radius: 50%; }
   .score { display: flex; align-items: flex-end; gap: 6px; margin-top: 8px; }
-  .score b { font-family: Archivo; font-weight: 900; font-size: 64px; line-height: .8; letter-spacing: -.06em; }
-  .score i { font-style: normal; font-family: Archivo; font-weight: 900; font-size: 22px; color: var(--faint); }
+  .score b { font-family: Geist; font-weight: 800; font-size: 64px; line-height: .8; letter-spacing: -.06em; }
+  .score i { font-style: normal; font-family: Geist; font-weight: 800; font-size: 22px; color: var(--faint); }
   section { padding: 70px 0; }
   h2 { font-size: clamp(2.2rem, 5.5vw, 4rem); }
   .sub { margin-top: 14px; color: var(--muted); max-width: 60ch; font-size: 1.08rem; }
   .grid3 { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); margin-top: 34px; }
   .grid4 { display: grid; gap: 16px; grid-template-columns: repeat(4, 1fr); margin-top: 34px; }
-  .num { font-family: Archivo; font-weight: 900; font-size: 40px; letter-spacing: -.04em; }
+  .num { font-family: Geist; font-weight: 800; font-size: 40px; letter-spacing: -.04em; }
   .card h3 { font-size: 18px; font-weight: 600; margin-top: 10px; }
   .card p { color: var(--muted); font-size: 15px; margin-top: 6px; }
   table { width: 100%; border-collapse: collapse; font-size: 15px; }
   th, td { text-align: left; padding: 13px 18px; border-top: 1px solid rgb(255 255 255 / .12); vertical-align: top; }
   thead th { border-top: 0; }
   td { color: var(--muted); }
-  .price { font-family: Archivo; font-weight: 900; font-size: 52px; letter-spacing: -.05em; line-height: 1; margin-top: 10px; }
-  .pill { display: inline-block; font-family: "Geist Mono", monospace; font-size: 11px; padding: 4px 10px; border-radius: 999px; background: #fff; color: var(--blue); }
+  .price { font-family: Geist; font-weight: 800; font-size: 52px; letter-spacing: -.05em; line-height: 1; margin-top: 10px; }
+  .pill { display: inline-block; font-family: Geist, sans-serif; font-size: 11px; padding: 4px 10px; border-radius: 999px; background: #fff; color: var(--blue); }
   ul.ticks { list-style: none; margin-top: 16px; display: grid; gap: 8px; font-size: 15px; color: var(--muted); }
   ul.ticks li::before { content: "✓  "; color: #fff; }
   details { padding: 18px 22px; }

@@ -1,11 +1,11 @@
-/* Fonts: Geist (text + headlines), Geist Mono (small labels), Archivo 900 (the big "crawler" wordmark only). */
-@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@900&family=Geist:wght@300;400;500&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap");
+/* Fonts: ONE family, Geist, for everything (text, headlines, labels, numbers). Bold weights are fine. */
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 /*
   CRAWLER DESIGN SYSTEM (v9, "glass": navy page, frosted panels, business-professional type).
   One look only (no light/dark modes):
-   - The PAGE is the logo blue #22c55e with white text; BLACK panels (.card-blue, .blue-band, the dashboard) mix in.
+   - The PAGE is the logo blue #02aa3d with white text; BLACK panels (.card-blue, .blue-band, the dashboard) mix in.
    - CARDS (.card, .card-raised) and torn PAPER strips (.paper) are white with dark text.
      They work by re-setting the color variables inside themselves, so every
      component (text-fg, bg-accent, ...) automatically picks the right colors.
@@ -20,7 +20,7 @@
    Everything (page, cards, paper sheets) uses the SAME light-on-dark tokens, so text is
    always white-ish and components need no special cases. Surfaces are frosted glass. */
 :root {
-  --brand: #22c55e;
+  --brand: #02aa3d;
   --bg: #060b2a; /* deep navy page */
   --surface: rgb(255 255 255 / 0.06); /* glass */
   --bg-subtle: rgb(255 255 255 / 0.06);
@@ -32,9 +32,9 @@
   --line-strong: rgb(255 255 255 / 0.22);
   --accent: #ffffff; /* the main button is white... */
   --accent-hover: #dcfce7;
-  --accent-fg: #22c55e; /* ...with logo-blue text */
+  --accent-fg: #02aa3d; /* ...with logo-blue text */
   --accent-ink: #bbf7d0; /* small accent text on glass */
-  --sheen: rgb(34 197 94 / 0.16);
+  --sheen: rgb(2 170 61 / 0.16);
   --shadow-sm: 0 1px 0 rgb(255 255 255 / 0.08) inset, 0 8px 24px -16px rgb(0 0 0 / 0.6);
   --shadow: 0 1px 0 rgb(255 255 255 / 0.12) inset, 0 30px 60px -30px rgb(0 0 0 / 0.7);
   color-scheme: dark;
@@ -51,7 +51,7 @@
    so a white card can re-set them for everything inside it). */
 @theme inline {
   --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; /* ONE font: Geist everywhere */
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -317,7 +317,7 @@ input[type="range"] {
   }
   .field:focus {
     outline: none;
-    border-color: #22c55e;
+    border-color: #02aa3d;
     box-shadow: 0 0 0 3px rgb(255 255 255 / 0.45);
   }
   .field-label {
@@ -527,8 +527,8 @@ input[type="range"] {
 
 /* ---------- The home page wordmark: huge, chunky "crawler" ---------- */
 .t-wordmark {
-  font-family: "Archivo", var(--font-sans);
-  font-weight: 900;
+  font-family: var(--font-sans);
+  font-weight: 800;
   font-size: clamp(5rem, 21vw, 17rem);
   letter-spacing: -0.065em;
   line-height: 0.82;
@@ -573,11 +573,11 @@ html {
 }
 /* Chunky display headings (same font as the "crawler" wordmark) */
 .features .t-chunk {
-  color: #22c55e;
+  color: #02aa3d;
 }
 .t-chunk {
-  font-family: "Archivo", var(--font-sans);
-  font-weight: 900;
+  font-family: var(--font-sans);
+  font-weight: 800;
   font-size: clamp(2.5rem, 6vw, 5rem);
   letter-spacing: -0.05em;
   line-height: 0.92;
@@ -663,17 +663,17 @@ html {
 }
 /* Giant sideways words (ScrollMarquee): outlined, then solid, in black. */
 .marquee-word {
-  font-family: "Archivo", var(--font-sans);
-  font-weight: 900;
+  font-family: var(--font-sans);
+  font-weight: 800;
   font-size: clamp(4rem, 12vw, 10rem);
   letter-spacing: -0.05em;
   line-height: 1;
   text-transform: uppercase;
   color: transparent;
-  -webkit-text-stroke: 2px #22c55e;
+  -webkit-text-stroke: 2px #02aa3d;
 }
 .marquee-word.is-solid {
-  color: #22c55e;
+  color: #02aa3d;
 }
 @media (prefers-reduced-motion: reduce), (scripting: none) {
   .split-word > span {
@@ -762,7 +762,7 @@ body {
 body {
   background-image:
     radial-gradient(1100px 760px at 12% -12%, rgb(47 68 232 / 0.55) 0%, transparent 60%),
-    radial-gradient(900px 700px at 105% 18%, rgb(34 197 94 / 0.6) 0%, transparent 62%),
+    radial-gradient(900px 700px at 105% 18%, rgb(2 170 61 / 0.6) 0%, transparent 62%),
     radial-gradient(900px 640px at 50% 115%, rgb(18 30 130 / 0.7) 0%, transparent 70%);
   background-attachment: fixed;
 }
@@ -900,7 +900,7 @@ body {
    v10 "SOLID" (2026-11-19, founder: "the light blue looks terrible everywhere, the gradient
    background looks bad, make it look like the future"). Replaces the v9/v9.1 colors:
    - ONE flat near-black page (no glows, no gradients).
-   - ONE brand blue (#22c55e, deep, never light/pastel): main buttons, active states, data marks.
+   - ONE brand blue (#02aa3d, deep, never light/pastel): main buttons, active states, data marks.
    - Text is white and greys; small labels are grey, never blue.
    - Panels: barely-there glass (3.5% white + a hairline border).
    ===================================================================== */
@@ -917,8 +917,8 @@ body {
   --fg-faint: #8d92a4; /* about 6:1 on the page */
   --line: rgb(255 255 255 / 0.08);
   --line-strong: rgb(255 255 255 / 0.16);
-  --accent: #22c55e; /* the one brand blue */
-  --accent-hover: #16a34a;
+  --accent: #02aa3d; /* the one brand blue */
+  --accent-hover: #018f33;
   --accent-fg: #ffffff;
   --accent-ink: #f5f6f8; /* small "accent" text is white, not blue */
 }
@@ -946,14 +946,14 @@ body {
     border-block: 1px solid rgb(255 255 255 / 0.06);
   }
   .btn-primary {
-    background: #22c55e;
+    background: #02aa3d;
     color: #ffffff;
     border: 1px solid rgb(255 255 255 / 0.14);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 2px rgb(0 0 0 / 0.4);
   }
   .btn-primary:hover:not(:disabled) {
-    background: #16a34a;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 8px 24px -12px rgb(34 197 94 / 0.7);
+    background: #018f33;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 8px 24px -12px rgb(2 170 61 / 0.7);
   }
   .btn-secondary {
     background: rgb(255 255 255 / 0.06);
@@ -964,8 +964,8 @@ body {
     border: 1px solid rgb(255 255 255 / 0.12);
   }
   .field:focus {
-    border-color: #22c55e;
-    box-shadow: 0 0 0 3px rgb(34 197 94 / 0.35);
+    border-color: #02aa3d;
+    box-shadow: 0 0 0 3px rgb(2 170 61 / 0.35);
   }
 }
 .card-blue,
@@ -989,7 +989,7 @@ body {
 .dash-active {
   background: rgb(255 255 255 / 0.06);
   border: 1px solid rgb(255 255 255 / 0.1);
-  box-shadow: inset 3px 0 0 #22c55e;
+  box-shadow: inset 3px 0 0 #02aa3d;
 }
 /* the big logo behind the dashboard hero: a faint watermark, no glow */
 .dash-orb {
@@ -1018,7 +1018,7 @@ body {
   top: 2%;
   height: 2px;
   background: linear-gradient(90deg, transparent, #f5f6f8, transparent);
-  box-shadow: 0 0 18px 2px rgb(34 197 94 / 0.8);
+  box-shadow: 0 0 18px 2px rgb(2 170 61 / 0.8);
   animation: scan-sweep 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 @keyframes scan-sweep {
@@ -1067,8 +1067,8 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(620px 420px at 18% -4%, rgb(34 197 94 / 0.22), transparent 70%),
-    radial-gradient(520px 380px at 92% 28%, rgb(34 197 94 / 0.11), transparent 70%);
+    radial-gradient(620px 420px at 18% -4%, rgb(2 170 61 / 0.22), transparent 70%),
+    radial-gradient(520px 380px at 92% 28%, rgb(2 170 61 / 0.11), transparent 70%);
   animation: stage-drift 18s ease-in-out infinite alternate;
 }
 @keyframes stage-drift { to { transform: translate3d(0, 24px, 0) scale(1.04); } }
@@ -1088,7 +1088,7 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   position: absolute; left: 0; right: 0; top: 0; height: 44px; border-radius: 12px;
   background: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.04));
   border: 1px solid rgb(255 255 255 / 0.14);
-  box-shadow: inset 3px 0 0 #22c55e, 0 10px 30px -12px rgb(34 197 94 / 0.6);
+  box-shadow: inset 3px 0 0 #02aa3d, 0 10px 30px -12px rgb(2 170 61 / 0.6);
   transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 .dash-quick {
@@ -1118,7 +1118,7 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.35s;
-  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, -20%), rgb(34 197 94 / 0.2), transparent 60%);
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, -20%), rgb(2 170 61 / 0.2), transparent 60%);
 }
 .gpanel:hover::before { opacity: 1; }
 .gpanel:hover { border-color: rgb(255 255 255 / 0.2); }
@@ -1135,7 +1135,7 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   backdrop-filter: blur(14px);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.gsearch:focus-within { border-color: #22c55e; box-shadow: 0 0 0 3px rgb(34 197 94 / 0.3); }
+.gsearch:focus-within { border-color: #02aa3d; box-shadow: 0 0 0 3px rgb(2 170 61 / 0.3); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .gpanel { background: #12141c; }
   .dash-rail { background: #0c0d12; }
@@ -1145,10 +1145,10 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
 .dash-rise { animation: dash-rise 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @keyframes dash-rise { from { opacity: 0; transform: translateY(16px) scale(0.985); } }
 .pulse-dot {
-  display: inline-block; width: 8px; height: 8px; border-radius: 9999px; background: #16a34a;
+  display: inline-block; width: 8px; height: 8px; border-radius: 9999px; background: #018f33;
   animation: pulse-ring 2s ease-out infinite;
 }
-@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgb(22 163 74 / 0.7); } 70%, 100% { box-shadow: 0 0 0 10px rgb(22 163 74 / 0); } }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgb(1 143 51 / 0.7); } 70%, 100% { box-shadow: 0 0 0 10px rgb(1 143 51 / 0); } }
 .fade-in { animation: fade-in 1s 0.6s both; }
 @keyframes fade-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
@@ -1175,8 +1175,8 @@ html:has(.report-stage), body:has(.report-stage) { overflow-x: clip; }
   height: 38rem;
   pointer-events: none;
   background:
-    radial-gradient(560px 340px at 30% 0%, rgb(34 197 94 / 0.2), transparent 70%),
-    radial-gradient(480px 320px at 78% 12%, rgb(34 197 94 / 0.1), transparent 70%);
+    radial-gradient(560px 340px at 30% 0%, rgb(2 170 61 / 0.2), transparent 70%),
+    radial-gradient(480px 320px at 78% 12%, rgb(2 170 61 / 0.1), transparent 70%);
   animation: stage-drift 18s ease-in-out infinite alternate;
 }
 .report .card,
@@ -1210,20 +1210,20 @@ html:has(.report-stage), body:has(.report-stage) { overflow-x: clip; }
 @media (min-width: 640px) { .fixcard { grid-template-columns: 2.75rem minmax(0, 1fr) auto; padding: 1.5rem; gap: 1.25rem; } }
 .fixnum {
   display: flex; height: 2.5rem; width: 2.5rem; align-items: center; justify-content: center; border-radius: 0.875rem;
-  background: rgb(34 197 94 / 0.2); border: 1px solid rgb(22 163 74 / 0.4); font-family: var(--font-mono); font-size: 0.8125rem;
+  background: rgb(2 170 61 / 0.2); border: 1px solid rgb(1 143 51 / 0.4); font-family: var(--font-mono); font-size: 0.8125rem;
 }
 .winpill { justify-self: start;
   display: inline-flex; flex-direction: column; align-items: center; min-width: 5.5rem; padding: 0.625rem 0.875rem; border-radius: 1rem;
-  background: linear-gradient(180deg, rgb(34 197 94 / 0.35), rgb(34 197 94 / 0.15)); border: 1px solid rgb(22 163 74 / 0.45);
-  box-shadow: 0 10px 30px -14px #22c55e;
+  background: linear-gradient(180deg, rgb(2 170 61 / 0.35), rgb(2 170 61 / 0.15)); border: 1px solid rgb(1 143 51 / 0.45);
+  box-shadow: 0 10px 30px -14px #02aa3d;
 }
 /* the launch path */
 .pathstep { position: relative; display: block; border-radius: 1rem; padding: 1rem; border: 1px solid rgb(255 255 255 / 0.1); background: rgb(255 255 255 / 0.03); transition: transform 0.25s, border-color 0.25s, background 0.25s; }
 a.pathstep:hover { transform: translateY(-3px); border-color: rgb(255 255 255 / 0.25); background: rgb(255 255 255 / 0.06); }
 .pathdot { display: flex; height: 1.75rem; width: 1.75rem; align-items: center; justify-content: center; border-radius: 9999px; border: 1px solid rgb(255 255 255 / 0.25); font-size: 0.75rem; }
-.pathdot.done { background: #22c55e; border-color: #16a34a; color: #fff; box-shadow: 0 0 0 4px rgb(34 197 94 / 0.25); }
+.pathdot.done { background: #02aa3d; border-color: #018f33; color: #fff; box-shadow: 0 0 0 4px rgb(2 170 61 / 0.25); }
 .pathbar { height: 4px; border-radius: 9999px; background: rgb(255 255 255 / 0.08); overflow: hidden; }
-.pathbar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #22c55e, #16a34a); transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.pathbar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #02aa3d, #018f33); transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .nextcard { display: flex; flex-direction: column; gap: 0.5rem; padding: 1.25rem; transition: transform 0.25s; }
 a.nextcard:hover { transform: translateY(-3px); }
 .nextcard .arrow { transition: transform 0.25s; }
@@ -1244,7 +1244,7 @@ html[data-calm] .pathbar > i, html[data-calm] a.pathstep, html[data-calm] a.next
 /* ---- FINAL POLISH (2026-11-22 launch audit) ---- */
 /* Accent TEXT stays a DARK, saturated royal blue (founder: "keep the blue dark", 2026-11-23).
    #4ade80 is the darkest blue that is still readable on the near-black page (4.77:1, AA for all text).
-   Buttons, rings and filled shapes keep the deep brand blue #22c55e (too dark for text: 2.97:1). */
+   Buttons, rings and filled shapes keep the deep brand blue #02aa3d (too dark for text: 2.97:1). */
 .text-accent { color: #4ade80; }
 /* No lonely last words in headings and lead paragraphs ("...before launch / day."). */
 .t-lead, .t-h1, .t-h2, .t-h3, .t-chunk, .home-hero p { text-wrap: balance; }
@@ -1276,7 +1276,7 @@ html[data-calm] .hero-row { animation: none; }
   position: absolute;
   inset: auto -10% -60% -10%;
   height: 120%;
-  background: radial-gradient(closest-side, rgb(34 197 94 / 0.28), transparent);
+  background: radial-gradient(closest-side, rgb(2 170 61 / 0.28), transparent);
   pointer-events: none;
 }
 
@@ -1296,7 +1296,7 @@ html[data-calm] .hero-row { animation: none; }
   .fixstatus { display: none !important; }
   * { color: #111 !important; box-shadow: none !important; text-shadow: none !important; backdrop-filter: none !important; animation: none !important; transition: none !important; }
   .card, .gpanel, .glass, .paper { background: #fff !important; border-color: #ddd !important; }
-  .bg-accent, .prio-critical { background: #22c55e !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .bg-accent, .prio-critical { background: #02aa3d !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .reveal { opacity: 1 !important; transform: none !important; }
   section, li { break-inside: avoid; }
   a { text-decoration: none !important; }
@@ -1319,13 +1319,13 @@ html:has(.bleed-full), body:has(.bleed-full) { overflow-x: clip; }
   padding: 8px 16px; font-size: 0.95rem; color: var(--fg);
   background: rgb(255 255 255 / 0.03);
 }
-.hook-dot { width: 8px; height: 8px; border-radius: 999px; background: #22c55e; box-shadow: 0 0 0 4px rgb(34 197 94 / 0.25); }
+.hook-dot { width: 8px; height: 8px; border-radius: 999px; background: #02aa3d; box-shadow: 0 0 0 4px rgb(2 170 61 / 0.25); }
 /* the hero picture gets a little more presence on big screens */
 @media (min-width: 1280px) { .hero-visual-wrap { transform: scale(1.04); transform-origin: center; } }
 
 /* ==================== PRICING v2: summarized cards (2026-11-23) ==================== */
-.plan-rec { border-color: rgb(22 163 74 / 0.7); background: linear-gradient(180deg, rgb(34 197 94 / 0.22), rgb(34 197 94 / 0.06)); }
-.plan-badge { border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: rgb(34 197 94 / 0.25); color: #bbf7d0; }
+.plan-rec { border-color: rgb(1 143 51 / 0.7); background: linear-gradient(180deg, rgb(2 170 61 / 0.22), rgb(2 170 61 / 0.06)); }
+.plan-badge { border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: rgb(2 170 61 / 0.25); color: #bbf7d0; }
 .plan-cta > div { margin-top: 0 !important; }  /* BuyButton / SwitchPlanButton bring their own top margin */
 .plan-cta .btn { width: 100%; border-radius: 999px; min-height: 48px; }
 
@@ -1355,10 +1355,10 @@ body:has(.dash-app) main { padding-bottom: 0 !important; }
   --fg-faint: #858a96;
   --line: #e7e7eb;
   --line-strong: #d6d7dc;
-  --accent: #22c55e;
-  --accent-hover: #16a34a;
+  --accent: #02aa3d;
+  --accent-hover: #018f33;
   --accent-fg: #ffffff;
-  --accent-ink: #22c55e;
+  --accent-ink: #02aa3d;
   color: var(--fg);
 }
 .dash-app { background: #f6f6f7; min-height: 100dvh; }
@@ -1398,15 +1398,15 @@ body:has(.dash-app) main { padding-bottom: 0 !important; }
 .dash-app .btn-secondary:hover { background: #f6f6f7 !important; }
 .dash-app .btn-text, .dash-app .btn-ghost { color: var(--fg-muted); }
 .dash-app .btn-text:hover, .dash-app .btn-ghost:hover { color: var(--fg); }
-.dash-app .btn-primary { box-shadow: 0 1px 2px rgb(34 197 94 / 0.25) !important; background: #22c55e !important; }
-.dash-app .btn-primary:hover { background: #16a34a !important; }
+.dash-app .btn-primary { box-shadow: 0 1px 2px rgb(2 170 61 / 0.25) !important; background: #02aa3d !important; }
+.dash-app .btn-primary:hover { background: #018f33 !important; }
 .dash-app .field, .dash-app input:not([type=range]):not([type=checkbox]), .dash-app select, .dash-app textarea { background: #ffffff; color: var(--fg); border-color: var(--line-strong); }
 .dash-app .chip { background: #ffffff; color: var(--fg-muted); border: 1px solid var(--line-strong); }
 .dash-app .chip[aria-pressed="true"] { background: #121316; color: #ffffff; border-color: #121316; }
 .dash-app .pill { border-color: var(--line-strong); color: var(--fg-muted); }
 .dash-app kbd { border-color: var(--line-strong); background: #fff; }
-.dash-app .text-accent { color: #22c55e; }
-.dash-app ::selection { background: rgb(34 197 94 / 0.18); }
+.dash-app .text-accent { color: #02aa3d; }
+.dash-app ::selection { background: rgb(2 170 61 / 0.18); }
 /* no drifting glows or count-in motion here */
 .dash-app .dash-rise, .dash-app .pulse-dot { animation: none !important; }
 
@@ -1436,16 +1436,16 @@ body:has(.dash-app) main { padding-bottom: 0 !important; }
   --fg-faint: #767676;
   --line: rgb(8 9 12 / 0.08);
   --line-strong: rgb(8 9 12 / 0.15);
-  --accent: #22c55e;
-  --accent-hover: #16a34a;
+  --accent: #02aa3d;
+  --accent-hover: #018f33;
   --accent-fg: #ffffff;
-  --accent-ink: #22c55e;
+  --accent-ink: #02aa3d;
   --gold: #f4d778;
 }
 html, body { background: #ffffff; color: var(--fg); }
 body { background-image: none; }
 body::before, body::after { content: none !important; }
-::selection { background: rgb(34 197 94 / 0.16); }
+::selection { background: rgb(2 170 61 / 0.16); }
 
 /* the black bands (and anything that wants the dark look) */
 .band-dark,
@@ -1576,7 +1576,7 @@ h1, h2, h3 { letter-spacing: -0.025em; }
 .rnav a:hover { color: #0a0a0a; }
 .rnav a[aria-current="true"] { background: #0a0a0a; color: #ffffff; box-shadow: none; }
 .fixnum { background: rgb(8 9 12 / 0.05); border: 1px solid var(--line); color: var(--fg); }
-.winpill { background: rgb(34 197 94 / 0.08); border: 1px solid rgb(34 197 94 / 0.2); box-shadow: none; color: var(--fg); }
+.winpill { background: rgb(2 170 61 / 0.08); border: 1px solid rgb(2 170 61 / 0.2); box-shadow: none; color: var(--fg); }
 .winpill span:last-child { color: var(--fg-muted) !important; }
 .pathstep { border-color: var(--line); background: rgb(8 9 12 / 0.02); }
 a.pathstep:hover { border-color: var(--line-strong); background: rgb(8 9 12 / 0.04); }
@@ -1648,18 +1648,18 @@ html[data-calm] .cm-dot, html[data-calm] .tilt, html[data-calm] .glass-tile { tr
    DESIGN v13 "WHITE + GREEN" (2026-11-24, founder: "keep the white background and the colourful
    vibe, switch the main colour from blue to light green"). v11.1 stays the base (white page, black
    bands, painted backdrops); this layer only re-colours it.
-   - #22c55e = the light green: data marks, highlights, filled chips (dark green text on it, since
+   - #02aa3d = the light green: data marks, highlights, filled chips (dark green text on it, since
      white on light green is too faint to read).
    - #15803d = small green TEXT on white (5:1, readable). #4ade80 / #86efac = green on black.
    ================================================================================================ */
 :root, .card, .card-raised, .paper, .dash-app {
-  --accent: #22c55e;
-  --accent-hover: #16a34a;
+  --accent: #02aa3d;
+  --accent-hover: #018f33;
   --accent-fg: #052e16;
   --accent-ink: #15803d;
 }
 .band-dark { --accent: #4ade80; --accent-hover: #86efac; --accent-fg: #052e16; --accent-ink: #86efac; }
-::selection { background: rgb(34 197 94 / 0.22); }
+::selection { background: rgb(2 170 61 / 0.22); }
 .dash-app .text-accent { color: #15803d; }
 .dash-app .btn-primary { background: #111 !important; box-shadow: none !important; }
 .dash-app .btn-primary:hover { background: #2a2a2a !important; }
@@ -1671,7 +1671,7 @@ html[data-calm] .cm-dot, html[data-calm] .tilt, html[data-calm] .glass-tile { tr
 .scene-sky {
   background:
     radial-gradient(120% 90% at 20% 110%, #fde68a 0%, transparent 55%),
-    radial-gradient(90% 80% at 85% 0%, #22c55e 0%, transparent 60%),
+    radial-gradient(90% 80% at 85% 0%, #02aa3d 0%, transparent 60%),
     linear-gradient(180deg, #86efac 0%, #d1fae5 55%, #fef3c7 100%);
 }
 .scene-dusk {
@@ -1683,5 +1683,16 @@ html[data-calm] .cm-dot, html[data-calm] .tilt, html[data-calm] .glass-tile { tr
 .scene-moss {
   background:
     radial-gradient(100% 80% at 80% 100%, #bef264 0%, transparent 60%),
-    linear-gradient(160deg, #14532d 0%, #22c55e 50%, #d9f99d 100%);
+    linear-gradient(160deg, #14532d 0%, #02aa3d 50%, #d9f99d 100%);
 }
+
+/* ================================================================================================
+   v13.1 (2026-11-24, founder: "this green is nice" + "keep one font, you can keep the bold").
+   - Main green = #02aa3d (the founder's swatch). Hover #018f33. Text on it = dark #052e16
+     (white on this green is only ~3:1). Small green text on white stays #15803d (readable).
+   - ONE font: Geist. The old serif-italic accents and mono labels are now Geist; accent words
+     are BOLD instead of italic. Numbers keep even widths (tabular) where mono used to do that.
+   ================================================================================================ */
+.serif { font-family: var(--font-sans); font-style: normal; font-weight: 700; letter-spacing: -0.03em; }
+.t-wordmark, .marquee-word { font-family: var(--font-sans); font-weight: 800; }
+.font-mono, .fl-num, .win-num, .t-number { font-variant-numeric: tabular-nums; }
