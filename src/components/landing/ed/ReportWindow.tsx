@@ -27,11 +27,11 @@ export default function ReportWindow({ data }: { data: SampleData }) {
         tabs={["Configuration", "Customers", "Report"]}
         active="Report"
         scene="dusk"
-        side={<Props rows={[["Status", <span key="s" className="text-[#16a34a]">Completed</span>], ["Customers", data.total], ["Run", "01"], ["Data", "Demo"]]} files={["report.pdf", "fix-prompt.txt"]} />}
+        side={<Props rows={[["Status", <span key="s" className="text-[#4ade80]">Completed</span>], ["Customers", data.total], ["Run", "01"], ["Data", "Demo"]]} files={["report.pdf", "fix-prompt.txt"]} />}
       >
         {view === "Summary" && (
           <div className="grid gap-4 sm:grid-cols-[8rem_minmax(0,1fr)]">
-            <div className="hidden text-[12px] text-[#8f8f8f] sm:block">
+            <div className="hidden text-[12px] text-faint sm:block">
               <p className="mb-2 uppercase tracking-[0.12em]">Contents</p>
               {["Summary", "Objections", "Fixes", "Customers"].map((c, i) => (
                 <p key={c} className={`win-item ${i === 0 ? "on" : ""}`}>
@@ -40,13 +40,13 @@ export default function ReportWindow({ data }: { data: SampleData }) {
               ))}
             </div>
             <div>
-              <p className="text-[11px] text-[#8f8f8f]">
+              <p className="text-[11px] text-faint">
                 Generated from run 01 · {data.total} simulated customers · demo data
               </p>
-              <p className="mt-2 text-[15px] leading-snug text-[#0a0a0a]">
+              <p className="mt-2 text-[15px] leading-snug text-fg">
                 {data.buy} of {data.total} would sign up. Most people leave because they can&apos;t see the price or any proof.
               </p>
-              <p className="mt-4 text-[11px] uppercase tracking-[0.12em] text-[#8f8f8f]">Findings</p>
+              <p className="mt-4 text-[11px] uppercase tracking-[0.12em] text-faint">Findings</p>
               <div className="mt-2 space-y-2">
                 {data.objections.slice(0, 3).map((o, i) => (
                   <div key={o.category} className="win-card p-3">
@@ -55,10 +55,10 @@ export default function ReportWindow({ data }: { data: SampleData }) {
                       <span className="capitalize">{o.category}</span>
                       <span className="ml-auto win-num">{o.count} customers</span>
                     </div>
-                    <div className="mt-2 grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-2 text-[11px] text-[#6b6b6b]">
+                    <div className="mt-2 grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-2 text-[11px] text-muted">
                       <span className="win-num">{o.pct}%</span>
-                      <span className="h-1.5 overflow-hidden rounded-full bg-[#f0f0f0]">
-                        <span className="block h-full rounded-full bg-[#1f5eff]" style={{ width: `${o.pct}%` }} />
+                      <span className="h-1.5 overflow-hidden rounded-full bg-subtle">
+                        <span className="block h-full rounded-full bg-[#4c7dff]" style={{ width: `${o.pct}%` }} />
                       </span>
                     </div>
                   </div>
@@ -73,9 +73,9 @@ export default function ReportWindow({ data }: { data: SampleData }) {
               <div key={i} className="win-card p-3">
                 <div className="flex items-center justify-between gap-2 text-[12px]">
                   <span className="truncate">{p.label}</span>
-                  <span className={`win-chip ${p.verdict === "buy" ? "!bg-[#1f5eff] !text-white" : ""}`}>{p.verdict === "buy" ? "Would buy" : p.verdict === "maybe" ? "Maybe" : "No"}</span>
+                  <span className={`win-chip ${p.verdict === "buy" ? "!bg-[#4c7dff] !text-white" : ""}`}>{p.verdict === "buy" ? "Would buy" : p.verdict === "maybe" ? "Maybe" : "No"}</span>
                 </div>
-                <p className="mt-2 text-[12.5px] text-[#3a3a3a]">“{p.quote}”</p>
+                <p className="mt-2 text-[12.5px] text-muted">“{p.quote}”</p>
               </div>
             ))}
           </div>
@@ -86,8 +86,8 @@ export default function ReportWindow({ data }: { data: SampleData }) {
               <div key={f.title} className="win-card flex items-start gap-3 p-3">
                 <span className="win-chip">0{i + 1}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13px] text-[#0a0a0a]">{f.title}</p>
-                  <p className="mt-1 text-[12px] text-[#6b6b6b]">{f.change}</p>
+                  <p className="text-[13px] text-fg">{f.title}</p>
+                  <p className="mt-1 text-[12px] text-muted">{f.change}</p>
                 </div>
                 <span className="win-chip">+{f.winBack}</span>
               </div>
@@ -95,7 +95,7 @@ export default function ReportWindow({ data }: { data: SampleData }) {
           </div>
         )}
         {view === "Fix prompt" && (
-          <pre className="win-card overflow-hidden whitespace-pre-wrap p-3 font-mono text-[11.5px] leading-relaxed text-[#3a3a3a]">
+          <pre className="win-card overflow-hidden whitespace-pre-wrap p-3 font-mono text-[11.5px] leading-relaxed text-muted">
             {`I'm improving my website: ${data.host}.
 I tested it with Crawler: ${data.buy} of ${data.total} simulated customers said they would sign up.
 (AI-simulated customers: a strong hint, not proof.)

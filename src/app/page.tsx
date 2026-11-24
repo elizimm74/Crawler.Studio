@@ -70,22 +70,13 @@ export default function Home() {
 
         {/* a simulated customer's spec sheet over a painted tile (example) */}
         <div className="rise d2 relative mx-auto w-full max-w-[26rem]" aria-label="An example simulated customer">
-          <span className="tag absolute left-4 top-0 z-20 -translate-y-1/2 bg-[#1f5eff] text-white">Simulated customer</span>
+          <span className="tag absolute left-4 top-0 z-20 -translate-y-1/2 bg-[#4c7dff] text-white">Simulated customer</span>
           <div className="scene scene-dusk aspect-[4/5] w-[78%] !p-0" aria-hidden>
             <div className="absolute inset-x-6 bottom-6 font-mono text-[11px] text-white/80">example · demo data</div>
           </div>
-          <div className="absolute right-0 top-[-1.5rem] h-28 w-28" aria-hidden>
-            <div className="scene scene-moss h-full w-full !rounded-2xl !p-0">
-              <div className="relative z-10 grid h-full grid-cols-5 gap-1.5 p-3">
-                {Array.from({ length: 25 }, (_, i) => (
-                  <span key={i} className={`aspect-square rounded-full ${i % 4 === 0 ? "bg-white" : "bg-white/30"}`} />
-                ))}
-              </div>
-            </div>
-          </div>
           {/* floating glass chips (demo numbers) */}
           <span className="glass-chip float-a absolute -left-6 top-10 z-20 hidden sm:inline-flex">
-            <i className="h-2 w-2 rounded-full bg-[#1f5eff]" /> {demo.sample.total} simulated customers
+            <i className="h-2 w-2 rounded-full bg-[#4c7dff]" /> {demo.sample.total} simulated customers
           </span>
           <span className="glass-chip float-b absolute -right-4 top-[46%] z-20 hidden sm:inline-flex">
             Biggest blocker · {demo.sample.objections[0]?.category} {demo.sample.objections[0]?.pct}%
@@ -94,7 +85,7 @@ export default function Home() {
             Fix #1 · +{demo.sample.fixes[0]?.winBack ?? 0} could win back
           </span>
           <dl className="spec glass-spec absolute -bottom-10 left-[-1rem] z-10 w-[72%] sm:left-[-2.5rem]">
-            <p className="mb-1 inline-block rounded-full bg-[#dedede] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#3a3a3a]">{p ? p.label.split(",").slice(0, 2).join(",") : "24, student"}</p>
+            <p className="mb-1 inline-block rounded-full bg-subtle px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{p ? p.label.split(",").slice(0, 2).join(",") : "24, student"}</p>
             {[
               ["Came from", "a TikTok video"],
               ["Budget", "Tight"],
@@ -104,18 +95,16 @@ export default function Home() {
             ].map(([k, v]) => (
               <div key={k} className="spec-row">
                 <dt>{k}</dt>
-                <dd className="text-[#0a0a0a]">{v}</dd>
+                <dd className="text-fg">{v}</dd>
               </div>
             ))}
           </dl>
         </div>
       </section>
 
-      {/* black → white fade, like a page turning */}
-      <div className="fade-band" aria-hidden />
 
       {/* ================= YOU PROVIDE (white) ================= */}
-      <section className="home-wide pt-20" aria-labelledby="provide-title">
+      <section className="home-wide pt-32" aria-labelledby="provide-title">
         <div className="eyebrow">
           <span>You provide</span>
           <span>Steps 1–3</span>
@@ -142,8 +131,8 @@ export default function Home() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="win-card p-3">
               <p className="text-[12px] font-medium">Description</p>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#3a3a3a]">MealMate plans a week of dinners and a grocery list for busy parents. The simulation tests the landing page, pricing and signup.</p>
-              <div className="mt-3 space-y-1 text-[12px] text-[#3a3a3a]">
+              <p className="mt-2 text-[12.5px] leading-relaxed text-muted">MealMate plans a week of dinners and a grocery list for busy parents. The simulation tests the landing page, pricing and signup.</p>
+              <div className="mt-3 space-y-1 text-[12px] text-muted">
                 <p>✓ Landing page</p>
                 <p>✓ Pricing: not shown</p>
                 <p>✓ Signup: 6 fields</p>
@@ -151,9 +140,9 @@ export default function Home() {
             </div>
             <div className="win-card p-3">
               <p className="text-[12px] font-medium">
-                Objectives <span className="text-[#9a9a9a]">3/{Object.keys(FOCUS).length}</span>
+                Objectives <span className="text-faint">3/{Object.keys(FOCUS).length}</span>
               </p>
-              <ol className="mt-2 space-y-2 text-[12.5px] text-[#3a3a3a]">
+              <ol className="mt-2 space-y-2 text-[12.5px] text-muted">
                 {(["buy", "price", "value"] as const).map((k, i) => (
                   <li key={k} className="flex gap-2">
                     <span className="win-num">{i + 1}</span>
@@ -182,13 +171,13 @@ export default function Home() {
               ["A2", "Price-checkers", "Compare against free apps and notes. Leave if the price is hidden or needs a card upfront."],
               ["A3", "Skeptics", "Burned by a trial before. Look for reviews, real people and an easy way to cancel."],
             ].map(([id, t, d], i) => (
-              <div key={id} className={`win-card p-3 ${i === 0 ? "!border-[#1f5eff]" : ""}`}>
+              <div key={id} className={`win-card p-3 ${i === 0 ? "!border-[#4c7dff]" : ""}`}>
                 <div className="flex items-center justify-between">
                   <span className="win-num">{id}</span>
                 </div>
-                <p className="mt-1 text-[14px] text-[#0a0a0a]">{t}</p>
-                <p className="mt-2 text-[12px] leading-relaxed text-[#6b6b6b]">{d}</p>
-                <p className="mt-3 text-[11px] text-[#9a9a9a]">Simulated customers</p>
+                <p className="mt-1 text-[14px] text-fg">{t}</p>
+                <p className="mt-2 text-[12px] leading-relaxed text-muted">{d}</p>
+                <p className="mt-3 text-[11px] text-faint">Simulated customers</p>
                 <p className="text-[12px]">≈ 33</p>
               </div>
             ))}
@@ -210,9 +199,9 @@ export default function Home() {
                   <span className="win-num">{id as string}</span>
                   <span className="win-chip">{kind as string}</span>
                 </div>
-                <p className="mt-2 text-[14px] leading-snug text-[#0a0a0a]">{q as string}</p>
+                <p className="mt-2 text-[14px] leading-snug text-fg">{q as string}</p>
                 {(opts as string[]).length ? (
-                  <ol className="mt-2 space-y-1 text-[12px] text-[#3a3a3a]">
+                  <ol className="mt-2 space-y-1 text-[12px] text-muted">
                     {(opts as string[]).map((o, i) => (
                       <li key={o}>
                         <span className="win-num mr-2">{"ABC"[i]}</span>
@@ -221,7 +210,7 @@ export default function Home() {
                     ))}
                   </ol>
                 ) : (
-                  <p className="mt-2 rounded-md border border-[#ececec] px-2 py-1.5 text-[12px] text-[#9a9a9a]">Customers answer in their own words</p>
+                  <p className="mt-2 rounded-md border border-line px-2 py-1.5 text-[12px] text-faint">Customers answer in their own words</p>
                 )}
               </div>
             ))}
@@ -229,10 +218,10 @@ export default function Home() {
         </AppWindow>
       </Row>
 
-      <div className="fade-to-black mt-32" aria-hidden />
+      <div className="mt-40 border-t border-line" aria-hidden />
 
       {/* ================= INSIDE CRAWLER (black) ================= */}
-      <section className="band-dark pb-32" aria-labelledby="inside-title">
+      <section className="band-dark pb-32 pt-28" aria-labelledby="inside-title">
         <div className="home-wide">
           <div className="eyebrow">
             <span>Inside Crawler</span>
@@ -386,7 +375,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="fade-to-white" aria-hidden />
+      <div className="mb-32 border-t border-line" aria-hidden />
 
       {/* ================= YOU RECEIVE (white) ================= */}
       <section className="home-wide pb-28" aria-labelledby="receive-title">

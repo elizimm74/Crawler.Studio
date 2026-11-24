@@ -1642,3 +1642,170 @@ a.pathstep:hover { border-color: var(--line-strong); background: rgb(8 9 12 / 0.
 @media (prefers-reduced-motion: reduce) { .float-a, .float-b, .float-c { animation: none; } .cm-dot, .tilt, .glass-tile { transition: none; } }
 html[data-calm] .float-a, html[data-calm] .float-b, html[data-calm] .float-c { animation: none; }
 html[data-calm] .cm-dot, html[data-calm] .tilt, html[data-calm] .glass-tile { transition: none; }
+
+/* =====================================================================================
+   DESIGN v12 "MIDNIGHT EDITORIAL" (2026-11-24, founder: "premium minimal typography,
+   sophisticated dark backgrounds, subtle blue, beautiful data viz, smooth transitions, strong
+   spacing, less clutter, enterprise-quality dashboard. A serious AI company, not a vibe-coded
+   startup.") REPLACES the white base of v11 (this block wins: it comes last).
+   - ONE dark base everywhere (#08090b), panels one step lighter (#0e0f12 / #121318), hairlines.
+   - ONE quiet blue (#4c7dff) for data, links and the few highlights. Buttons stay pills:
+     white on dark for the main action, quiet grey for the rest.
+   - No pastel backdrops, no white sections: depth comes from subtle blue-black light + grain.
+   ===================================================================================== */
+:root,
+.card,
+.card-raised,
+.paper,
+.features,
+.glass,
+.band-dark,
+.band-dark .card,
+.band-dark .card-raised,
+.band-dark .paper,
+.band-dark .glass {
+  --bg: #08090b;
+  --bg-subtle: rgb(255 255 255 / 0.045);
+  --bg-raised: #121318;
+  --surface: #0e0f12;
+  --fg: #ededef;
+  --fg-muted: #a1a4ad;
+  --fg-faint: #6f737d;
+  --line: rgb(255 255 255 / 0.07);
+  --line-strong: rgb(255 255 255 / 0.14);
+  --accent: #4c7dff;
+  --accent-hover: #6a93ff;
+  --accent-fg: #ffffff;
+  --accent-ink: #7fa2ff;
+  color: var(--fg);
+}
+html, body { background: #08090b !important; color: var(--fg); }
+.band-dark { background: transparent; }
+::selection { background: rgb(76 125 255 / 0.3); }
+.fade-band, .fade-to-black, .fade-to-white { display: none; }
+.site-header { background: rgb(8 9 11 / 0.72) !important; border-bottom: 1px solid rgb(255 255 255 / 0.06) !important; }
+
+/* calmer, finer type */
+h1, h2 { letter-spacing: -0.035em; }
+.t-display { font-size: clamp(2.6rem, 5vw, 4.6rem); letter-spacing: -0.045em; line-height: 1.02; }
+.t-lead { color: var(--fg-muted); }
+.text-faint { color: var(--fg-faint); }
+
+/* surfaces */
+@layer components {
+  .card, .card-raised, .paper, .glass { background: #0e0f12; border: 1px solid var(--line); border-radius: 20px; box-shadow: none; }
+  .band-dark .card, .band-dark .card-raised, .band-dark .paper, .band-dark .glass { background: #0e0f12; border-color: var(--line); }
+  .btn-secondary { background: rgb(255 255 255 / 0.06); color: var(--fg); }
+  .btn-secondary:hover:not(:disabled) { background: rgb(255 255 255 / 0.1); }
+  .field { background: rgb(255 255 255 / 0.04); color: var(--fg); border-color: rgb(255 255 255 / 0.1); }
+  .field:hover { border-color: rgb(255 255 255 / 0.18); }
+  .field:focus { border-color: rgb(76 125 255 / 0.8); box-shadow: 0 0 0 3px rgb(76 125 255 / 0.18); }
+  .field::placeholder { color: #5f636c; }
+  .field option { color: #0a0a0a; background: #fff; }
+  .chip { background: rgb(255 255 255 / 0.05); color: var(--fg-muted); }
+  .chip:hover { background: rgb(255 255 255 / 0.09); color: var(--fg); }
+  .chip[aria-pressed="true"] { background: var(--fg); color: #08090b; border-color: var(--fg); }
+  .pill-maybe { background: rgb(255 255 255 / 0.08); }
+}
+.gpanel, .report .card, .report .card-raised { background: #0e0f12 !important; border: 1px solid var(--line) !important; }
+.dpanel { background: #0e0f12; border: 1px solid rgb(255 255 255 / 0.07); }
+.drow { background: rgb(255 255 255 / 0.04); }
+.drow:hover { background: rgb(255 255 255 / 0.07); }
+.drow[aria-selected="true"] { background: linear-gradient(90deg, rgb(76 125 255 / 0.22), rgb(76 125 255 / 0.06)); box-shadow: inset 2px 0 0 #4c7dff; }
+.seg { background: rgb(255 255 255 / 0.05); }
+.seg [aria-pressed="true"], .seg [aria-selected="true"] { background: rgb(255 255 255 / 0.12) !important; color: #fff; box-shadow: none !important; }
+.note, :root .note, .band-dark .note { background: rgb(76 125 255 / 0.06); border: 1px solid rgb(76 125 255 / 0.18); }
+.note-title, :root .note-title, .band-dark .note-title { color: #8fb0ff; }
+.note-btn { background: rgb(76 125 255 / 0.14); }
+.eyebrow { border-bottom-color: rgb(255 255 255 / 0.08); }
+
+/* painted backdrops become deep, quiet light (no pastels) */
+.scene-sky, .scene-dusk, .scene-moss {
+  background: radial-gradient(70% 90% at 85% 0%, rgb(76 125 255 / 0.28), transparent 60%), radial-gradient(60% 80% at 0% 100%, rgb(76 125 255 / 0.12), transparent 60%), linear-gradient(180deg, #10131c 0%, #0b0c10 100%);
+  border: 1px solid rgb(255 255 255 / 0.06);
+}
+.scene::after { opacity: 0.12; }
+
+/* the drawn product windows: a dark enterprise app */
+.win { background: #0c0d10; color: var(--fg); border-color: rgb(255 255 255 / 0.08); box-shadow: 0 40px 90px -40px rgb(0 0 0 / 0.9); }
+.win-side { background: #0a0b0d; border-right-color: rgb(255 255 255 / 0.06); }
+.win-item { color: #9a9da6; }
+.win-item.on { background: rgb(255 255 255 / 0.06); color: #ededef; }
+.win-tab { color: #868a93; }
+.win-tab.on { background: rgb(255 255 255 / 0.08); color: #ededef; }
+.win-card { background: #111216; border-color: rgb(255 255 255 / 0.07); }
+.win-chip { background: rgb(255 255 255 / 0.06); color: #c5c7cd; }
+.win-num { color: #6f737d; }
+
+/* hero: dark glass spec card and chips */
+.spec { background: rgb(18 19 24 / 0.82) !important; border: 1px solid rgb(255 255 255 / 0.09); box-shadow: 0 40px 80px -30px rgb(0 0 0 / 0.8); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); }
+.spec-row { border-bottom-color: rgb(255 255 255 / 0.07); }
+.spec-row dt { color: #6f737d; }
+.spec-row dd { color: #ededef !important; }
+.glass-chip { color: #ededef; background: rgb(18 19 24 / 0.6); border: 1px solid rgb(255 255 255 / 0.1); box-shadow: 0 12px 30px -14px rgb(0 0 0 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.06); }
+
+/* reports */
+.rnav { background: rgb(14 15 18 / 0.8) !important; border-color: rgb(255 255 255 / 0.08) !important; box-shadow: 0 12px 40px -18px rgb(0 0 0 / 0.9) !important; }
+.rnav a { color: #8a8d96 !important; }
+.rnav a:hover { color: #ededef !important; }
+.rnav a[aria-current="true"] { background: rgb(255 255 255 / 0.1) !important; color: #fff !important; }
+.fixnum { background: rgb(255 255 255 / 0.05); border-color: rgb(255 255 255 / 0.08); }
+.winpill { background: rgb(76 125 255 / 0.1); border-color: rgb(76 125 255 / 0.25); }
+.pathstep { background: rgb(255 255 255 / 0.02); }
+.pathdot.done { background: #4c7dff; border-color: #4c7dff; }
+.pathbar { background: rgb(255 255 255 / 0.07); }
+.pathbar > i { background: #4c7dff; }
+.marquee-word { -webkit-text-stroke-color: rgb(255 255 255 / 0.8); }
+.marquee-word.is-solid { color: #fff; }
+
+/* pricing: the recommended plan is the one with the blue edge, not a loud black block */
+.plan-rec { background: linear-gradient(180deg, rgb(76 125 255 / 0.1), rgb(76 125 255 / 0.02)) !important; border-color: rgb(76 125 255 / 0.45) !important; color: var(--fg); }
+.plan-rec .btn-primary { background: #ffffff !important; color: #08090b !important; border-color: #fff !important; }
+.plan-badge { background: rgb(76 125 255 / 0.18); color: #a9c0ff; }
+
+/* ---------- the dashboard: a dark, enterprise workspace ---------- */
+.dash-app,
+.dash-app .card,
+.dash-app .card-raised,
+.dash-app .paper,
+.dash-app .glass,
+.dash-app .gpanel {
+  --bg: #08090b;
+  --bg-subtle: rgb(255 255 255 / 0.04);
+  --bg-raised: #121318;
+  --surface: #0e0f12;
+  --fg: #ededef;
+  --fg-muted: #a1a4ad;
+  --fg-faint: #6f737d;
+  --line: rgb(255 255 255 / 0.07);
+  --line-strong: rgb(255 255 255 / 0.13);
+  --accent: #4c7dff;
+  --accent-ink: #7fa2ff;
+}
+html:has(.dash-app), body:has(.dash-app), .dash-app { background: #08090b !important; }
+.dash-app .fl-panel, .dash-app .card, .dash-app .card-raised, .dash-app .gpanel, .dash-app .glass {
+  background: #0e0f12 !important; border: 1px solid rgb(255 255 255 / 0.07) !important;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset !important;
+}
+.fl-tile { background: rgb(255 255 255 / 0.03); border-color: rgb(255 255 255 / 0.06); }
+.fl-chip { background: rgb(255 255 255 / 0.04); border-color: rgb(255 255 255 / 0.1); color: #c5c7cd; }
+.fl-rail { background: #0a0b0d !important; border-right: 1px solid rgb(255 255 255 / 0.06) !important; }
+@media (max-width: 1023px) { .fl-rail { background: #08090b !important; border-bottom: 1px solid rgb(255 255 255 / 0.06) !important; } }
+.fl-search { background: #0e0f12 !important; border-color: rgb(255 255 255 / 0.08) !important; box-shadow: none !important; }
+.fl-search:focus-within { border-color: rgb(76 125 255 / 0.6) !important; }
+.dash-app .dash-pill { background: rgb(255 255 255 / 0.06) !important; border: 1px solid rgb(255 255 255 / 0.08) !important; box-shadow: none !important; }
+.dash-app .dash-quick { color: #9a9da6; }
+.dash-app .dash-quick:hover { color: #ededef; background: rgb(255 255 255 / 0.05); }
+.dash-app .dash-active { background: rgb(255 255 255 / 0.08); border-color: rgb(255 255 255 / 0.1); color: #fff !important; }
+.dash-app .btn-primary { background: #ffffff !important; border-color: #ffffff !important; color: #08090b !important; }
+.dash-app .btn-primary:hover { background: #dcdde1 !important; }
+.dash-app .btn-secondary { background: rgb(255 255 255 / 0.06) !important; color: #ededef !important; border: 1px solid rgb(255 255 255 / 0.08) !important; box-shadow: none !important; }
+.dash-app .btn-secondary:hover { background: rgb(255 255 255 / 0.1) !important; }
+.dash-app .field, .dash-app input:not([type=range]):not([type=checkbox]), .dash-app select, .dash-app textarea { background: rgb(255 255 255 / 0.04); color: #ededef; border-color: rgb(255 255 255 / 0.1); }
+.dash-app .chip { background: rgb(255 255 255 / 0.05); color: #a1a4ad; border-color: transparent; }
+.dash-app .chip[aria-pressed="true"] { background: #ededef; color: #08090b; }
+.dash-app kbd { background: transparent; border-color: rgb(255 255 255 / 0.12); }
+.dash-app .text-accent { color: #7fa2ff; }
+
+/* calm motion: everything that moves eases the same way */
+a, button, .card, .dpanel, .win-card, .drow, .chip, .seg button { transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
