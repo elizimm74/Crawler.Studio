@@ -113,13 +113,13 @@ const record = (r) => {
   await flow("hero: a bad address shows an error and stays on the page", async () => {
     await p.goto(BASE + "/", { waitUntil: "networkidle" });
     await p.fill("#hero-url", "not a site");
-    await p.getByRole("button", { name: /Test My Website Free/ }).click();
+    await p.getByRole("button", { name: /Run free simulation/ }).first().click();
     await p.getByRole("alert").first().waitFor({ timeout: 3000 });
     if (!p.url().endsWith("/")) throw new Error("navigated away");
   });
   await flow("hero: a good address goes to onboarding WITH the address", async () => {
     await p.fill("#hero-url", "example.com");
-    await p.getByRole("button", { name: /Test My Website Free/ }).click();
+    await p.getByRole("button", { name: /Run free simulation/ }).first().click();
     await p.waitForURL(/\/onboarding\?url=example\.com/, { timeout: 8000 });
     await p.locator("#ob-url").waitFor();
     const v = await p.inputValue("#ob-url");
@@ -139,19 +139,17 @@ const record = (r) => {
     await p.getByRole("button", { name: /Mobile app \(screenshots\)/ }).click();
     await p.getByRole("heading", { name: /Testing a mobile app/ }).waitFor();
   });
-  await flow("home: the report window's 'View as' switch changes the view", async () => {
+  await flow("home: the live simulation preview runs and the sample report shows ranked fixes", async () => {
     await p.goto(BASE + "/", { waitUntil: "networkidle" });
-    await p.getByRole("tab", { name: "Customers" }).click();
-    await p.getByText("Would buy", { exact: true }).first().waitFor({ timeout: 3000 });
-    await p.getByRole("tab", { name: "Fixes" }).click();
+    // the preview starts at customer 1 and moves on by itself (demo data)
+    await p.getByText(/Simulating \d+\/100/).first().waitFor({ timeout: 5000 });
+    await p.getByText("Ranked fixes", { exact: true }).first().waitFor({ timeout: 3000 });
     await p.getByText("Show the price on the homepage").first().waitFor({ timeout: 3000 });
-    await p.getByRole("tab", { name: "Fix prompt" }).click();
-    await p.getByText(/Do NOT invent testimonials/).first().waitFor({ timeout: 3000 });
+    await p.getByText(/Simulated results · demo data/).first().waitFor({ timeout: 3000 });
   });
-  await flow("home: the research explorer switches groups and items", async () => {
-    await p.getByRole("tab", { name: "Assumptions" }).click();
-    await p.getByRole("option", { name: /Patience/ }).click();
-    await p.getByText("Labelled assumption").first().waitFor({ timeout: 3000 });
+  await flow("home: the sample-report link and final URL box are there", async () => {
+    await p.locator('a[href="#report"]').first().waitFor();
+    await p.locator("#final-url").waitFor();
   });
   await flow("home: FAQ answers open", async () => {
     await p.getByText("What does it cost?").click();

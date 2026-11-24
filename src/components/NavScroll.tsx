@@ -8,7 +8,9 @@ export default function NavScroll() {
     const root = document.documentElement;
     const on = () => {
       const s = window.scrollY > 24 ? "1" : "";
-      if ((root.dataset.scrolled ?? "") !== s) s ? (root.dataset.scrolled = s) : delete root.dataset.scrolled;
+      if ((root.dataset.scrolled ?? "") === s) return;
+      if (s) root.dataset.scrolled = s;
+      else delete root.dataset.scrolled;
     };
     on();
     window.addEventListener("scroll", on, { passive: true });

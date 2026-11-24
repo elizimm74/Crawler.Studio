@@ -44,7 +44,7 @@ export default function ScanPage({ kind = "page", locked }: { kind?: "page" | "p
           const on = i < locked;
           return (
             <g key={i} className="scan-block" style={{ opacity: on ? 1 : 0.55 }}>
-              <rect x={x} y={y} width={w} height={h} rx="4" fill={on ? "rgb(2 170 61 / 0.28)" : "rgb(255 255 255 / 0.07)"} />
+              <rect x={x} y={y} width={w} height={h} rx="4" fill={on ? "rgb(56 103 255 / 0.28)" : "rgb(255 255 255 / 0.07)"} />
               {on && (
                 <g stroke="#f5f6f8" strokeWidth="1.5" fill="none" className="scan-lock">
                   <path d={`M${x - 4} ${y + 6}V${y - 4}H${x + 6}`} />

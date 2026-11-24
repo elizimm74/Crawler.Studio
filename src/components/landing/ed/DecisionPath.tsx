@@ -15,7 +15,7 @@ export default function DecisionPath() {
       <ol className="grid gap-3 md:grid-cols-5">
         {STEPS.map((s, i) => (
           <li key={s.n} className="glass-tile relative flex flex-col p-5" style={{ animationDelay: `${i * 120}ms` }}>
-            <span className="font-mono text-xs text-[#86efac]">{s.n}</span>
+            <span className="font-mono text-xs text-[#a9c2ff]">{s.n}</span>
             <p className="mt-2 text-[17px] tracking-tight">{s.title}</p>
             <p className="mt-2 text-[13px] leading-relaxed text-white/55">{s.what}</p>
             <p className="mt-auto border-t border-white/10 pt-3 text-[12.5px] italic text-white/80">{s.ex}</p>

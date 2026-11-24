@@ -76,7 +76,7 @@ export function HowItWorks() {
 // ---------- Meet your customers ----------
 // Each card is built from the engine's REAL building blocks (mindset, budget, where they came from,
 // what convinces them, their dealbreaker: src/lib/personas.ts, behavior.ts, mind.ts).
-const PERSONAS = [
+export const PERSONAS = [
   { name: "The price-conscious shopper", age: "18–34", prefs: "Compares prices, hunts for free plans", budget: "Tight", motive: "A clear price that beats free alternatives", objection: "Hidden price or a card upfront", style: "Checks the price first, leaves fast if it's unclear" },
   { name: "The quality-focused buyer", age: "25–54", prefs: "Reads details, photos and materials", budget: "Comfortable", motive: "Proof that it's well made and works", objection: "Vague descriptions, no reviews", style: "Slow and thorough" },
   { name: "The impulse purchaser", age: "16–30", prefs: "Fast, visual, mobile", budget: "Okay", motive: "An exciting first screen and an easy yes", objection: "A slow or long sign-up", style: "Decides in seconds" },

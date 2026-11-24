@@ -1,470 +1,380 @@
-// The home page, v5 "Editorial" (2026-11-24, after aaru.com/simulation):
-//   Hero (white): headline + URL box, a simulated customer's "spec sheet" over a painted tile
-//   → black fade → YOU PROVIDE (steps 1–3): the Crawler app drawn in windows on painted backdrops
-//   → INSIDE CRAWLER (black, steps 4–6): research explorer, inner life, counting, honest limits
-//   → YOU RECEIVE (step 7): the report window with a "View as" switch → FAQ → final CTA.
-// Every number is a real plan fact (src/lib/plans.ts), a sourced research fact (Science.tsx), or
-// clearly labelled demo data (the made-up MealMate example). No photos, no borrowed art.
+// The home page, v6 (2026-11-24, founder's "complete brand, UI/UX & conversion redesign":
+// premium like aaru.com but Crawler's own, blue/black/white, the product as the hero visual).
+//   Hero: badge, headline, URL box (the starting point), live simulation preview
+//   → How it works (4 steps, each with a tiny UI) → Meet your customers → What Crawler analyzes
+//   → Sample report → Use cases → Honest by design + free plan → FAQ → final URL box.
+// Every number is a real plan fact (src/lib/plans.ts) or clearly labelled demo data (the made-up
+// MealMate example in src/lib/example.ts). No invented testimonials, users or accuracy claims.
 import Link from "next/link";
 import HeroForm from "@/components/landing/home/HeroForm";
-import AppWindow, { Props } from "@/components/landing/ed/AppWindow";
-import Explorer, { type ExplorerGroups } from "@/components/landing/ed/Explorer";
-import ReportWindow from "@/components/landing/ed/ReportWindow";
-import Toc from "@/components/landing/ed/Toc";
-import CrowdModel from "@/components/landing/ed/CrowdModel";
-import DecisionPath from "@/components/landing/ed/DecisionPath";
-import Tilt from "@/components/landing/ed/Tilt";
+import { PERSONAS } from "@/components/landing/home/sections";
+import SimConsole from "@/components/landing/v14/SimConsole";
+import ReportPreview from "@/components/landing/v14/ReportPreview";
 import Reveal from "@/components/Reveal";
 import SmoothScroll from "@/components/landing/motion/SmoothScroll";
 import Faq from "@/components/landing/Faq";
-import { ASSUMPTIONS, FACTS } from "@/components/landing/Science";
 import { homeDemo } from "@/lib/homeDemo";
-import { STARTER_CUSTOMERS } from "@/lib/plans";
-import { FOCUS } from "@/lib/productTypes";
-import Nature from "@/components/Nature";
-import WashScroll from "@/components/landing/WashScroll";
+import { PLANS, STARTER_CUSTOMERS } from "@/lib/plans";
 
 export const metadata = {
-  title: { absolute: "Crawler: AI customer simulations for your website" },
+  title: { absolute: "Crawler: meet your customers before they meet your website" },
   description:
-    "Would your customers actually buy? Crawler runs AI-simulated customers through your website, store or app and shows what makes them buy, what makes them leave, and what to fix before launch.",
+    "Crawler sends AI-simulated customers through your website, store or app. See who would buy, why the rest leave, and exactly what to fix, before launch.",
   alternates: { canonical: "/" },
 };
 
-const AUDIENCE_ITEMS = [
-  { title: "Age, gender and where they live", body: "Set an age range (and lean it younger or older), a gender split and urban / suburban / rural. Every simulated customer is sampled from these ranges, so you get a spread, not one stereotype." },
-  { title: "Budget and mindset", body: "Tight / okay / comfortable budgets, and mindsets like price-sensitive, skeptical, busy, impulse buyer or early adopter. These change what each customer notices and what makes them leave." },
-  { title: "What they use now", body: "The app, competitor or workaround they'd have to switch from. Customers compare you with it, the way real people do." },
-  { title: "Business buyers", body: "For B2B: role, company size, industry, and whether they can buy alone or need approval (then they look for pricing and proof to show a boss)." },
-];
+const lowestPaid = Math.min(...PLANS.filter((p) => p.priceUsd > 0).map((p) => p.priceUsd));
 
 export default function Home() {
   const demo = homeDemo();
-  const groups: ExplorerGroups = {
-    Research: FACTS.map((f) => ({ title: f.finding, source: f.source, who: f.who, body: "A published finding Crawler builds into how simulated customers behave. It shapes patience, what they look for and what makes them quit. Full list and limits on the science page." })),
-    Assumptions: ASSUMPTIONS.map((a) => ({ title: a.what, source: "Labelled assumption", body: `${a.value}. This is our assumption, not a measured fact, and it's labelled that way everywhere it's used.` })),
-    "Your audience": AUDIENCE_ITEMS.map((a) => ({ ...a, source: "You choose" })),
-  };
-  const p = demo.sample.people[0];
+  const s = demo.sample;
 
   return (
-    <div className="bleed-full -mt-12 sm:-mt-16">
-      {/* ================= HERO (white) ================= */}
-      <section className="home-wide grid min-h-[calc(100svh-4rem)] items-center gap-12 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20" aria-labelledby="hero-title" data-wash="#f4f7f1 #d7eedd">
-        <div className="rise">
-          <p className="text-[15px] text-faint">
-            AI customer simulation. <span className="text-accent">From link to fixes.</span>
-          </p>
-          <h1 id="hero-title" className="t-display mt-6">
-            Would your customers <span className="serif">actually</span> buy?
-            <span className="block text-faint">Ask a hundred of them first.</span>
-          </h1>
-          <p className="t-lead mt-8 max-w-lg">
-            Paste your link. AI shoppers try your site and tell you exactly why they wouldn&apos;t buy, and what to fix before launch.
-          </p>
-          <div className="mt-8 max-w-xl">
-            <HeroForm />
+    <div className="v14 bleed-full">
+      {/* ================= HERO ================= */}
+      <section className="hero14 home-wide pb-20 pt-10 text-center sm:pt-16" aria-labelledby="hero-title">
+        <Link href="/example" className="badge14 rise">
+          <span className="badge14-dot" aria-hidden />
+          <span>
+            AI customer simulation<span className="hidden sm:inline"> for websites, stores, apps and ads</span>
+          </span>
+          <span className="text-faint" aria-hidden>
+            →
+          </span>
+        </Link>
+        <h1 id="hero-title" className="h14 rise d1 mx-auto mt-7 max-w-6xl">
+          Meet your customers <span className="hl14 sm:block">before they meet your website.</span>
+        </h1>
+        <p className="lead14 rise d2 mx-auto mt-6 max-w-2xl">
+          Crawler sends 100 AI-simulated customers through your site. See who would buy, why the rest leave, and exactly what to fix, in minutes.
+        </p>
+        <div className="rise d3 mx-auto mt-9 max-w-2xl">
+          <div className="url14">
+            <HeroForm cta="Run free simulation" />
           </div>
           <p className="mt-4 text-sm text-faint">
-            No credit card required · Free: 1 test with {STARTER_CUSTOMERS} simulated customers · Simulated buying intent, not real purchases
+            No credit card · Free: 1 test with {STARTER_CUSTOMERS} simulated customers ·{" "}
+            <Link href="#report" className="text-muted underline-offset-4 hover:text-fg hover:underline">
+              See a sample report
+            </Link>
           </p>
         </div>
-
-        {/* a simulated customer's spec sheet over a painted tile (example) */}
-        <div className="rise d2 relative mx-auto w-full max-w-[26rem]" aria-label="An example simulated customer">
-          <span className="tag absolute left-4 top-0 z-20 -translate-y-1/2 bg-[#02aa3d] text-[#052e16]">Simulated customer</span>
-          <div className="scene scene-dusk aspect-[4/5] w-[78%] !p-0" aria-hidden>
-            <Nature kind="grass" />
-            <div className="absolute inset-x-6 bottom-6 font-mono text-[11px] text-white/80">example · demo data</div>
-          </div>
-          <div className="absolute right-0 top-[-1.5rem] h-28 w-28" aria-hidden>
-            <div className="scene scene-moss h-full w-full !rounded-2xl !p-0">
-              <Nature kind="leaf" />
-            </div>
-          </div>
-          {/* floating glass chips (demo numbers) */}
-          <span className="glass-chip float-a absolute -left-6 top-10 z-20 hidden sm:inline-flex">
-            <i className="h-2 w-2 rounded-full bg-[#02aa3d]" /> {demo.sample.total} simulated customers
-          </span>
-          <span className="glass-chip float-b absolute -right-4 top-[46%] z-20 hidden sm:inline-flex">
-            Biggest blocker · {demo.sample.objections[0]?.category} {demo.sample.objections[0]?.pct}%
-          </span>
-          <span className="glass-chip float-c absolute -bottom-16 right-2 z-20 hidden sm:inline-flex">
-            Fix #1 · +{demo.sample.fixes[0]?.winBack ?? 0} could win back
-          </span>
-          <dl className="spec glass-spec absolute -bottom-10 left-[-1rem] z-10 w-[72%] sm:left-[-2.5rem]">
-            <p className="mb-1 inline-block rounded-full bg-[#dedede] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#3a3a3a]">{p ? p.label.split(",").slice(0, 2).join(",") : "24, student"}</p>
-            {[
-              ["Came from", "a TikTok video"],
-              ["Budget", "Tight"],
-              ["Patience", "about 10 seconds"],
-              ["Dealbreaker", "a hidden price"],
-              ["Decision", "Wouldn't buy"],
-            ].map(([k, v]) => (
-              <div key={k} className="spec-row">
-                <dt>{k}</dt>
-                <dd className="text-[#0a0a0a]">{v}</dd>
-              </div>
-            ))}
-          </dl>
+        <div className="rise d4 relative mt-16 text-left">
+          <div className="stage14" aria-hidden />
+          <SimConsole
+            host={s.host}
+            total={s.total}
+            buy={s.buy}
+            maybe={s.maybe}
+            no={s.no}
+            sim={demo.sim}
+            objections={s.objections}
+            topFix={s.fixes[0]?.title ?? ""}
+            winBack={s.fixes[0]?.winBack ?? 0}
+          />
         </div>
       </section>
 
-      {/* black → white fade, like a page turning */}
+      {/* ================= HOW IT WORKS ================= */}
+      <section id="how" className="home-wide scroll-mt-24 py-20 sm:py-28" aria-labelledby="how-title">
+        <Head eyebrow="How it works" id="how-title" title="From a link to a list of fixes." sub="No setup, no tracking code, no real visitors needed." />
+        <ol className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {STEPS.map((st, k) => (
+            <li key={st.title} className="h-full">
+              <Reveal delay={k * 90} className="tile14 h-full">
+                <div className="tile14-visual" aria-hidden>
+                  {st.visual}
+                </div>
+                <p className="mt-6 text-[12px] font-medium text-accent-ink">0{k + 1}</p>
+                <h3 className="mt-1 text-lg font-semibold tracking-tight">{st.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{st.body}</p>
+              </Reveal>
+            </li>
+          ))}
+        </ol>
+      </section>
 
-      {/* ================= YOU PROVIDE (white) ================= */}
-      <section className="home-wide pt-20" aria-labelledby="provide-title" data-wash="#eef3f8 #d6e3f4">
-        <div className="eyebrow">
-          <span>You provide</span>
-          <span>Steps 1–3</span>
+      {/* ================= MEET YOUR CUSTOMERS ================= */}
+      <section className="home-wide py-20 sm:py-28" aria-labelledby="meet-title">
+        <Head
+          eyebrow="Meet your customers"
+          id="meet-title"
+          title="Not one opinion. A hundred different ones."
+          sub="Every test mixes people like these, sampled from the audience you pick: different budgets, moods, reasons for visiting and dealbreakers."
+        />
+        <ul className="personas14 mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {PERSONAS.slice(0, 8).map((p, k) => (
+            <li key={p.name} className="h-full">
+              <Reveal delay={(k % 4) * 70} className="tile14 h-full">
+                <div className="flex items-center gap-3">
+                  <span className={`avatar14 a${k % 4}`} aria-hidden>
+                    {p.name.replace(/^The /, "").charAt(0).toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold leading-tight tracking-tight">{p.name}</h3>
+                    <p className="text-xs text-faint">Age {p.age}</p>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  <span className="chip14">Budget: {p.budget.toLowerCase()}</span>
+                </div>
+                <dl className="mt-4 space-y-3 text-sm">
+                  <div>
+                    <dt className="text-xs text-faint">Buys for</dt>
+                    <dd className="mt-0.5 text-fg">{p.motive}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-faint">Leaves when</dt>
+                    <dd className="mt-0.5 text-fg">{p.objection}</dd>
+                  </div>
+                </dl>
+              </Reveal>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-5 text-xs text-faint">
+          Synthetic personas, not real or surveyed people. Their traits come from published research and labelled assumptions:{" "}
+          <Link href="/science" className="underline underline-offset-2 hover:text-fg">
+            read the science
+          </Link>
+          .
+        </p>
+      </section>
+
+      {/* ================= WHAT CRAWLER ANALYZES ================= */}
+      <section className="home-wide py-20 sm:py-28" aria-labelledby="areas-title">
+        <Head eyebrow="What Crawler analyzes" id="areas-title" title="Everything a first-time visitor judges." sub="On desktop and on a phone, from the first screen to the cart or signup." />
+        <ul className="grid14 mt-14">
+          {AREAS.map(([title, body, icon], k) => (
+            <li key={title} className="grid14-cell">
+              <span className="icon14" aria-hidden>
+                <Icon d={icon} />
+              </span>
+              <h3 className="mt-5 font-semibold tracking-tight">{title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted">{body}</p>
+              <span className="grid14-n" aria-hidden>
+                {String(k + 1).padStart(2, "0")}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-5 text-xs text-faint">Crawler looks and clicks like a visitor. It never pays, checks out or types into card fields.</p>
+      </section>
+
+      {/* ================= SAMPLE REPORT ================= */}
+      <section id="report" className="home-wide scroll-mt-24 py-20 sm:py-28" aria-labelledby="report-title">
+        <Head
+          eyebrow="Sample report"
+          id="report-title"
+          title="A report you'd actually pay for."
+          sub="Who would buy, what stopped everyone else, where they left, and fixes ranked by how many customers each could win back."
+        />
+        <div className="mt-14">
+          <ReportPreview data={s} funnel={demo.funnel} />
         </div>
-        <div className="mt-10 grid gap-8 lg:grid-cols-2">
-          <h2 id="provide-title" className="t-h1">
-            Paste a link.
-            <span className="block text-faint">Choose who walks in.</span>
-          </h2>
-          <p className="t-lead max-w-md lg:justify-self-end">
-            Start with your website, store or app and what you want to learn. Pick the people who would actually visit, and Crawler builds them.
-          </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Link href="/example" className="btn btn-secondary h-12 px-6">
+            Open the full sample report
+          </Link>
+          <Link href="/onboarding" className="btn btn-primary h-12 px-6">
+            Run yours free
+          </Link>
         </div>
       </section>
 
-      <Row id="how" n="01" title="Your website" text="Crawler opens it like a first-time visitor, on a laptop and a phone, and finds your pricing and signup (or a product page and the cart). You choose what you want to learn: would they buy, is the price fair, is the value clear.">
-        <AppWindow
-          crumb="mealmate.app"
-          title="mealmate.app simulation"
-          tabs={["Configuration", "Customers", "Report"]}
-          active="Configuration"
-          side={<Props rows={[["Status", "Draft"], ["Customers", "100"], ["Device mix", "Phone + laptop"]]} files={["landing.png", "pricing.png", "signup.png"]} />}
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="win-card p-3">
-              <p className="text-[12px] font-medium">Description</p>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#3a3a3a]">MealMate plans a week of dinners and a grocery list for busy parents. The simulation tests the landing page, pricing and signup.</p>
-              <div className="mt-3 space-y-1 text-[12px] text-[#3a3a3a]">
-                <p>✓ Landing page</p>
-                <p>✓ Pricing: not shown</p>
-                <p>✓ Signup: 6 fields</p>
-              </div>
-            </div>
-            <div className="win-card p-3">
-              <p className="text-[12px] font-medium">
-                Objectives <span className="text-[#9a9a9a]">3/{Object.keys(FOCUS).length}</span>
-              </p>
-              <ol className="mt-2 space-y-2 text-[12.5px] text-[#3a3a3a]">
-                {(["buy", "price", "value"] as const).map((k, i) => (
-                  <li key={k} className="flex gap-2">
-                    <span className="win-num">{i + 1}</span>
-                    {FOCUS[k].label}
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </div>
-        </AppWindow>
-      </Row>
-
-      <Row n="02" title="Customers" flip text="Each audience becomes a crowd of simulated customers, broad or niche. Ages, budgets, mindsets, devices and where they came from are sampled in code, so no two think exactly alike.">
-        <AppWindow
-          crumb="mealmate.app"
-          title="mealmate.app simulation"
-          tabs={["Configuration", "Customers", "Report"]}
-          active="Customers"
-          scene="moss"
-          bleed="left"
-          side={<Props rows={[["Status", "Ready"], ["Audience", "Busy moms"], ["Customers", "100"]]} />}
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            {[
-              ["A1", "Busy parents", "Short on time, plan meals on their phone after the kids are asleep. Want the result, not a tour."],
-              ["A2", "Price-checkers", "Compare against free apps and notes. Leave if the price is hidden or needs a card upfront."],
-              ["A3", "Skeptics", "Burned by a trial before. Look for reviews, real people and an easy way to cancel."],
-            ].map(([id, t, d], i) => (
-              <div key={id} className={`win-card p-3 ${i === 0 ? "!border-[#02aa3d]" : ""}`}>
-                <div className="flex items-center justify-between">
-                  <span className="win-num">{id}</span>
+      {/* ================= USE CASES ================= */}
+      <section className="home-wide py-20 sm:py-28" aria-labelledby="uses-title">
+        <Head eyebrow="Use cases" id="uses-title" title="Built for people who launch things." />
+        <ul className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {USES.map((u, k) => (
+            <li key={u.title} className="h-full">
+              <Reveal delay={(k % 3) * 80} className="tile14 use14 h-full">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-lg font-semibold tracking-tight">{u.title}</h3>
+                  {u.tag && <span className="chip14">{u.tag}</span>}
                 </div>
-                <p className="mt-1 text-[14px] text-[#0a0a0a]">{t}</p>
-                <p className="mt-2 text-[12px] leading-relaxed text-[#6b6b6b]">{d}</p>
-                <p className="mt-3 text-[11px] text-[#9a9a9a]">Simulated customers</p>
-                <p className="text-[12px]">≈ 33</p>
-              </div>
-            ))}
-          </div>
-        </AppWindow>
-      </Row>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{u.body}</p>
+                <p className="mt-5 border-t border-line pt-4 text-[13px] text-fg">
+                  <span className="text-faint">Ask it: </span>
+                  {u.ask}
+                </p>
+              </Reveal>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <Row n="03" title="What every customer answers" text="Every simulated customer decides for themselves and answers the same questions, in their own words. Those answers are counted in code, never guessed.">
-        <AppWindow crumb="mealmate.app" title="mealmate.app simulation" tabs={["Configuration", "Customers", "Report"]} active="Customers" scene="sky" side={<Props rows={[["Questions", "5"], ["Answered", "0/100"]]} />}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {[
-              ["Q1", "Single choice", "Would you sign up?", ["Yes", "Maybe", "No"]],
-              ["Q2", "Free response", "What stopped you?", []],
-              ["Q3", "Single choice", "Where did you leave?", ["Landing page", "Pricing", "Signup"]],
-              ["Q4", "Free response", "What would change your mind?", []],
-            ].map(([id, kind, q, opts]) => (
-              <div key={id as string} className="win-card p-3">
-                <div className="flex items-center gap-2">
-                  <span className="win-num">{id as string}</span>
-                  <span className="win-chip">{kind as string}</span>
-                </div>
-                <p className="mt-2 text-[14px] leading-snug text-[#0a0a0a]">{q as string}</p>
-                {(opts as string[]).length ? (
-                  <ol className="mt-2 space-y-1 text-[12px] text-[#3a3a3a]">
-                    {(opts as string[]).map((o, i) => (
-                      <li key={o}>
-                        <span className="win-num mr-2">{"ABC"[i]}</span>
-                        {o}
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <p className="mt-2 rounded-md border border-[#ececec] px-2 py-1.5 text-[12px] text-[#9a9a9a]">Customers answer in their own words</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </AppWindow>
-      </Row>
-
-      <div className="fade-to-black mt-32" aria-hidden />
-
-      {/* ================= INSIDE CRAWLER (black) ================= */}
-      <section className="band-dark pb-32" aria-labelledby="inside-title">
-        <div className="home-wide">
-          <div className="eyebrow">
-            <span>Inside Crawler</span>
-            <span>Steps 4–6</span>
-          </div>
-          <div className="mt-10 grid gap-8 lg:grid-cols-2">
-            <h2 id="inside-title" className="t-h1">
-              Every customer is built,
-              <span className="block text-faint">not copied from a template.</span>
+      {/* ================= HONEST BY DESIGN + FREE PLAN ================= */}
+      <section className="home-wide py-20 sm:py-28" aria-labelledby="honest-title">
+        <div className="honest14">
+          <div>
+            <p className="eyebrow14">Honest by design</p>
+            <h2 id="honest-title" className="h2-14 mt-4">
+              A strong hint, <span className="text-faint">not a crystal ball.</span>
             </h2>
-            <p className="t-lead max-w-md lg:justify-self-end">
-              Busy parents, skeptical founders, teens on their phones: each simulated customer starts from published research about how people browse and buy, then gets a life of their own.
+            <p className="mt-5 max-w-md text-muted">
+              Simulated customers show you likely problems fast and cheap. They don&apos;t replace real customers, so every report says so, and every number traces back to who said it.
             </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href="/science" className="btn btn-secondary h-11 px-5 text-sm">
+                Read the science
+              </Link>
+              <Link href="/accuracy" className="btn btn-text h-11 px-3 text-sm">
+                How we measure accuracy →
+              </Link>
+            </div>
           </div>
-
-          <div className="mt-24 grid gap-10 lg:grid-cols-[12rem_minmax(0,1fr)]">
-            <Toc
-              label="Inside Crawler"
-              items={[
-                { id: "research", n: "04", title: "Research" },
-                { id: "minds", n: "05", title: "Customers" },
-                { id: "counting", n: "06", title: "Decisions" },
-              ]}
-            />
-            <div className="min-w-0 space-y-28">
-              <div id="research" className="scroll-mt-28">
-                <div className="max-w-2xl">
-                  <h3 className="text-[1.75rem] tracking-tight">Crawler starts with research.</h3>
-                  <p className="mt-4 text-[17px] leading-relaxed text-white/85">
-                    How fast people leave, what makes them quit a signup, how teens shop and what subscription apps convert: published findings set how every simulated customer behaves. Where there is no study, we say so and label it an assumption.
-                  </p>
-                  <div className="note mt-8">
-                    <p className="note-title">ⓘ Facts and assumptions</p>
-                    <p className="mt-2 text-sm text-white/70">Every number that shapes a customer is either a named, published source or a labelled assumption. None is hidden, and none is presented as more than it is.</p>
-                    <Link href="/science" className="note-btn">
-                      Read the science +
-                    </Link>
-                  </div>
-                </div>
-                <Reveal className="mt-14">
-                  <Explorer groups={groups} />
-                </Reveal>
-              </div>
-
-              <div id="minds" className="scroll-mt-28 max-w-2xl">
-                <h3 className="text-[1.75rem] tracking-tight">Customers have an inner life.</h3>
-                <p className="mt-4 text-[17px] leading-relaxed text-white/85">
-                  A crowd is not a spreadsheet of identical rows. Each customer gets a reason for visiting, how badly they need this, sometimes a bad past experience, what would win them over and the one thing that makes them leave. Then they look at your real pages and decide.
-                </p>
-                <div className="dpanel mt-8 p-5 sm:p-6">
-                  <div className="flex flex-wrap gap-2">
-                    <span className="tag bg-white/10 text-white">◷ Patience</span>
-                    <span className="tag bg-white/10 text-white">◎ Mindset</span>
-                    <span className="tag bg-[#4ade80]/20 text-[#bbf7d0]">⌁ Dealbreaker</span>
-                  </div>
-                  <dl className="mt-5 divide-y divide-white/10 text-sm">
-                    {[
-                      ["Why they're here", "Saw it in a TikTok, curious, no plan to buy"],
-                      ["How much they need it", "Nice to have"],
-                      ["Burned before", "Charged after forgetting to cancel a free trial"],
-                      ["What wins them", "A clear price that beats free alternatives"],
-                      ["Dealbreaker", "A price that's hidden or needs a card upfront"],
-                    ].map(([k, v]) => (
-                      <div key={k} className="grid grid-cols-[10rem_minmax(0,1fr)] gap-4 py-3">
-                        <dt className="text-white/55">{k}</dt>
-                        <dd className="text-white/80">{v}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  <p className="mt-3 text-[11px] text-white/40">Example customer. Inner-life odds are labelled assumptions.</p>
-                </div>
-              </div>
-
-              <div className="scroll-mt-28">
-                <div className="max-w-2xl">
-                  <h3 className="text-[1.75rem] tracking-tight">Five steps before every decision.</h3>
-                  <p className="mt-4 text-[17px] leading-relaxed text-white/85">
-                    Every simulated customer thinks it through in the same order a real visitor does: what they see first, whether they need it, their dealbreaker, whether they trust it, and then a decision in their own words.
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {HONEST.map(([t, b]) => (
+              <li key={t} className="tile14 !p-5">
+                <h3 className="font-semibold tracking-tight">{t}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">{b}</p>
+              </li>
+            ))}
+            <li className="tile14 plan14 !p-5 sm:col-span-2">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-semibold tracking-tight">Start free</h3>
+                  <p className="mt-1 text-sm text-muted">
+                    1 test with {STARTER_CUSTOMERS} simulated customers, no card. Plans from ${lowestPaid}/month.
                   </p>
                 </div>
-                <Reveal className="mt-10">
-                  <DecisionPath />
-                </Reveal>
-              </div>
-
-              <div id="counting" className="scroll-mt-28">
-                <div className="max-w-2xl">
-                  <h3 className="text-[1.75rem] tracking-tight">Every decision is counted in code.</h3>
-                  <p className="mt-4 text-[17px] leading-relaxed text-white/85">
-                    The AI only plays the customers. Counting is plain code: who would buy, who left where, which reasons repeat, and how many people each fix could win back. Re-test with the same customers and see exactly who changed their mind.
-                  </p>
-                </div>
-                <Reveal className="mt-10">
-                  <CrowdModel points={demo.crowd} />
-                </Reveal>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <div className="dpanel p-6">
-                    <p className="text-[19px] tracking-tight">Buy rate by mindset</p>
-                    <p className="mt-1 text-sm text-white/45">Demo data · {demo.sample.total} simulated customers</p>
-                    <div className="mt-6 space-y-3">
-                      {(demo.sample.segments[0]?.rows ?? []).map((r) => (
-                        <div key={r.value} className="grid grid-cols-[8rem_minmax(0,1fr)_3rem] items-center gap-3 text-sm">
-                          <span className="truncate text-white/70">{r.value}</span>
-                          <span className="h-2 overflow-hidden rounded-full bg-white/10">
-                            <span className="block h-full rounded-full bg-[#4ade80]" style={{ width: `${Math.round(r.buyRate * 100)}%` }} />
-                          </span>
-                          <span className="text-right font-mono text-xs text-white/70">{Math.round(r.buyRate * 100)}%</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="dpanel p-6">
-                    <p className="text-[19px] tracking-tight">What stopped them</p>
-                    <p className="mt-1 text-sm text-white/45">Demo data · share of people who didn&apos;t buy</p>
-                    <ul className="mt-6 space-y-3 text-sm">
-                      {demo.sample.objections.slice(0, 5).map((o) => (
-                        <li key={o.category} className="flex items-center gap-3">
-                          <span className="w-28 truncate capitalize text-white/70">{o.category}</span>
-                          <span className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
-                            <span className="block h-full rounded-full bg-white" style={{ width: `${o.pct}%` }} />
-                          </span>
-                          <span className="w-10 text-right font-mono text-xs text-white/70">{o.pct}%</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div className="max-w-2xl">
-                <h3 className="text-[1.75rem] tracking-tight">Honest about what it is.</h3>
-                <p className="mt-4 text-[17px] leading-relaxed text-white/85">
-                  Simulated customers are a fast, cheap signal about what to fix, not a forecast of your sales. They tend to say yes more often than real people. The useful part is the reasons, the ranking of problems and the change between two versions.
-                </p>
-                <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                  <div className="dpanel p-5">
-                    <p className="text-[17px]">Good at</p>
-                    <p className="mt-2 text-sm leading-relaxed text-white/55">Spotting missing prices, proof, unclear headlines and heavy signups. Comparing two versions on the same customers.</p>
-                  </div>
-                  <div className="dpanel p-5">
-                    <p className="text-[17px]">Not a replacement for</p>
-                    <p className="mt-2 text-sm leading-relaxed text-white/55">Real customers, A/B tests after launch, or exact conversion rates. We publish predicted vs real results as they come in.</p>
-                  </div>
-                </div>
-                <Link href="/accuracy" className="btn btn-primary mt-8 h-11 px-6 text-sm">
-                  See accuracy so far
+                <Link href="/pricing" className="btn btn-secondary h-11 px-5 text-sm">
+                  See pricing
                 </Link>
               </div>
-            </div>
-          </div>
+            </li>
+          </ul>
         </div>
       </section>
 
-      <div className="fade-to-white" aria-hidden />
-
-      {/* ================= YOU RECEIVE (white) ================= */}
-      <section className="home-wide pb-28" aria-labelledby="receive-title" data-wash="#f7f1e8 #f1d9bf">
-        <div className="eyebrow">
-          <span>You receive</span>
-          <span>Step 7</span>
-        </div>
-        <div className="mt-10 grid gap-8 lg:grid-cols-2">
-          <h2 id="receive-title" className="t-h1">
-            The simulation runs.
-            <span className="block text-faint">The reasons come back.</span>
-          </h2>
-          <p className="t-lead max-w-md lg:justify-self-end">
-            A report you can act on: who would buy, what stopped everyone else, where they left, and ranked fixes with how many customers each could win back. Then copy one prompt and let your AI builder make the changes.
-          </p>
-        </div>
-        <div className="mt-16 grid items-center gap-10 lg:grid-cols-[16rem_minmax(0,1fr)]">
-          <div>
-            <p className="text-[1.35rem] tracking-tight">Your report</p>
-            <p className="mt-3 text-[15px] leading-relaxed text-muted">Every finding traces back to the customers who said it. Read it by customer type, export a PDF, track each fix, and re-test the same crowd after you ship.</p>
-            <Link href="/example" className="btn btn-secondary mt-6 h-11 px-5 text-sm">
-              Open the full sample report
-            </Link>
-          </div>
-          <div className="lg:-mr-[max(0px,calc((100vw-88rem)/2+3rem))]">
-            <Reveal>
-              <ReportWindow data={demo.sample} />
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      <section className="home-wide pb-28" data-wash="#f3f0f7 #e2daf2">
+      {/* ================= FAQ ================= */}
+      <section className="home-wide py-20 sm:py-28">
         <Faq />
       </section>
 
-      {/* ================= FINAL CTA =================
-          Words on the left, nature as a framed accent on the right (not a full-page photo). */}
-      <section className="home-wide pb-28" aria-labelledby="final-title" data-wash="#eef6ee #cfead6">
-        <div className="grid items-center gap-10 rounded-[32px] border border-line bg-white/70 p-6 backdrop-blur sm:p-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14 lg:p-14">
-          <div>
-            <h2 id="final-title" className="t-h1">
-              Stop guessing.
-              <span className="block text-faint">
-                Start <span className="serif text-[#0b5e28]">validating.</span>
-              </span>
-            </h2>
-            <p className="mt-5 max-w-md text-muted">Paste your website and see what your simulated customers think in a few minutes.</p>
-            <div className="band-dark mt-8 max-w-xl rounded-[22px] !bg-black/85 p-2">
-              <HeroForm cta="Run Your First Simulation" id="final-url" />
-            </div>
-            <p className="mt-4 text-sm text-faint">No credit card required to get started.</p>
+      {/* ================= FINAL CTA ================= */}
+      <section className="home-wide pb-28" aria-labelledby="final-title">
+        <div className="final14">
+          <h2 id="final-title" className="h2-14 mx-auto max-w-3xl">
+            Your next customer is about to visit. <span className="hl14">Meet them first.</span>
+          </h2>
+          <p className="mx-auto mt-5 max-w-lg text-muted">Paste your website. Your first simulation is free and takes a few minutes.</p>
+          <div className="url14 mx-auto mt-9 max-w-2xl text-left">
+            <HeroForm cta="Run free simulation" id="final-url" />
           </div>
-          <div className="scene relative aspect-[4/3] !p-0 lg:aspect-[5/4]" aria-hidden>
-            <Nature kind="ridge" position="50% 60%" />
-          </div>
+          <p className="mt-4 text-sm text-faint">No credit card required.</p>
         </div>
       </section>
       {/* soft, inertial scrolling (mouse / trackpad only; off for reduced motion) */}
       <SmoothScroll />
-      {/* the page colour washes softly from one tint to the next as you scroll */}
-      <WashScroll />
     </div>
   );
 }
 
-// One "caption + window" row: the caption on one side, the window running off the other edge.
-function Row({ n, title, text, children, flip = false, id }: { n: string; title: string; text: string; children: React.ReactNode; flip?: boolean; id?: string }) {
+function Head({ eyebrow, id, title, sub }: { eyebrow: string; id: string; title: string; sub?: string }) {
   return (
-    <section id={id} className="scroll-mt-24 pt-36 sm:pt-44" aria-label={title}>
-      <div className={`grid items-center gap-10 lg:gap-16 ${flip ? "lg:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)]" : "lg:grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)]"}`}>
-        <div className={`px-4 sm:px-8 ${flip ? "lg:order-2 lg:pl-0 lg:pr-[max(3rem,calc((100vw-88rem)/2+3rem))]" : "lg:pr-0 lg:pl-[max(3rem,calc((100vw-88rem)/2+3rem))]"}`}>
-          <p className="font-mono text-xs text-faint">{n}</p>
-          <p className="mt-2 text-[1.6rem] leading-tight tracking-tight">{title}</p>
-          <p className="mt-4 text-[15px] leading-relaxed text-muted">{text}</p>
-        </div>
-        <Reveal className={`min-w-0 ${flip ? "lg:order-1" : ""} ${flip ? "pr-4 sm:pr-8 lg:pr-0" : "pl-4 sm:pl-8 lg:pl-0"}`}>
-          <Tilt max={3}>{children}</Tilt>
-        </Reveal>
-      </div>
-    </section>
+    <div className="mx-auto max-w-3xl text-center">
+      <p className="eyebrow14">{eyebrow}</p>
+      <h2 id={id} className="h2-14 mt-4">
+        {title}
+      </h2>
+      {sub && <p className="mx-auto mt-4 max-w-xl text-muted">{sub}</p>}
+    </div>
   );
 }
+
+function Icon({ d }: { d: string }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d={d} />
+    </svg>
+  );
+}
+
+// ---------- content ----------
+const STEPS = [
+  {
+    title: "Enter your website",
+    body: "Paste a link. Crawler checks it's live, reads what you sell and suggests who your customers are.",
+    visual: (
+      <div className="mini-url">
+        <span className="text-faint">https://</span>mealmate.app<span className="mini-caret" />
+      </div>
+    ),
+  },
+  {
+    title: "AI customers explore it",
+    body: "100 simulated customers, each with their own budget and mindset, visit on laptop and phone.",
+    visual: (
+      <div className="mini-crowd">
+        {Array.from({ length: 40 }, (_, i) => (
+          <i key={i} className={i % 7 === 0 ? "on" : i % 5 === 0 ? "mid" : ""} />
+        ))}
+      </div>
+    ),
+  },
+  {
+    title: "See why they buy or leave",
+    body: "Every customer decides, gives their main objection and the moment that lost them.",
+    visual: (
+      <div className="mini-bars">
+        {[
+          ["Price", 72],
+          ["Trust", 54],
+          ["Value", 38],
+        ].map(([k, w]) => (
+          <div key={k as string}>
+            <span>{k}</span>
+            <b style={{ width: `${w}%` }} />
+          </div>
+        ))}
+      </div>
+    ),
+  },
+  {
+    title: "Get ranked fixes",
+    body: "Fixes ordered by how many customers each could win back, plus a prompt to make the changes.",
+    visual: (
+      <div className="mini-fixes">
+        {[
+          ["Show the price", "+9"],
+          ["Add real proof", "+6"],
+          ["Shorter signup", "+4"],
+        ].map(([t, n]) => (
+          <div key={t}>
+            <span>{t}</span>
+            <b>{n}</b>
+          </div>
+        ))}
+      </div>
+    ),
+  },
+];
+
+const AREAS: [string, string, string][] = [
+  ["Product pages", "Do visitors understand exactly what they'd get?", "M4 5h16v14H4zM4 9h16M8 13h5"],
+  ["Pricing", "Can they find it, read it, and does it feel fair?", "M12 3v18M16.5 7.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 2.6 4.5 3.2 4.5 1.5 4.5 3.3-2 3-4.5 3-4.5-1.3-4.5-3"],
+  ["Website design", "Does it look professional on laptop and phone?", "M3 5h18v11H3zM8 20h8M12 16v4"],
+  ["Trust signals", "Reviews, proof, policies and contact details: there or missing.", "M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"],
+  ["Navigation", "Can they find pricing, signup or the product page?", "M4 6h16M4 12h10M4 18h6"],
+  ["Checkout experience", "Cart, sign-up fields, account walls. Never pays.", "M5 6h15l-2 8H7L5 3H3M9 20a1 1 0 1 0 0-.01M17 20a1 1 0 1 0 0-.01"],
+  ["Messaging", "Is the main promise clear, specific and believable?", "M4 5h16v11H8l-4 4z"],
+  ["Purchase objections", "Each customer's main reason not to buy, grouped and counted.", "M12 8v5M12 16.5v.5M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"],
+];
+
+const USES = [
+  { title: "Shopify stores", tag: "Store test · beta", body: "Crawler opens a product page and adds to cart like a shopper, then customers judge price, shipping, returns and trust.", ask: "Why aren't people adding to cart?" },
+  { title: "Clothing brands", tag: "Store test · beta", body: "Test your drop page on Gen Z shoppers before it goes live: sizing, delivery cost, reviews and vibe.", ask: "Would 16–24 year olds buy this hoodie at $68?" },
+  { title: "E-commerce businesses", tag: null, body: "Find the step where shoppers give up, from the first screen to the cart, on phone and laptop.", ask: "What's the biggest blocker on my product page?" },
+  { title: "SaaS startups", tag: null, body: "Pricing page, free trial, signup form: see which one loses the most simulated buyers and why.", ask: "Is my pricing page scaring people off?" },
+  { title: "Marketing agencies", tag: null, body: "Run a test on a client's site before the pitch and send the report link as proof of what to fix.", ask: "What should we fix first for this client?" },
+  { title: "Pre-launch founders", tag: null, body: "Test a landing page or waitlist before you have traffic, then re-test the same crowd after you change it.", ask: "Would anyone join this waitlist?" },
+];
+
+const HONEST: [string, string][] = [
+  ["Simulated, and labelled", "Customers are AI-simulated. Results show buying intent, not real purchases, and every report says so."],
+  ["Built on research", "Patience, trust and checkout behaviour come from published studies; guesses are labelled as assumptions."],
+  ["Counted in code", "Scores, objections and win-backs are counted from each customer's answer, not made up by the AI."],
+  ["Safe on your site", "Crawler looks and clicks like a visitor. It never pays, checks out or logs into accounts it shouldn't."],
+];

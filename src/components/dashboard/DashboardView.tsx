@@ -26,7 +26,6 @@ import { money } from "@/lib/revenue";
 import { PLAYS } from "@/lib/playbook";
 import { subscriptionLine, summarize, type Analysis, type DashboardData } from "@/lib/dashboard";
 import ManageBilling from "@/components/ManageBilling";
-import Nature from "@/components/Nature";
 import Mark from "@/components/Mark";
 import { PLANS, planName } from "@/lib/plans";
 
@@ -96,7 +95,7 @@ function Delta({ n, suffix = " pts" }: { n: number | null; suffix?: string }) {
   if (n === null) return <span className="text-xs text-faint">first test</span>;
   if (n === 0) return <span className="text-xs text-faint">no change</span>;
   return (
-    <span className={`text-xs font-medium ${n > 0 ? "text-[#4ade80]" : "text-[#f87171]"}`}>
+    <span className={`text-xs font-medium ${n > 0 ? "text-[#648bff]" : "text-[#f87171]"}`}>
       {n > 0 ? "↑" : "↓"} {Math.abs(n)}
       {suffix}
     </span>
@@ -113,7 +112,7 @@ function Thumb({ a, size = "h-11 w-11" }: { a: Analysis; size?: string }) {
     );
   }
   return (
-    <span className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-[#bfe9cc] bg-[#e8f8ee] text-base font-medium text-[#0b5e28]`} aria-hidden>
+    <span className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-[#2a3f72] bg-[#15223d] text-base font-medium text-[#a9c2ff]`} aria-hidden>
       {a.kind === "app" || a.kind === "game" || a.kind === "video" ? <Icon name={a.kind === "video" ? "play" : "phone"} /> : a.label.charAt(0).toUpperCase()}
     </span>
   );
@@ -211,7 +210,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
         <aside className="fl-rail min-w-0 px-4 pt-4 sm:px-6 lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto lg:px-4 lg:py-5">
           <div className="hidden h-full flex-col lg:flex">
             <Link href="/?home=1" className="flex h-10 items-center gap-2 px-2 text-[15px] font-semibold tracking-tight" aria-label="Crawler home">
-              <Mark size={20} className="text-accent" /> crawler
+              <span className="logo-tile is-small" aria-hidden><Mark size={13} className="text-white" /></span> crawler
             </Link>
 
             <p className="fl-label mt-8 px-3">Workspace</p>
@@ -305,7 +304,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           {/* phones: a small top bar + a tab row instead of the rail */}
           <div className="flex h-12 items-center justify-between lg:hidden">
             <Link href="/?home=1" className="flex items-center gap-2 font-semibold tracking-tight" aria-label="Crawler home">
-              <Mark size={20} className="text-accent" /> crawler
+              <span className="logo-tile is-small" aria-hidden><Mark size={13} className="text-white" /></span> crawler
             </Link>
             <div className="flex items-center gap-1 text-sm">
               <Link href="/settings" className="btn btn-text h-10 px-3 text-sm">
@@ -375,12 +374,10 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           {view === "overview" && (
             <>
               {/* header: greeting + one sentence from the person's latest result */}
-              {/* a real nature photo behind the greeting (see Nature.tsx) */}
+              {/* the greeting banner: a quiet blue-black panel (no photos: the product is the visual) */}
               <div className="dash-banner relative flex flex-wrap items-end justify-between gap-6 overflow-hidden rounded-2xl border border-line px-6 py-8 sm:px-8 sm:py-10">
-                <Nature kind="ridge" position="50% 62%" />
-                <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/65 to-white/10" />
                 <div className="relative z-10 min-w-0">
-                  <p className="fl-label !text-[#0b5e28]">
+                  <p className="fl-label !text-[#8faeff]">
                     {hello}, {data.name}
                   </p>
                   <h1 className="mt-3 max-w-3xl text-[1.75rem] font-semibold leading-tight tracking-tight sm:text-[2.1rem]">{summary}</h1>
@@ -409,7 +406,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                         <Thumb a={latest} size="h-24 w-24" />
                       </span>
                       <div className="min-w-0">
-                        <p className="fl-num text-5xl" style={{ color: "#02aa3d" }}>
+                        <p className="fl-num text-5xl" style={{ color: "#3867ff" }}>
                           {latest.score ?? "–"}
                           <span className="text-2xl text-faint">/{latest.total ?? 100}</span>
                         </p>
@@ -466,7 +463,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                           <Link href={`/run/${f.testId}`} className="group flex items-center gap-3 py-3.5 transition-colors hover:text-fg">
                             <span className="w-5 font-mono text-xs text-faint">{String(i + 1).padStart(2, "0")}</span>
                             <span className="min-w-0 flex-1 text-sm">{f.title}</span>
-                            {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#02aa3d]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
+                            {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#3867ff]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
                           </Link>
                         </li>
                       ))}

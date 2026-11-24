@@ -9,7 +9,19 @@ const short = (s: string, n = 90) => (s.length > n ? `${s.slice(0, n - 1)}…` :
 
 // Built once per server process (it never changes), not on every visit.
 export type CrowdPoint = { v: "buy" | "maybe" | "no"; mindset: string };
-type HomeDemo = { hero: HeroDemo; sample: SampleData; crowd: CrowdPoint[] };
+// One simulated customer for the hero's live simulation preview (all from the demo run).
+export type SimCustomer = {
+  initials: string;
+  label: string; // "34 · nurse"
+  budget: string;
+  mindset: string;
+  from: string; // how they arrived
+  verdict: "buy" | "maybe" | "no";
+  lostAt: string; // "hero" | "pricing" | "signup" | "none"
+  quote: string;
+};
+export type FunnelRow = { step: string; label: string; lost: number };
+type HomeDemo = { hero: HeroDemo; sample: SampleData; crowd: CrowdPoint[]; sim: SimCustomer[]; funnel: FunnelRow[] };
 let cached: HomeDemo | null = null;
 export function homeDemo(): HomeDemo {
   return (cached ??= buildHomeDemo());
@@ -44,7 +56,37 @@ function buildHomeDemo(): HomeDemo {
   const seg = (key: string, label: string) => ({ label, rows: (s.segments[key] ?? []).filter((r) => r.n >= 3).slice(0, 5).map((r) => ({ value: r.value, n: r.n, buyRate: r.buyRate })) });
   // one point per simulated customer: their decision and mindset (for the crowd model picture)
   const crowd: CrowdPoint[] = run.verdicts.map((v) => ({ v: v.verdict, mindset: byId.get(v.personaId)?.mindset ?? "other" }));
+  // six customers for the live preview: a realistic mix, mostly not buying (like real visitors)
+  const seen = new Set<string>();
+  const distinct = (v: "buy" | "maybe" | "no", n: number) =>
+    run.verdicts.filter((x) => x.verdict === v && !seen.has(x.quote) && (seen.add(x.quote), true)).slice(0, n);
+  const simPick = [...distinct("no", 3), ...distinct("maybe", 2), ...distinct("buy", 2)];
+  const order = [simPick[0], simPick[5], simPick[1], simPick[3], simPick[2], simPick[6], simPick[4]].filter(Boolean).slice(0, 6);
+  const sim: SimCustomer[] = order.map((v) => {
+    const p = byId.get(v.personaId)!;
+    const occ = p.occupation.toLowerCase();
+    return {
+      initials: (occ.split(/\s+/).map((w) => w[0]).join("").slice(0, 2) || "?").toUpperCase(),
+      label: `${p.age} · ${occ}`,
+      budget: p.budget,
+      mindset: p.mindset,
+      from: p.arrivedFrom,
+      verdict: v.verdict,
+      lostAt: v.lostAt,
+      quote: short(v.quote, 84),
+    };
+  });
+  // where the simulated customers who didn't buy stopped (counted from the demo verdicts)
+  const lost = (step: string) => run.verdicts.filter((v) => v.verdict !== "buy" && v.lostAt === step).length;
+  const funnel: FunnelRow[] = [
+    { step: "hero", label: "First screen", lost: lost("hero") },
+    { step: "pricing", label: "Pricing", lost: lost("pricing") },
+    { step: "product", label: "Trying it", lost: lost("product") },
+    { step: "signup", label: "Signup", lost: lost("signup") },
+  ].filter((r) => r.step !== "product" || r.lost > 0);
   return {
+    sim,
+    funnel,
     crowd,
     hero: {
       host,
