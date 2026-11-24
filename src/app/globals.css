@@ -5,7 +5,7 @@
 /*
   CRAWLER DESIGN SYSTEM (v9, "glass": navy page, frosted panels, business-professional type).
   One look only (no light/dark modes):
-   - The PAGE is the logo blue #1d4ed8 with white text; BLACK panels (.card-blue, .blue-band, the dashboard) mix in.
+   - The PAGE is the logo blue #22c55e with white text; BLACK panels (.card-blue, .blue-band, the dashboard) mix in.
    - CARDS (.card, .card-raised) and torn PAPER strips (.paper) are white with dark text.
      They work by re-setting the color variables inside themselves, so every
      component (text-fg, bg-accent, ...) automatically picks the right colors.
@@ -20,7 +20,7 @@
    Everything (page, cards, paper sheets) uses the SAME light-on-dark tokens, so text is
    always white-ish and components need no special cases. Surfaces are frosted glass. */
 :root {
-  --brand: #1d4ed8;
+  --brand: #22c55e;
   --bg: #060b2a; /* deep navy page */
   --surface: rgb(255 255 255 / 0.06); /* glass */
   --bg-subtle: rgb(255 255 255 / 0.06);
@@ -31,10 +31,10 @@
   --line: rgb(255 255 255 / 0.12);
   --line-strong: rgb(255 255 255 / 0.22);
   --accent: #ffffff; /* the main button is white... */
-  --accent-hover: #e3edff;
-  --accent-fg: #1d4ed8; /* ...with logo-blue text */
-  --accent-ink: #bcd2ff; /* small accent text on glass */
-  --sheen: rgb(29 78 216 / 0.16);
+  --accent-hover: #dcfce7;
+  --accent-fg: #22c55e; /* ...with logo-blue text */
+  --accent-ink: #bbf7d0; /* small accent text on glass */
+  --sheen: rgb(34 197 94 / 0.16);
   --shadow-sm: 0 1px 0 rgb(255 255 255 / 0.08) inset, 0 8px 24px -16px rgb(0 0 0 / 0.6);
   --shadow: 0 1px 0 rgb(255 255 255 / 0.12) inset, 0 30px 60px -30px rgb(0 0 0 / 0.7);
   color-scheme: dark;
@@ -317,7 +317,7 @@ input[type="range"] {
   }
   .field:focus {
     outline: none;
-    border-color: #1d4ed8;
+    border-color: #22c55e;
     box-shadow: 0 0 0 3px rgb(255 255 255 / 0.45);
   }
   .field-label {
@@ -573,7 +573,7 @@ html {
 }
 /* Chunky display headings (same font as the "crawler" wordmark) */
 .features .t-chunk {
-  color: #1d4ed8;
+  color: #22c55e;
 }
 .t-chunk {
   font-family: "Archivo", var(--font-sans);
@@ -670,10 +670,10 @@ html {
   line-height: 1;
   text-transform: uppercase;
   color: transparent;
-  -webkit-text-stroke: 2px #1d4ed8;
+  -webkit-text-stroke: 2px #22c55e;
 }
 .marquee-word.is-solid {
-  color: #1d4ed8;
+  color: #22c55e;
 }
 @media (prefers-reduced-motion: reduce), (scripting: none) {
   .split-word > span {
@@ -762,7 +762,7 @@ body {
 body {
   background-image:
     radial-gradient(1100px 760px at 12% -12%, rgb(47 68 232 / 0.55) 0%, transparent 60%),
-    radial-gradient(900px 700px at 105% 18%, rgb(29 78 216 / 0.6) 0%, transparent 62%),
+    radial-gradient(900px 700px at 105% 18%, rgb(34 197 94 / 0.6) 0%, transparent 62%),
     radial-gradient(900px 640px at 50% 115%, rgb(18 30 130 / 0.7) 0%, transparent 70%);
   background-attachment: fixed;
 }
@@ -900,7 +900,7 @@ body {
    v10 "SOLID" (2026-11-19, founder: "the light blue looks terrible everywhere, the gradient
    background looks bad, make it look like the future"). Replaces the v9/v9.1 colors:
    - ONE flat near-black page (no glows, no gradients).
-   - ONE brand blue (#1d4ed8, deep, never light/pastel): main buttons, active states, data marks.
+   - ONE brand blue (#22c55e, deep, never light/pastel): main buttons, active states, data marks.
    - Text is white and greys; small labels are grey, never blue.
    - Panels: barely-there glass (3.5% white + a hairline border).
    ===================================================================== */
@@ -917,8 +917,8 @@ body {
   --fg-faint: #8d92a4; /* about 6:1 on the page */
   --line: rgb(255 255 255 / 0.08);
   --line-strong: rgb(255 255 255 / 0.16);
-  --accent: #1d4ed8; /* the one brand blue */
-  --accent-hover: #2563eb;
+  --accent: #22c55e; /* the one brand blue */
+  --accent-hover: #16a34a;
   --accent-fg: #ffffff;
   --accent-ink: #f5f6f8; /* small "accent" text is white, not blue */
 }
@@ -946,14 +946,14 @@ body {
     border-block: 1px solid rgb(255 255 255 / 0.06);
   }
   .btn-primary {
-    background: #1d4ed8;
+    background: #22c55e;
     color: #ffffff;
     border: 1px solid rgb(255 255 255 / 0.14);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 2px rgb(0 0 0 / 0.4);
   }
   .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 8px 24px -12px rgb(29 78 216 / 0.7);
+    background: #16a34a;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 8px 24px -12px rgb(34 197 94 / 0.7);
   }
   .btn-secondary {
     background: rgb(255 255 255 / 0.06);
@@ -964,8 +964,8 @@ body {
     border: 1px solid rgb(255 255 255 / 0.12);
   }
   .field:focus {
-    border-color: #1d4ed8;
-    box-shadow: 0 0 0 3px rgb(29 78 216 / 0.35);
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgb(34 197 94 / 0.35);
   }
 }
 .card-blue,
@@ -989,7 +989,7 @@ body {
 .dash-active {
   background: rgb(255 255 255 / 0.06);
   border: 1px solid rgb(255 255 255 / 0.1);
-  box-shadow: inset 3px 0 0 #1d4ed8;
+  box-shadow: inset 3px 0 0 #22c55e;
 }
 /* the big logo behind the dashboard hero: a faint watermark, no glow */
 .dash-orb {
@@ -1018,7 +1018,7 @@ body {
   top: 2%;
   height: 2px;
   background: linear-gradient(90deg, transparent, #f5f6f8, transparent);
-  box-shadow: 0 0 18px 2px rgb(29 78 216 / 0.8);
+  box-shadow: 0 0 18px 2px rgb(34 197 94 / 0.8);
   animation: scan-sweep 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 @keyframes scan-sweep {
@@ -1067,8 +1067,8 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(620px 420px at 18% -4%, rgb(29 78 216 / 0.22), transparent 70%),
-    radial-gradient(520px 380px at 92% 28%, rgb(29 78 216 / 0.11), transparent 70%);
+    radial-gradient(620px 420px at 18% -4%, rgb(34 197 94 / 0.22), transparent 70%),
+    radial-gradient(520px 380px at 92% 28%, rgb(34 197 94 / 0.11), transparent 70%);
   animation: stage-drift 18s ease-in-out infinite alternate;
 }
 @keyframes stage-drift { to { transform: translate3d(0, 24px, 0) scale(1.04); } }
@@ -1088,7 +1088,7 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   position: absolute; left: 0; right: 0; top: 0; height: 44px; border-radius: 12px;
   background: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.04));
   border: 1px solid rgb(255 255 255 / 0.14);
-  box-shadow: inset 3px 0 0 #1d4ed8, 0 10px 30px -12px rgb(29 78 216 / 0.6);
+  box-shadow: inset 3px 0 0 #22c55e, 0 10px 30px -12px rgb(34 197 94 / 0.6);
   transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 .dash-quick {
@@ -1118,7 +1118,7 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.35s;
-  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, -20%), rgb(29 78 216 / 0.2), transparent 60%);
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, -20%), rgb(34 197 94 / 0.2), transparent 60%);
 }
 .gpanel:hover::before { opacity: 1; }
 .gpanel:hover { border-color: rgb(255 255 255 / 0.2); }
@@ -1135,7 +1135,7 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
   backdrop-filter: blur(14px);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.gsearch:focus-within { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgb(29 78 216 / 0.3); }
+.gsearch:focus-within { border-color: #22c55e; box-shadow: 0 0 0 3px rgb(34 197 94 / 0.3); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .gpanel { background: #12141c; }
   .dash-rail { background: #0c0d12; }
@@ -1145,10 +1145,10 @@ html:has(.dash-stage), body:has(.dash-stage) { overflow-x: clip; } /* the full-w
 .dash-rise { animation: dash-rise 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @keyframes dash-rise { from { opacity: 0; transform: translateY(16px) scale(0.985); } }
 .pulse-dot {
-  display: inline-block; width: 8px; height: 8px; border-radius: 9999px; background: #2563eb;
+  display: inline-block; width: 8px; height: 8px; border-radius: 9999px; background: #16a34a;
   animation: pulse-ring 2s ease-out infinite;
 }
-@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgb(37 99 235 / 0.7); } 70%, 100% { box-shadow: 0 0 0 10px rgb(37 99 235 / 0); } }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgb(22 163 74 / 0.7); } 70%, 100% { box-shadow: 0 0 0 10px rgb(22 163 74 / 0); } }
 .fade-in { animation: fade-in 1s 0.6s both; }
 @keyframes fade-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
@@ -1175,8 +1175,8 @@ html:has(.report-stage), body:has(.report-stage) { overflow-x: clip; }
   height: 38rem;
   pointer-events: none;
   background:
-    radial-gradient(560px 340px at 30% 0%, rgb(29 78 216 / 0.2), transparent 70%),
-    radial-gradient(480px 320px at 78% 12%, rgb(29 78 216 / 0.1), transparent 70%);
+    radial-gradient(560px 340px at 30% 0%, rgb(34 197 94 / 0.2), transparent 70%),
+    radial-gradient(480px 320px at 78% 12%, rgb(34 197 94 / 0.1), transparent 70%);
   animation: stage-drift 18s ease-in-out infinite alternate;
 }
 .report .card,
@@ -1210,20 +1210,20 @@ html:has(.report-stage), body:has(.report-stage) { overflow-x: clip; }
 @media (min-width: 640px) { .fixcard { grid-template-columns: 2.75rem minmax(0, 1fr) auto; padding: 1.5rem; gap: 1.25rem; } }
 .fixnum {
   display: flex; height: 2.5rem; width: 2.5rem; align-items: center; justify-content: center; border-radius: 0.875rem;
-  background: rgb(29 78 216 / 0.2); border: 1px solid rgb(37 99 235 / 0.4); font-family: var(--font-mono); font-size: 0.8125rem;
+  background: rgb(34 197 94 / 0.2); border: 1px solid rgb(22 163 74 / 0.4); font-family: var(--font-mono); font-size: 0.8125rem;
 }
 .winpill { justify-self: start;
   display: inline-flex; flex-direction: column; align-items: center; min-width: 5.5rem; padding: 0.625rem 0.875rem; border-radius: 1rem;
-  background: linear-gradient(180deg, rgb(29 78 216 / 0.35), rgb(29 78 216 / 0.15)); border: 1px solid rgb(37 99 235 / 0.45);
-  box-shadow: 0 10px 30px -14px #1d4ed8;
+  background: linear-gradient(180deg, rgb(34 197 94 / 0.35), rgb(34 197 94 / 0.15)); border: 1px solid rgb(22 163 74 / 0.45);
+  box-shadow: 0 10px 30px -14px #22c55e;
 }
 /* the launch path */
 .pathstep { position: relative; display: block; border-radius: 1rem; padding: 1rem; border: 1px solid rgb(255 255 255 / 0.1); background: rgb(255 255 255 / 0.03); transition: transform 0.25s, border-color 0.25s, background 0.25s; }
 a.pathstep:hover { transform: translateY(-3px); border-color: rgb(255 255 255 / 0.25); background: rgb(255 255 255 / 0.06); }
 .pathdot { display: flex; height: 1.75rem; width: 1.75rem; align-items: center; justify-content: center; border-radius: 9999px; border: 1px solid rgb(255 255 255 / 0.25); font-size: 0.75rem; }
-.pathdot.done { background: #1d4ed8; border-color: #2563eb; color: #fff; box-shadow: 0 0 0 4px rgb(29 78 216 / 0.25); }
+.pathdot.done { background: #22c55e; border-color: #16a34a; color: #fff; box-shadow: 0 0 0 4px rgb(34 197 94 / 0.25); }
 .pathbar { height: 4px; border-radius: 9999px; background: rgb(255 255 255 / 0.08); overflow: hidden; }
-.pathbar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #1d4ed8, #2563eb); transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.pathbar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #22c55e, #16a34a); transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .nextcard { display: flex; flex-direction: column; gap: 0.5rem; padding: 1.25rem; transition: transform 0.25s; }
 a.nextcard:hover { transform: translateY(-3px); }
 .nextcard .arrow { transition: transform 0.25s; }
@@ -1243,9 +1243,9 @@ html[data-calm] .pathbar > i, html[data-calm] a.pathstep, html[data-calm] a.next
 
 /* ---- FINAL POLISH (2026-11-22 launch audit) ---- */
 /* Accent TEXT stays a DARK, saturated royal blue (founder: "keep the blue dark", 2026-11-23).
-   #3a72ff is the darkest blue that is still readable on the near-black page (4.77:1, AA for all text).
-   Buttons, rings and filled shapes keep the deep brand blue #1d4ed8 (too dark for text: 2.97:1). */
-.text-accent { color: #3a72ff; }
+   #4ade80 is the darkest blue that is still readable on the near-black page (4.77:1, AA for all text).
+   Buttons, rings and filled shapes keep the deep brand blue #22c55e (too dark for text: 2.97:1). */
+.text-accent { color: #4ade80; }
 /* No lonely last words in headings and lead paragraphs ("...before launch / day."). */
 .t-lead, .t-h1, .t-h2, .t-h3, .t-chunk, .home-hero p { text-wrap: balance; }
 /* phone menu: no default disclosure triangle */
@@ -1276,7 +1276,7 @@ html[data-calm] .hero-row { animation: none; }
   position: absolute;
   inset: auto -10% -60% -10%;
   height: 120%;
-  background: radial-gradient(closest-side, rgb(29 78 216 / 0.28), transparent);
+  background: radial-gradient(closest-side, rgb(34 197 94 / 0.28), transparent);
   pointer-events: none;
 }
 
@@ -1296,7 +1296,7 @@ html[data-calm] .hero-row { animation: none; }
   .fixstatus { display: none !important; }
   * { color: #111 !important; box-shadow: none !important; text-shadow: none !important; backdrop-filter: none !important; animation: none !important; transition: none !important; }
   .card, .gpanel, .glass, .paper { background: #fff !important; border-color: #ddd !important; }
-  .bg-accent, .prio-critical { background: #1d4ed8 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .bg-accent, .prio-critical { background: #22c55e !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .reveal { opacity: 1 !important; transform: none !important; }
   section, li { break-inside: avoid; }
   a { text-decoration: none !important; }
@@ -1319,13 +1319,13 @@ html:has(.bleed-full), body:has(.bleed-full) { overflow-x: clip; }
   padding: 8px 16px; font-size: 0.95rem; color: var(--fg);
   background: rgb(255 255 255 / 0.03);
 }
-.hook-dot { width: 8px; height: 8px; border-radius: 999px; background: #1d4ed8; box-shadow: 0 0 0 4px rgb(29 78 216 / 0.25); }
+.hook-dot { width: 8px; height: 8px; border-radius: 999px; background: #22c55e; box-shadow: 0 0 0 4px rgb(34 197 94 / 0.25); }
 /* the hero picture gets a little more presence on big screens */
 @media (min-width: 1280px) { .hero-visual-wrap { transform: scale(1.04); transform-origin: center; } }
 
 /* ==================== PRICING v2: summarized cards (2026-11-23) ==================== */
-.plan-rec { border-color: rgb(37 99 235 / 0.7); background: linear-gradient(180deg, rgb(29 78 216 / 0.22), rgb(29 78 216 / 0.06)); }
-.plan-badge { border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: rgb(29 78 216 / 0.25); color: #bcd2ff; }
+.plan-rec { border-color: rgb(22 163 74 / 0.7); background: linear-gradient(180deg, rgb(34 197 94 / 0.22), rgb(34 197 94 / 0.06)); }
+.plan-badge { border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: rgb(34 197 94 / 0.25); color: #bbf7d0; }
 .plan-cta > div { margin-top: 0 !important; }  /* BuyButton / SwitchPlanButton bring their own top margin */
 .plan-cta .btn { width: 100%; border-radius: 999px; min-height: 48px; }
 
@@ -1355,10 +1355,10 @@ body:has(.dash-app) main { padding-bottom: 0 !important; }
   --fg-faint: #858a96;
   --line: #e7e7eb;
   --line-strong: #d6d7dc;
-  --accent: #1d4ed8;
-  --accent-hover: #2563eb;
+  --accent: #22c55e;
+  --accent-hover: #16a34a;
   --accent-fg: #ffffff;
-  --accent-ink: #1d4ed8;
+  --accent-ink: #22c55e;
   color: var(--fg);
 }
 .dash-app { background: #f6f6f7; min-height: 100dvh; }
@@ -1398,15 +1398,15 @@ body:has(.dash-app) main { padding-bottom: 0 !important; }
 .dash-app .btn-secondary:hover { background: #f6f6f7 !important; }
 .dash-app .btn-text, .dash-app .btn-ghost { color: var(--fg-muted); }
 .dash-app .btn-text:hover, .dash-app .btn-ghost:hover { color: var(--fg); }
-.dash-app .btn-primary { box-shadow: 0 1px 2px rgb(29 78 216 / 0.25) !important; background: #1d4ed8 !important; }
-.dash-app .btn-primary:hover { background: #2563eb !important; }
+.dash-app .btn-primary { box-shadow: 0 1px 2px rgb(34 197 94 / 0.25) !important; background: #22c55e !important; }
+.dash-app .btn-primary:hover { background: #16a34a !important; }
 .dash-app .field, .dash-app input:not([type=range]):not([type=checkbox]), .dash-app select, .dash-app textarea { background: #ffffff; color: var(--fg); border-color: var(--line-strong); }
 .dash-app .chip { background: #ffffff; color: var(--fg-muted); border: 1px solid var(--line-strong); }
 .dash-app .chip[aria-pressed="true"] { background: #121316; color: #ffffff; border-color: #121316; }
 .dash-app .pill { border-color: var(--line-strong); color: var(--fg-muted); }
 .dash-app kbd { border-color: var(--line-strong); background: #fff; }
-.dash-app .text-accent { color: #1d4ed8; }
-.dash-app ::selection { background: rgb(29 78 216 / 0.18); }
+.dash-app .text-accent { color: #22c55e; }
+.dash-app ::selection { background: rgb(34 197 94 / 0.18); }
 /* no drifting glows or count-in motion here */
 .dash-app .dash-rise, .dash-app .pulse-dot { animation: none !important; }
 
@@ -1436,16 +1436,16 @@ body:has(.dash-app) main { padding-bottom: 0 !important; }
   --fg-faint: #767676;
   --line: rgb(8 9 12 / 0.08);
   --line-strong: rgb(8 9 12 / 0.15);
-  --accent: #1f5eff;
-  --accent-hover: #3b74ff;
+  --accent: #22c55e;
+  --accent-hover: #16a34a;
   --accent-fg: #ffffff;
-  --accent-ink: #1f5eff;
+  --accent-ink: #22c55e;
   --gold: #f4d778;
 }
 html, body { background: #ffffff; color: var(--fg); }
 body { background-image: none; }
 body::before, body::after { content: none !important; }
-::selection { background: rgb(31 94 255 / 0.16); }
+::selection { background: rgb(34 197 94 / 0.16); }
 
 /* the black bands (and anything that wants the dark look) */
 .band-dark,
@@ -1462,8 +1462,8 @@ body::before, body::after { content: none !important; }
   --fg-faint: rgb(255 255 255 / 0.45);
   --line: rgb(255 255 255 / 0.1);
   --line-strong: rgb(255 255 255 / 0.2);
-  --accent: #388cff;
-  --accent-ink: #6aa8ff;
+  --accent: #4ade80;
+  --accent-ink: #86efac;
   color: var(--fg);
 }
 .band-dark { background: #000000; }
@@ -1576,7 +1576,7 @@ h1, h2, h3 { letter-spacing: -0.025em; }
 .rnav a:hover { color: #0a0a0a; }
 .rnav a[aria-current="true"] { background: #0a0a0a; color: #ffffff; box-shadow: none; }
 .fixnum { background: rgb(8 9 12 / 0.05); border: 1px solid var(--line); color: var(--fg); }
-.winpill { background: rgb(31 94 255 / 0.08); border: 1px solid rgb(31 94 255 / 0.2); box-shadow: none; color: var(--fg); }
+.winpill { background: rgb(34 197 94 / 0.08); border: 1px solid rgb(34 197 94 / 0.2); box-shadow: none; color: var(--fg); }
 .winpill span:last-child { color: var(--fg-muted) !important; }
 .pathstep { border-color: var(--line); background: rgb(8 9 12 / 0.02); }
 a.pathstep:hover { border-color: var(--line-strong); background: rgb(8 9 12 / 0.04); }
@@ -1643,169 +1643,45 @@ a.pathstep:hover { border-color: var(--line-strong); background: rgb(8 9 12 / 0.
 html[data-calm] .float-a, html[data-calm] .float-b, html[data-calm] .float-c { animation: none; }
 html[data-calm] .cm-dot, html[data-calm] .tilt, html[data-calm] .glass-tile { transition: none; }
 
-/* =====================================================================================
-   DESIGN v12 "MIDNIGHT EDITORIAL" (2026-11-24, founder: "premium minimal typography,
-   sophisticated dark backgrounds, subtle blue, beautiful data viz, smooth transitions, strong
-   spacing, less clutter, enterprise-quality dashboard. A serious AI company, not a vibe-coded
-   startup.") REPLACES the white base of v11 (this block wins: it comes last).
-   - ONE dark base everywhere (#08090b), panels one step lighter (#0e0f12 / #121318), hairlines.
-   - ONE quiet blue (#4c7dff) for data, links and the few highlights. Buttons stay pills:
-     white on dark for the main action, quiet grey for the rest.
-   - No pastel backdrops, no white sections: depth comes from subtle blue-black light + grain.
-   ===================================================================================== */
-:root,
-.card,
-.card-raised,
-.paper,
-.features,
-.glass,
-.band-dark,
-.band-dark .card,
-.band-dark .card-raised,
-.band-dark .paper,
-.band-dark .glass {
-  --bg: #08090b;
-  --bg-subtle: rgb(255 255 255 / 0.045);
-  --bg-raised: #121318;
-  --surface: #0e0f12;
-  --fg: #ededef;
-  --fg-muted: #a1a4ad;
-  --fg-faint: #6f737d;
-  --line: rgb(255 255 255 / 0.07);
-  --line-strong: rgb(255 255 255 / 0.14);
-  --accent: #4c7dff;
-  --accent-hover: #6a93ff;
-  --accent-fg: #ffffff;
-  --accent-ink: #7fa2ff;
-  color: var(--fg);
+
+/* ================================================================================================
+   DESIGN v13 "WHITE + GREEN" (2026-11-24, founder: "keep the white background and the colourful
+   vibe, switch the main colour from blue to light green"). v11.1 stays the base (white page, black
+   bands, painted backdrops); this layer only re-colours it.
+   - #22c55e = the light green: data marks, highlights, filled chips (dark green text on it, since
+     white on light green is too faint to read).
+   - #15803d = small green TEXT on white (5:1, readable). #4ade80 / #86efac = green on black.
+   ================================================================================================ */
+:root, .card, .card-raised, .paper, .dash-app {
+  --accent: #22c55e;
+  --accent-hover: #16a34a;
+  --accent-fg: #052e16;
+  --accent-ink: #15803d;
 }
-html, body { background: #08090b !important; color: var(--fg); }
-.band-dark { background: transparent; }
-::selection { background: rgb(76 125 255 / 0.3); }
-.fade-band, .fade-to-black, .fade-to-white { display: none; }
-.site-header { background: rgb(8 9 11 / 0.72) !important; border-bottom: 1px solid rgb(255 255 255 / 0.06) !important; }
+.band-dark { --accent: #4ade80; --accent-hover: #86efac; --accent-fg: #052e16; --accent-ink: #86efac; }
+::selection { background: rgb(34 197 94 / 0.22); }
+.dash-app .text-accent { color: #15803d; }
+.dash-app .btn-primary { background: #111 !important; box-shadow: none !important; }
+.dash-app .btn-primary:hover { background: #2a2a2a !important; }
+.pill-buy, .prio-critical { color: #052e16 !important; }
+.plan-badge { color: #052e16; background: #bbf7d0; }
+.pathdot.done { color: #052e16; }
 
-/* calmer, finer type */
-h1, h2 { letter-spacing: -0.035em; }
-.t-display { font-size: clamp(2.6rem, 5vw, 4.6rem); letter-spacing: -0.045em; line-height: 1.02; }
-.t-lead { color: var(--fg-muted); }
-.text-faint { color: var(--fg-faint); }
-
-/* surfaces */
-@layer components {
-  .card, .card-raised, .paper, .glass { background: #0e0f12; border: 1px solid var(--line); border-radius: 20px; box-shadow: none; }
-  .band-dark .card, .band-dark .card-raised, .band-dark .paper, .band-dark .glass { background: #0e0f12; border-color: var(--line); }
-  .btn-secondary { background: rgb(255 255 255 / 0.06); color: var(--fg); }
-  .btn-secondary:hover:not(:disabled) { background: rgb(255 255 255 / 0.1); }
-  .field { background: rgb(255 255 255 / 0.04); color: var(--fg); border-color: rgb(255 255 255 / 0.1); }
-  .field:hover { border-color: rgb(255 255 255 / 0.18); }
-  .field:focus { border-color: rgb(76 125 255 / 0.8); box-shadow: 0 0 0 3px rgb(76 125 255 / 0.18); }
-  .field::placeholder { color: #5f636c; }
-  .field option { color: #0a0a0a; background: #fff; }
-  .chip { background: rgb(255 255 255 / 0.05); color: var(--fg-muted); }
-  .chip:hover { background: rgb(255 255 255 / 0.09); color: var(--fg); }
-  .chip[aria-pressed="true"] { background: var(--fg); color: #08090b; border-color: var(--fg); }
-  .pill-maybe { background: rgb(255 255 255 / 0.08); }
+/* painted backdrops, now green-forward and colourful: mint sky, lime sunset, deep moss */
+.scene-sky {
+  background:
+    radial-gradient(120% 90% at 20% 110%, #fde68a 0%, transparent 55%),
+    radial-gradient(90% 80% at 85% 0%, #22c55e 0%, transparent 60%),
+    linear-gradient(180deg, #86efac 0%, #d1fae5 55%, #fef3c7 100%);
 }
-.gpanel, .report .card, .report .card-raised { background: #0e0f12 !important; border: 1px solid var(--line) !important; }
-.dpanel { background: #0e0f12; border: 1px solid rgb(255 255 255 / 0.07); }
-.drow { background: rgb(255 255 255 / 0.04); }
-.drow:hover { background: rgb(255 255 255 / 0.07); }
-.drow[aria-selected="true"] { background: linear-gradient(90deg, rgb(76 125 255 / 0.22), rgb(76 125 255 / 0.06)); box-shadow: inset 2px 0 0 #4c7dff; }
-.seg { background: rgb(255 255 255 / 0.05); }
-.seg [aria-pressed="true"], .seg [aria-selected="true"] { background: rgb(255 255 255 / 0.12) !important; color: #fff; box-shadow: none !important; }
-.note, :root .note, .band-dark .note { background: rgb(76 125 255 / 0.06); border: 1px solid rgb(76 125 255 / 0.18); }
-.note-title, :root .note-title, .band-dark .note-title { color: #8fb0ff; }
-.note-btn { background: rgb(76 125 255 / 0.14); }
-.eyebrow { border-bottom-color: rgb(255 255 255 / 0.08); }
-
-/* painted backdrops become deep, quiet light (no pastels) */
-.scene-sky, .scene-dusk, .scene-moss {
-  background: radial-gradient(70% 90% at 85% 0%, rgb(76 125 255 / 0.28), transparent 60%), radial-gradient(60% 80% at 0% 100%, rgb(76 125 255 / 0.12), transparent 60%), linear-gradient(180deg, #10131c 0%, #0b0c10 100%);
-  border: 1px solid rgb(255 255 255 / 0.06);
+.scene-dusk {
+  background:
+    radial-gradient(90% 80% at 10% 100%, #fdba74 0%, transparent 60%),
+    radial-gradient(100% 80% at 90% 10%, #065f46 0%, transparent 65%),
+    linear-gradient(160deg, #0f766e 0%, #84cc16 60%, #fef08a 100%);
 }
-.scene::after { opacity: 0.12; }
-
-/* the drawn product windows: a dark enterprise app */
-.win { background: #0c0d10; color: var(--fg); border-color: rgb(255 255 255 / 0.08); box-shadow: 0 40px 90px -40px rgb(0 0 0 / 0.9); }
-.win-side { background: #0a0b0d; border-right-color: rgb(255 255 255 / 0.06); }
-.win-item { color: #9a9da6; }
-.win-item.on { background: rgb(255 255 255 / 0.06); color: #ededef; }
-.win-tab { color: #868a93; }
-.win-tab.on { background: rgb(255 255 255 / 0.08); color: #ededef; }
-.win-card { background: #111216; border-color: rgb(255 255 255 / 0.07); }
-.win-chip { background: rgb(255 255 255 / 0.06); color: #c5c7cd; }
-.win-num { color: #6f737d; }
-
-/* hero: dark glass spec card and chips */
-.spec { background: rgb(18 19 24 / 0.82) !important; border: 1px solid rgb(255 255 255 / 0.09); box-shadow: 0 40px 80px -30px rgb(0 0 0 / 0.8); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); }
-.spec-row { border-bottom-color: rgb(255 255 255 / 0.07); }
-.spec-row dt { color: #6f737d; }
-.spec-row dd { color: #ededef !important; }
-.glass-chip { color: #ededef; background: rgb(18 19 24 / 0.6); border: 1px solid rgb(255 255 255 / 0.1); box-shadow: 0 12px 30px -14px rgb(0 0 0 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.06); }
-
-/* reports */
-.rnav { background: rgb(14 15 18 / 0.8) !important; border-color: rgb(255 255 255 / 0.08) !important; box-shadow: 0 12px 40px -18px rgb(0 0 0 / 0.9) !important; }
-.rnav a { color: #8a8d96 !important; }
-.rnav a:hover { color: #ededef !important; }
-.rnav a[aria-current="true"] { background: rgb(255 255 255 / 0.1) !important; color: #fff !important; }
-.fixnum { background: rgb(255 255 255 / 0.05); border-color: rgb(255 255 255 / 0.08); }
-.winpill { background: rgb(76 125 255 / 0.1); border-color: rgb(76 125 255 / 0.25); }
-.pathstep { background: rgb(255 255 255 / 0.02); }
-.pathdot.done { background: #4c7dff; border-color: #4c7dff; }
-.pathbar { background: rgb(255 255 255 / 0.07); }
-.pathbar > i { background: #4c7dff; }
-.marquee-word { -webkit-text-stroke-color: rgb(255 255 255 / 0.8); }
-.marquee-word.is-solid { color: #fff; }
-
-/* pricing: the recommended plan is the one with the blue edge, not a loud black block */
-.plan-rec { background: linear-gradient(180deg, rgb(76 125 255 / 0.1), rgb(76 125 255 / 0.02)) !important; border-color: rgb(76 125 255 / 0.45) !important; color: var(--fg); }
-.plan-rec .btn-primary { background: #ffffff !important; color: #08090b !important; border-color: #fff !important; }
-.plan-badge { background: rgb(76 125 255 / 0.18); color: #a9c0ff; }
-
-/* ---------- the dashboard: a dark, enterprise workspace ---------- */
-.dash-app,
-.dash-app .card,
-.dash-app .card-raised,
-.dash-app .paper,
-.dash-app .glass,
-.dash-app .gpanel {
-  --bg: #08090b;
-  --bg-subtle: rgb(255 255 255 / 0.04);
-  --bg-raised: #121318;
-  --surface: #0e0f12;
-  --fg: #ededef;
-  --fg-muted: #a1a4ad;
-  --fg-faint: #6f737d;
-  --line: rgb(255 255 255 / 0.07);
-  --line-strong: rgb(255 255 255 / 0.13);
-  --accent: #4c7dff;
-  --accent-ink: #7fa2ff;
+.scene-moss {
+  background:
+    radial-gradient(100% 80% at 80% 100%, #bef264 0%, transparent 60%),
+    linear-gradient(160deg, #14532d 0%, #22c55e 50%, #d9f99d 100%);
 }
-html:has(.dash-app), body:has(.dash-app), .dash-app { background: #08090b !important; }
-.dash-app .fl-panel, .dash-app .card, .dash-app .card-raised, .dash-app .gpanel, .dash-app .glass {
-  background: #0e0f12 !important; border: 1px solid rgb(255 255 255 / 0.07) !important;
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset !important;
-}
-.fl-tile { background: rgb(255 255 255 / 0.03); border-color: rgb(255 255 255 / 0.06); }
-.fl-chip { background: rgb(255 255 255 / 0.04); border-color: rgb(255 255 255 / 0.1); color: #c5c7cd; }
-.fl-rail { background: #0a0b0d !important; border-right: 1px solid rgb(255 255 255 / 0.06) !important; }
-@media (max-width: 1023px) { .fl-rail { background: #08090b !important; border-bottom: 1px solid rgb(255 255 255 / 0.06) !important; } }
-.fl-search { background: #0e0f12 !important; border-color: rgb(255 255 255 / 0.08) !important; box-shadow: none !important; }
-.fl-search:focus-within { border-color: rgb(76 125 255 / 0.6) !important; }
-.dash-app .dash-pill { background: rgb(255 255 255 / 0.06) !important; border: 1px solid rgb(255 255 255 / 0.08) !important; box-shadow: none !important; }
-.dash-app .dash-quick { color: #9a9da6; }
-.dash-app .dash-quick:hover { color: #ededef; background: rgb(255 255 255 / 0.05); }
-.dash-app .dash-active { background: rgb(255 255 255 / 0.08); border-color: rgb(255 255 255 / 0.1); color: #fff !important; }
-.dash-app .btn-primary { background: #ffffff !important; border-color: #ffffff !important; color: #08090b !important; }
-.dash-app .btn-primary:hover { background: #dcdde1 !important; }
-.dash-app .btn-secondary { background: rgb(255 255 255 / 0.06) !important; color: #ededef !important; border: 1px solid rgb(255 255 255 / 0.08) !important; box-shadow: none !important; }
-.dash-app .btn-secondary:hover { background: rgb(255 255 255 / 0.1) !important; }
-.dash-app .field, .dash-app input:not([type=range]):not([type=checkbox]), .dash-app select, .dash-app textarea { background: rgb(255 255 255 / 0.04); color: #ededef; border-color: rgb(255 255 255 / 0.1); }
-.dash-app .chip { background: rgb(255 255 255 / 0.05); color: #a1a4ad; border-color: transparent; }
-.dash-app .chip[aria-pressed="true"] { background: #ededef; color: #08090b; }
-.dash-app kbd { background: transparent; border-color: rgb(255 255 255 / 0.12); }
-.dash-app .text-accent { color: #7fa2ff; }
-
-/* calm motion: everything that moves eases the same way */
-a, button, .card, .dpanel, .win-card, .drow, .chip, .seg button { transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }

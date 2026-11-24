@@ -58,7 +58,7 @@ export default function ReportWindow({ data }: { data: SampleData }) {
                     <div className="mt-2 grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-2 text-[11px] text-muted">
                       <span className="win-num">{o.pct}%</span>
                       <span className="h-1.5 overflow-hidden rounded-full bg-subtle">
-                        <span className="block h-full rounded-full bg-[#4c7dff]" style={{ width: `${o.pct}%` }} />
+                        <span className="block h-full rounded-full bg-[#22c55e]" style={{ width: `${o.pct}%` }} />
                       </span>
                     </div>
                   </div>
@@ -73,7 +73,7 @@ export default function ReportWindow({ data }: { data: SampleData }) {
               <div key={i} className="win-card p-3">
                 <div className="flex items-center justify-between gap-2 text-[12px]">
                   <span className="truncate">{p.label}</span>
-                  <span className={`win-chip ${p.verdict === "buy" ? "!bg-[#4c7dff] !text-white" : ""}`}>{p.verdict === "buy" ? "Would buy" : p.verdict === "maybe" ? "Maybe" : "No"}</span>
+                  <span className={`win-chip ${p.verdict === "buy" ? "!bg-[#22c55e] !text-[#052e16]" : ""}`}>{p.verdict === "buy" ? "Would buy" : p.verdict === "maybe" ? "Maybe" : "No"}</span>
                 </div>
                 <p className="mt-2 text-[12.5px] text-muted">“{p.quote}”</p>
               </div>
