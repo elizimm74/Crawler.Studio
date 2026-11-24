@@ -1722,3 +1722,50 @@ html[data-calm] .nature { transition: none; }
 .dash-banner { min-height: 13rem; }
 /* more landscape around the drawn windows (aaru-style framing) */
 @media (min-width: 640px) { .scene { padding: 64px 0 0 64px; } .scene-left { padding: 64px 64px 0 0; } }
+
+/* ================================================================================================
+   v13.3 FLOATING NAV + WASHED COLOUR CHANGES (2026-11-24, founder: aaru-style "very nice navigation
+   bars, nice scrolling, beautiful colour changes using washed gradients; nature as an accent, not
+   a full page; different colours; always professional").
+   ================================================================================================ */
+/* the header is now a floating dark-glass pill; the old full-width white bar is gone */
+.site-header { background: transparent !important; border: 0 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.nav-pill {
+  --fg: #ffffff; --fg-muted: rgb(255 255 255 / 0.72); --fg-faint: rgb(255 255 255 / 0.5);
+  --bg: #151715; --subtle: #1d201d; --raised: #1d201d; --line: rgb(255 255 255 / 0.12); --line-strong: rgb(255 255 255 / 0.2);
+  color: var(--fg);
+  background: rgb(20 22 20 / 0.72);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 18px;
+  box-shadow: 0 12px 40px -18px rgb(0 0 0 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.06);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  backdrop-filter: saturate(160%) blur(18px);
+  transition: max-width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.45s ease;
+}
+html[data-scrolled] .nav-pill { max-width: 52rem; height: 3.25rem; background: rgb(20 22 20 / 0.86); }
+.nav-pill .btn-text { color: var(--fg-muted); }
+.nav-pill .btn-text:hover { color: #fff; background: rgb(255 255 255 / 0.08); }
+.nav-pill .btn-primary { background: #ffffff !important; color: #0a0a0a !important; border-color: #ffffff !important; box-shadow: none !important; height: 2.5rem; }
+.nav-pill .btn-primary:hover { background: #e9ece9 !important; }
+
+/* the wash: a fixed layer behind the home page that fades between pale tints as you scroll */
+.wash-layer { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background-color: var(--wash, #ffffff); transition: background-color 1.4s ease; }
+.wash-glow { position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%; background-color: var(--wash-glow, #ffffff); filter: blur(90px); opacity: 0.85; transition: background-color 1.6s ease; animation: wash-drift 34s ease-in-out infinite alternate; }
+.wash-glow-a { top: -30vmax; right: -20vmax; }
+.wash-glow-b { bottom: -40vmax; left: -25vmax; opacity: 0.6; animation-delay: -12s; }
+@keyframes wash-drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(-6vmax, 4vmax, 0) scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .wash-layer, .wash-glow { transition: none; animation: none; } .nav-pill { transition: none; } }
+html[data-calm] .wash-layer, html[data-calm] .wash-glow { transition: none; animation: none; }
+/* the black band now fades in and out of the wash instead of hard white */
+.fade-to-black { background: linear-gradient(180deg, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 0.08) 30%, rgb(0 0 0 / 0.6) 64%, #000 100%); }
+.fade-to-white { background: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.82) 30%, rgb(0 0 0 / 0.14) 72%, rgb(0 0 0 / 0) 100%); }
+/* the glass hero card + chips stay readable on any tint */
+html.washed .site-header + main { background: transparent; }
+/* while the wash is on, the page itself is see-through so the tint shows */
+html.washed, html.washed body, html.washed main { background: transparent !important; }
+html.washed { background-color: var(--wash, #ffffff) !important; }
+.nav-pill { background: rgb(20 22 20 / 0.8); }
+/* the phone menu drops down from the dark pill, so it is dark glass too (white text on it) */
+.nav-pill .phone-menu > div { background: #151715 !important; border-color: rgb(255 255 255 / 0.12) !important; color: #fff; box-shadow: 0 20px 50px -20px rgb(0 0 0 / 0.6) !important; }
+.nav-pill .phone-menu > div a, .nav-pill .phone-menu > div button { color: rgb(255 255 255 / 0.85); }
+.nav-pill .phone-menu > div a:hover, .nav-pill .phone-menu > div button:hover { background: rgb(255 255 255 / 0.08); color: #fff; }

@@ -22,6 +22,7 @@ import { homeDemo } from "@/lib/homeDemo";
 import { STARTER_CUSTOMERS } from "@/lib/plans";
 import { FOCUS } from "@/lib/productTypes";
 import Nature from "@/components/Nature";
+import WashScroll from "@/components/landing/WashScroll";
 
 export const metadata = {
   title: { absolute: "Crawler: AI customer simulations for your website" },
@@ -49,7 +50,7 @@ export default function Home() {
   return (
     <div className="bleed-full -mt-12 sm:-mt-16">
       {/* ================= HERO (white) ================= */}
-      <section className="home-wide grid min-h-[calc(100svh-4rem)] items-center gap-12 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20" aria-labelledby="hero-title">
+      <section className="home-wide grid min-h-[calc(100svh-4rem)] items-center gap-12 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20" aria-labelledby="hero-title" data-wash="#f4f7f1 #d7eedd">
         <div className="rise">
           <p className="text-[15px] text-faint">
             AI customer simulation. <span className="text-accent">From link to fixes.</span>
@@ -110,10 +111,9 @@ export default function Home() {
       </section>
 
       {/* black → white fade, like a page turning */}
-      <div className="fade-band" aria-hidden />
 
       {/* ================= YOU PROVIDE (white) ================= */}
-      <section className="home-wide pt-20" aria-labelledby="provide-title">
+      <section className="home-wide pt-20" aria-labelledby="provide-title" data-wash="#eef3f8 #d6e3f4">
         <div className="eyebrow">
           <span>You provide</span>
           <span>Steps 1–3</span>
@@ -387,7 +387,7 @@ export default function Home() {
       <div className="fade-to-white" aria-hidden />
 
       {/* ================= YOU RECEIVE (white) ================= */}
-      <section className="home-wide pb-28" aria-labelledby="receive-title">
+      <section className="home-wide pb-28" aria-labelledby="receive-title" data-wash="#f7f1e8 #f1d9bf">
         <div className="eyebrow">
           <span>You receive</span>
           <span>Step 7</span>
@@ -417,33 +417,36 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="home-wide pb-28">
+      <section className="home-wide pb-28" data-wash="#f3f0f7 #e2daf2">
         <Faq />
       </section>
 
-      {/* ================= FINAL CTA ================= */}
-      <section className="home-wide pb-24" aria-labelledby="final-title">
-        <div className="scene scene-sky !p-0">
-          <Nature kind="ridge" position="50% 40%" />
-          {/* a soft light glow behind the words so they stay readable over the landscape */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_42%,rgba(255,255,255,0.75),transparent_75%)]" aria-hidden />
-          <div className="relative z-10 px-6 pb-36 pt-20 text-center text-fg sm:px-12 sm:pb-44 sm:pt-28">
-            <h2 id="final-title" className="t-h1 text-fg">
+      {/* ================= FINAL CTA =================
+          Words on the left, nature as a framed accent on the right (not a full-page photo). */}
+      <section className="home-wide pb-28" aria-labelledby="final-title" data-wash="#eef6ee #cfead6">
+        <div className="grid items-center gap-10 rounded-[32px] border border-line bg-white/70 p-6 backdrop-blur sm:p-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14 lg:p-14">
+          <div>
+            <h2 id="final-title" className="t-h1">
               Stop guessing.
-              <span className="block text-black/55">
+              <span className="block text-faint">
                 Start <span className="serif text-[#0b5e28]">validating.</span>
               </span>
             </h2>
-            <p className="mx-auto mt-5 max-w-md text-black/70">Paste your website and see what your simulated customers think in a few minutes.</p>
-            <div className="band-dark mx-auto mt-8 max-w-xl rounded-[22px] !bg-black/80 p-2 backdrop-blur">
+            <p className="mt-5 max-w-md text-muted">Paste your website and see what your simulated customers think in a few minutes.</p>
+            <div className="band-dark mt-8 max-w-xl rounded-[22px] !bg-black/85 p-2">
               <HeroForm cta="Run Your First Simulation" id="final-url" />
             </div>
-            <p className="mt-4 inline-block rounded-full bg-white/80 px-3 py-1 text-sm text-black/75 backdrop-blur">No credit card required to get started.</p>
+            <p className="mt-4 text-sm text-faint">No credit card required to get started.</p>
+          </div>
+          <div className="scene relative aspect-[4/3] !p-0 lg:aspect-[5/4]" aria-hidden>
+            <Nature kind="ridge" position="50% 60%" />
           </div>
         </div>
       </section>
       {/* soft, inertial scrolling (mouse / trackpad only; off for reduced motion) */}
       <SmoothScroll />
+      {/* the page colour washes softly from one tint to the next as you scroll */}
+      <WashScroll />
     </div>
   );
 }

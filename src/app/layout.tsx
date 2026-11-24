@@ -1,4 +1,5 @@
 // The frame around every page: <html>, <body>, the top bar and the footer.
+import NavScroll from "@/components/NavScroll";
 import CalmToggle from "@/components/CalmToggle";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -56,8 +57,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-bg focus:p-4">
           Skip to content
         </a>
-        <header className="site-header sticky top-0 z-40">
-          <div className="home-wide flex h-16 items-center justify-between gap-4">
+        {/* a floating glass nav pill (it tightens up once you scroll: NavScroll) */}
+        <NavScroll />
+        <header className="site-header sticky top-3 z-40 px-3 sm:top-4 sm:px-4">
+          <div className="nav-pill mx-auto flex h-14 max-w-[64rem] items-center justify-between gap-4 pl-5 pr-2">
             <Logo />
             <nav className="flex items-center gap-1 text-sm" aria-label="Main">
               {user ? (
