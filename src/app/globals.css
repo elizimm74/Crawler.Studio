@@ -2181,3 +2181,18 @@ html, body, html:has(.dash-app), body:has(.dash-app), .dash-app { background: #f
 .plan-rec .text-faint, .plan-rec svg { color: #6b7570 !important; }
 .plan-rec .btn-primary { color: #fff !important; }
 .pulse-dot { background: #02aa3d !important; box-shadow: 0 0 0 4px rgb(2 170 61 / 0.18) !important; }
+
+/* ---------- "How a simulation works": the particle field (SimField.tsx) ---------- */
+.field14 { position: relative; overflow: hidden; border-radius: 24px; background: radial-gradient(70% 60% at 50% 35%, #ffffff 0%, #f6f9f7 70%); border: 1px solid var(--line); box-shadow: 0 30px 70px -45px rgb(15 30 20 / 0.3); }
+.field14-stage { position: relative; height: clamp(420px, 52vw, 620px); }
+.field14-stage canvas { position: absolute; inset: 0; display: block; }
+.field14-card { position: relative; margin: -96px auto 24px; width: min(560px, calc(100% - 32px)); padding: 18px 18px 14px 20px; border-radius: 18px; background: rgb(255 255 255 / 0.86); border: 1px solid var(--line); box-shadow: 0 16px 40px -24px rgb(15 30 20 / 0.3); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.field14-btn { display: inline-flex; height: 44px; width: 44px; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid var(--line-strong); background: #fff; color: var(--fg); transition: background 0.25s ease, transform 0.25s ease; }
+.field14-btn:hover { background: #f5f7f6; }
+.field14-btn.is-next { background: #058a37; border-color: #058a37; color: #fff; }
+.field14-btn.is-next:hover { background: #047a30; transform: translateX(1px); }
+.field14-progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 14px; }
+.field14-progress i { display: block; height: 3px; border-radius: 9px; background: rgb(12 32 20 / 0.1); transition: background 0.4s ease; }
+.field14-progress i.is-done { background: rgb(2 170 61 / 0.45); }
+.field14-progress i.is-on { background: #02aa3d; }
+@media (max-width: 639px) { .field14-stage { height: 380px; } .field14-card { margin-top: -64px; } }

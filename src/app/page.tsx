@@ -10,6 +10,7 @@ import HeroForm from "@/components/landing/home/HeroForm";
 import { PERSONAS } from "@/components/landing/home/sections";
 import SimConsole from "@/components/landing/v14/SimConsole";
 import ReportPreview from "@/components/landing/v14/ReportPreview";
+import SimField from "@/components/landing/v14/SimField";
 import Reveal from "@/components/Reveal";
 import SmoothScroll from "@/components/landing/motion/SmoothScroll";
 import Faq from "@/components/landing/Faq";
@@ -86,23 +87,11 @@ export default function Home() {
 
       {/* ================= HOW IT WORKS ================= */}
       <section id="how" className="home-wide scroll-mt-24 py-20 sm:py-28" aria-labelledby="how-title">
-        <Head eyebrow="How it works" id="how-title" title="From a link to a list of fixes." sub="No setup, no tracking code, no real visitors needed." />
-        <ol className="steps14 mt-14">
-          {STEPS.map((st, k) => (
-            <li key={st.title} className="steps14-item">
-              <Reveal delay={k * 90}>
-                <p className="steps14-label">
-                  <i aria-hidden /> Step {k + 1}
-                </p>
-                <div className="tile14-visual mt-6" aria-hidden>
-                  {st.visual}
-                </div>
-                <h3 className="mt-6 text-lg font-medium tracking-tight">{st.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{st.body}</p>
-              </Reveal>
-            </li>
-          ))}
-        </ol>
+        <Head eyebrow="How a simulation works" id="how-title" title="From a link to a list of fixes." sub="No setup, no tracking code, no real visitors needed. Use the arrows to step through it." />
+        {/* the animated "how a simulation works" field (demo data), see SimField.tsx */}
+        <div className="mt-14">
+          <SimField crowd={demo.crowd} />
+        </div>
       </section>
 
       {/* ================= MEET YOUR CUSTOMERS ================= */}
@@ -344,64 +333,7 @@ function Icon({ d }: { d: string }) {
 }
 
 // ---------- content ----------
-const STEPS = [
-  {
-    title: "Enter your website",
-    body: "Paste a link. Crawler checks it's live, reads what you sell and suggests who your customers are.",
-    visual: (
-      <div className="mini-url">
-        <span className="text-faint">https://</span>mealmate.app<span className="mini-caret" />
-      </div>
-    ),
-  },
-  {
-    title: "AI customers explore it",
-    body: "100 simulated customers, each with their own budget and mindset, visit on laptop and phone.",
-    visual: (
-      <div className="mini-crowd">
-        {Array.from({ length: 40 }, (_, i) => (
-          <i key={i} className={i % 7 === 0 ? "on" : i % 5 === 0 ? "mid" : ""} />
-        ))}
-      </div>
-    ),
-  },
-  {
-    title: "See why they buy or leave",
-    body: "Every customer decides, gives their main objection and the moment that lost them.",
-    visual: (
-      <div className="mini-bars">
-        {[
-          ["Price", 72],
-          ["Trust", 54],
-          ["Value", 38],
-        ].map(([k, w]) => (
-          <div key={k as string}>
-            <span>{k}</span>
-            <b style={{ width: `${w}%` }} />
-          </div>
-        ))}
-      </div>
-    ),
-  },
-  {
-    title: "Get ranked fixes",
-    body: "Fixes ordered by how many customers each could win back, plus a prompt to make the changes.",
-    visual: (
-      <div className="mini-fixes">
-        {[
-          ["Show the price", "+9"],
-          ["Add real proof", "+6"],
-          ["Shorter signup", "+4"],
-        ].map(([t, n]) => (
-          <div key={t}>
-            <span>{t}</span>
-            <b>{n}</b>
-          </div>
-        ))}
-      </div>
-    ),
-  },
-];
+
 
 const AREAS: [string, string, string][] = [
   ["Pricing", "Can they find it, read it, and does it feel fair?", "M12 3v18M16.5 7.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 2.6 4.5 3.2 4.5 1.5 4.5 3.3-2 3-4.5 3-4.5-1.3-4.5-3"],
