@@ -14,9 +14,9 @@ import type { CrowdPoint } from "@/lib/homeDemo";
 type V3 = [number, number, number];
 const GREEN = "#02aa3d";
 const DEEP = "#058a37";
-const AMBER = "#f2a516";
+const LIGHT_GREEN = "#8fd4a8"; // "maybe" (no yellow anywhere: founder rule)
 const GREY = "#b9c3bd";
-const MIND_COLORS = ["#02aa3d", "#f2a516", "#4c8ee8", "#9b7be0", "#59635e"];
+const MIND_COLORS = ["#02aa3d", "#0ea5a4", "#4c8ee8", "#9b7be0", "#59635e"];
 
 const STEPS = [
   { title: "Pick your customers", body: "Crawler samples 100 simulated customers from the audience you choose. Never 100 copies of one person." },
@@ -83,7 +83,7 @@ function build(crowd: CrowdPoint[]): { dots: Dot[]; minds: string[]; counts: { b
       poses: [p0, cloud, visit, out],
       chosen,
       color1: MIND_COLORS[Math.max(0, minds.indexOf(c.mindset)) % MIND_COLORS.length],
-      color3: c.v === "buy" ? DEEP : c.v === "maybe" ? AMBER : GREY,
+      color3: c.v === "buy" ? DEEP : c.v === "maybe" ? LIGHT_GREEN : GREY,
       delay: r() * 0.35,
       seed: r() * 100,
       page,
@@ -266,7 +266,7 @@ export default function SimField({ crowd }: { crowd: CrowdPoint[] }) {
         const al = ease(Math.max(0, (T - 0.45) / 0.55));
         const labels: [number, string, number, string][] = [
           [-0.95, "would buy", cnt.buy, DEEP],
-          [0, "maybe", cnt.maybe, "#8a5a00"],
+          [0, "maybe", cnt.maybe, "#3f9e66"],
           [0.95, "left", cnt.no, "#59635e"],
         ];
         ctx.globalAlpha = al;
