@@ -19,7 +19,7 @@ export default function Toc({ label, items }: { label: string; items: { id: stri
   }, [items]);
   return (
     <nav aria-label={label} className="toc sticky top-28 hidden lg:block">
-      <p className="mb-2 px-3 text-[11px] font-medium uppercase tracking-[0.14em] text-white/45">{label}</p>
+      <p className="mb-2 px-3 text-[11px] font-medium uppercase tracking-[0.14em] text-faint">{label}</p>
       {items.map((i) => (
         <a key={i.id} href={`#${i.id}`} className={on === i.id ? "on" : ""}>
           <span className="n">{i.n}</span> {i.title}

@@ -42,7 +42,7 @@ export default function Explorer({ groups }: { groups: ExplorerGroups }) {
               <li key={x.title}>
                 <button type="button" role="option" aria-selected={i === pick} onClick={() => setPick(i)} className="drow w-full">
                   <span className="truncate">{x.title}</span>
-                  <span aria-hidden className="text-white/60">
+                  <span aria-hidden className="text-faint">
                     {i === pick ? "×" : "›"}
                   </span>
                 </button>
@@ -52,11 +52,11 @@ export default function Explorer({ groups }: { groups: ExplorerGroups }) {
         </div>
         <div className="dpanel p-5 sm:p-7" aria-live="polite">
           <p className="text-[22px] leading-tight tracking-tight">{it.title}</p>
-          <p className="mt-3 text-sm text-white/80">
+          <p className="mt-3 text-sm text-faint">
             {it.source}
-            {it.who ? <span className="text-white/45"> · {it.who}</span> : null}
+            {it.who ? <span className="text-faint"> · {it.who}</span> : null}
           </p>
-          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-white/55">{it.body}</p>
+          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-faint">{it.body}</p>
           <Bars seed={it.title} />
         </div>
       </div>
@@ -82,12 +82,12 @@ function Bars({ seed }: { seed: string }) {
       <svg viewBox="0 0 400 96" className="w-full" aria-hidden>
         {rows.map((p, i) => (
           <g key={i} transform={`translate(0 ${i * 24})`}>
-            <polyline points={p} fill="none" stroke={i % 2 ? "rgb(255 255 255 / 0.35)" : "#ffffff"} strokeWidth="1.4" />
-            <line x1={120 + ((h >> i) % 200)} x2={120 + ((h >> i) % 200)} y1="4" y2="20" stroke="#648bff" strokeWidth="2" />
+            <polyline points={p} fill="none" stroke={i % 2 ? "rgb(12 32 20 / 0.22)" : "#ffffff"} strokeWidth="1.4" />
+            <line x1={120 + ((h >> i) % 200)} x2={120 + ((h >> i) % 200)} y1="4" y2="20" stroke="#02aa3d" strokeWidth="2" />
           </g>
         ))}
       </svg>
-      <figcaption className="mt-2 text-[11px] text-white/40">Illustration, not data. The source above is the evidence.</figcaption>
+      <figcaption className="mt-2 text-[11px] text-faint">Illustration, not data. The source above is the evidence.</figcaption>
     </figure>
   );
 }

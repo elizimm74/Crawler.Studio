@@ -77,14 +77,14 @@ export default function CrowdModel({ points }: { points: CrowdPoint[] }) {
 
   const count = (g: string) => points.filter((p) => (mode === "decision" ? p.v : p.mindset) === g).length;
   const label = (g: string) => (g === "buy" ? "Would buy" : g === "maybe" ? "Maybe" : g === "no" ? "Wouldn't" : g);
-  const fill = (p: CrowdPoint) => (p.v === "buy" ? "#648bff" : p.v === "maybe" ? "rgb(255 255 255 / 0.85)" : "rgb(255 255 255 / 0.28)");
+  const fill = (p: CrowdPoint) => (p.v === "buy" ? "#02aa3d" : p.v === "maybe" ? "#f2a516" : "rgb(12 32 20 / 0.22)");
 
   return (
     <div ref={ref} className="dpanel overflow-hidden p-5 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[19px] tracking-tight">The crowd model</p>
-          <p className="mt-1 text-sm text-white/45">100 simulated customers · demo data</p>
+          <p className="mt-1 text-sm text-faint">100 simulated customers · demo data</p>
         </div>
         <div className="seg" role="tablist" aria-label="Group the crowd">
           {(["crowd", "decision", "mindset"] as const).map((m) => (
@@ -97,7 +97,7 @@ export default function CrowdModel({ points }: { points: CrowdPoint[] }) {
       <svg viewBox={`0 0 ${W} ${H}`} className="crowd-model mt-6 w-full" role="img" aria-label={`100 simulated customers grouped ${mode === "crowd" ? "loosely" : `by ${mode}`}`}>
         <g className="crowd-links">
           {links.map(([a, b]) => (
-            <line key={`${a}-${b}`} x1={pos[a].x} y1={pos[a].y} x2={pos[b].x} y2={pos[b].y} stroke="rgb(255 255 255 / 0.12)" strokeWidth="1" />
+            <line key={`${a}-${b}`} x1={pos[a].x} y1={pos[a].y} x2={pos[b].x} y2={pos[b].y} stroke="rgb(12 32 20 / 0.12)" strokeWidth="1" />
           ))}
         </g>
         {points.map((p, i) => (
@@ -105,20 +105,20 @@ export default function CrowdModel({ points }: { points: CrowdPoint[] }) {
         ))}
         {mode !== "crowd" &&
           groups.map((g, i) => (
-            <text key={g} x={((i + 0.5) / groups.length) * W} y={H - 14} textAnchor="middle" fill="rgb(255 255 255 / 0.6)" fontSize="12" style={{ textTransform: "capitalize" }}>
+            <text key={g} x={((i + 0.5) / groups.length) * W} y={H - 14} textAnchor="middle" fill="rgb(12 32 20 / 0.6)" fontSize="12" style={{ textTransform: "capitalize" }}>
               {label(g)} · {count(g)}
             </text>
           ))}
       </svg>
-      <div className="mt-2 flex flex-wrap gap-4 text-xs text-white/50">
+      <div className="mt-2 flex flex-wrap gap-4 text-xs text-faint">
         <span className="flex items-center gap-2">
-          <i className="h-2 w-2 rounded-full bg-[#648bff]" /> would buy
+          <i className="h-2 w-2 rounded-full bg-[#02aa3d]" /> would buy
         </span>
         <span className="flex items-center gap-2">
-          <i className="h-2 w-2 rounded-full bg-white/85" /> maybe
+          <i className="h-2 w-2 rounded-full bg-[#f2a516]" /> maybe
         </span>
         <span className="flex items-center gap-2">
-          <i className="h-2 w-2 rounded-full bg-white/30" /> wouldn&apos;t
+          <i className="h-2 w-2 rounded-full bg-[rgb(12_32_20_/_0.08)]" /> wouldn&apos;t
         </span>
       </div>
     </div>
