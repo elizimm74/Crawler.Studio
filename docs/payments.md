@@ -1,5 +1,8 @@
 # Payments (Stripe): monthly plans measured in simulated customers
 
+> **2026-11-25: final pricing.** Five plans (Free trial / Starter $19 / Growth $49 / Pro $99 / Agency $199), monthly or annual, one-time Crawler packs and launch discounts. See `docs/pricing.md` (it replaces the plan details below). Stripe: add the `checkout.session.completed` webhook event for packs.
+
+
 ## The plans (src/lib/plans.ts + migration 0014, keep them in sync)
 | Plan | Price | Simulated customers / month | Video + ad tests |
 |---|---|---|---|

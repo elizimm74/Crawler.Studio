@@ -24,6 +24,7 @@ import CopyFixPrompt from "./report/CopyFixPrompt";
 import FixCard from "@/components/report/FixCard";
 import { FixProgress, FixStatusProvider } from "@/components/report/FixStatus";
 import PrintButton from "@/components/report/PrintButton";
+import PreviewLock from "@/components/report/PreviewLock";
 import { PRIORITIES, priorityFor } from "@/lib/priority";
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
@@ -60,6 +61,56 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
     { id: "details", label: "Details" },
     ...(demo ? [] : [{ id: "revenue", label: "Revenue" }, { id: "next", label: "Next steps" }, { id: "share", label: "Share" }]),
   ];
+
+  // FREE TRIAL, not paid yet: the score, the summary and the top reasons, then the locked panel.
+  if (run.preview) {
+    return (
+      <ReportShell sections={[{ id: "answer", label: "Answer" }, { id: "problems", label: "Problems" }, { id: "unlock", label: "Full report" }]}>
+        <ReportHero
+          label={run.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+          tag="free trial preview"
+          value={stats.buy}
+          total={stats.total}
+          headline={`would ${goal}`}
+          summary={firstSentence(advice.summary)}
+          pills={top ? [{ text: `Biggest blocker: ${top.category} · ${pct(top.pctOfNonBuyers)}`, warn: true }] : []}
+          yes={stats.buy}
+          crowdTotal={stats.total}
+          crowdCaption={`one dot = one simulated customer · ${stats.buy} said yes, ${stats.maybe} maybe`}
+          actions={
+            <Link href="#unlock" className="btn btn-primary h-11 px-5 text-sm">
+              See what to fix
+            </Link>
+          }
+        >
+          <VerdictBar buy={stats.buy} maybe={stats.maybe} no={stats.no} goal={goal} />
+        </ReportHero>
+        <section id="problems" className="scroll-mt-32">
+          <p className="t-label">customer feedback preview</p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight">What stopped them</h2>
+          <ul className="mt-6 grid gap-3 md:grid-cols-3">
+            {stats.objections
+              .filter((o) => o.category !== "none")
+              .slice(0, 3)
+              .map((o) => (
+                <li key={o.category} className="card p-5">
+                  <div className="flex justify-between gap-3 text-sm">
+                    <span className="font-medium first-letter:uppercase">{o.category}</span>
+                    <span className="tabular-nums text-muted">{pct(o.count / Math.max(1, stats.total))}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-faint">{o.count} of {stats.total} simulated customers</p>
+                  {o.examples[0] && <p className="mt-3 text-sm text-muted">“{o.examples[0]}”</p>}
+                </li>
+              ))}
+          </ul>
+        </section>
+        <PreviewLock fixes={run.preview.fixes} customers={run.preview.customers} />
+        <p className="text-center text-xs text-faint">
+          Simulation result: these are AI-simulated customers. Their buying intent is a strong hint about what to fix, not a real conversion rate.
+        </p>
+      </ReportShell>
+    );
+  }
 
   return (
     <FixStatusProvider testId={run.id} demo={demo}>

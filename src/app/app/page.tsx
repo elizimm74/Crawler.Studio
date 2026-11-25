@@ -14,7 +14,7 @@ import ExplorePanel from "@/components/ExplorePanel";
 import Working from "@/components/Working";
 import Onboarding from "@/components/Onboarding";
 import { MyMindsCards, SaveMind } from "@/components/dashboard/minds";
-import { SizePicker, StarterNote, fitSize, usePlan } from "@/components/dashboard/usePlan";
+import { SizePicker, canPickSize, StarterNote, fitSize, usePlan } from "@/components/dashboard/usePlan";
 import AppWizard from "@/components/app/AppWizard";
 import VideoWizard from "@/components/video/VideoWizard";
 import { Chevron, ErrorNote, Heading, Nav, PRESET_HINT, PresetCard, Stepper, Summary, waitForCrawl } from "@/components/wizard";
@@ -96,7 +96,7 @@ function Wizard() {
   const plan = usePlan(); // how many customers this account's test gets (25 starter / 100 full)
   const [size, setSize] = useState(100); // paid plans pick 100 / 250 / 500 / 1,000
   // shown on the launch step: the picked size on paid plans, else what the server will give (25 / 100)
-  const customers = plan && (plan.monthly || plan.unlimited) ? fitSize(plan, size) : (plan?.customers ?? 100);
+  const customers = canPickSize(plan) ? fitSize(plan, size) : (plan?.customers ?? 100);
 
   async function analyze(target = url) {
     setBusy("analyzing");

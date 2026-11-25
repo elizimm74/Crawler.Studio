@@ -127,7 +127,10 @@ export type PlanData = {
   referrals: { count: number; needed: number; code: string };
   billing?: boolean; // has paid before (a Stripe customer): show "Manage billing"
   ads?: boolean; // video / ad tests included in this plan
-  monthly?: Monthly | null; // paid plans: simulated customers this billing month
+  monthly?: Monthly | null; // paid plans: Crawlers (simulated customers) this billing month
+  packs?: number; // one-time pack Crawlers left (never expire)
+  paid?: boolean; // ever paid (any plan or pack): unlocks the free-trial report
+  priority?: number; // 0 standard, 1 priority (Pro), 2 highest (Agency)
   subscription?: Subscription | null;
 };
 
@@ -135,10 +138,12 @@ export type PlanData = {
 export type Monthly = { allowance: number; used: number; left: number; resets: string | null };
 
 // The test sizes this person can pick right now: only sizes that fit in what's left this month.
-export function sizesFor(monthly: Monthly | null | undefined, unlimited: boolean, sizes: readonly number[]): number[] {
+// `packs`: one-time pack Crawlers on top of the month (pass 0 for Ad Analysis: packs don't cover it).
+export function sizesFor(monthly: Monthly | null | undefined, unlimited: boolean, sizes: readonly number[], packs = 0): number[] {
   if (unlimited) return [...sizes];
-  if (!monthly) return [];
-  return sizes.filter((n) => n <= monthly.left);
+  if (!monthly && packs <= 0) return [];
+  const left = (monthly?.left ?? 0) + Math.max(0, packs);
+  return sizes.filter((n) => n <= left);
 }
 
 // The monthly plan, as the Stripe webhook last saw it (migration 0013).

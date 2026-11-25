@@ -1,5 +1,5 @@
 "use client";
-// What this account's next test looks like: how many simulated customers, how many tests are left,
+// What this account's next test looks like: how many Crawlers (simulated customers), how many tests are left,
 // and the invite progress. The database decides; this only fetches it (GET /api/plan).
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -40,34 +40,46 @@ export function StarterNote({ plan }: { plan: PlanInfo | null }) {
   );
 }
 
-// Paid plans: pick how many simulated customers this test uses (only sizes that fit this month).
-// Free accounts don't see it (their size is set by the server: 25 starter / 100 full).
-export function SizePicker({ plan, value, onChange }: { plan: PlanInfo | null; value: number; onChange: (n: number) => void }) {
-  if (!plan || (!plan.monthly && !plan.unlimited)) return null;
-  const fits = sizesFor(plan.monthly, plan.unlimited, TEST_SIZES);
+// Can this account choose a test size? Paid plans, Crawler packs (not for Ad Analysis) and admins can.
+// Free trials can't: the server sets their size (25 starter / 100 after invites).
+export function canPickSize(plan: PlanInfo | null, video = false): boolean {
+  return Boolean(plan && (plan.monthly || plan.unlimited || (!video && (plan.packs ?? 0) > 0)));
+}
+
+// Pick how many Crawlers this test uses (only sizes that fit: this month's Crawlers, then pack Crawlers).
+export function SizePicker({ plan, value, onChange, video = false }: { plan: PlanInfo | null; value: number; onChange: (n: number) => void; video?: boolean }) {
+  if (!plan || !canPickSize(plan, video)) return null;
+  const packs = video ? 0 : (plan.packs ?? 0);
+  const fits = sizesFor(plan.monthly, plan.unlimited, TEST_SIZES, packs);
+  const n = (x: number) => x.toLocaleString("en-US");
+  const left = plan.unlimited
+    ? "Admin: no monthly limit."
+    : [
+        plan.monthly ? `${n(plan.monthly.left)} of ${n(plan.monthly.allowance)} Crawlers left this month.` : "",
+        packs > 0 ? `${n(packs)} pack Crawlers${plan.monthly ? " on top" : " left"}.` : "",
+        "Bigger crowds take longer (1,000 is a few minutes).",
+      ]
+        .filter(Boolean)
+        .join(" ");
   return (
     <div className="card p-4 sm:p-6">
-      <p className="font-medium">How many simulated customers?</p>
-      <p className="mt-1 text-sm text-muted">
-        {plan.unlimited
-          ? "Admin: no monthly limit."
-          : `${plan.monthly!.left.toLocaleString("en-US")} of ${plan.monthly!.allowance.toLocaleString("en-US")} left this month. Bigger crowds take longer (1,000 is a few minutes).`}
-      </p>
+      <p className="font-medium">How many Crawlers?</p>
+      <p className="mt-1 text-sm text-muted">{left}</p>
       {fits.length ? (
         <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Test size">
-          {fits.map((n) => (
-            <button key={n} type="button" className="chip" aria-pressed={value === n} onClick={() => onChange(n)}>
-              {n.toLocaleString("en-US")}
+          {fits.map((x) => (
+            <button key={x} type="button" className="chip" aria-pressed={value === x} onClick={() => onChange(x)}>
+              {n(x)}
             </button>
           ))}
         </div>
       ) : (
         <p className="mt-4 text-sm">
-          You&apos;ve used this month&apos;s customers.{" "}
+          You&apos;ve used this month&apos;s Crawlers.{" "}
           <Link href="/pricing" className="underline underline-offset-2">
-            Upgrade
+            Upgrade or buy a pack
           </Link>{" "}
-          or wait until your plan renews.
+          , or wait until your plan renews.
         </p>
       )}
     </div>
@@ -75,9 +87,9 @@ export function SizePicker({ plan, value, onChange }: { plan: PlanInfo | null; v
 }
 
 // Keeps the chosen size valid when the plan loads (e.g. 1,000 picked but only 300 left -> 250).
-export function fitSize(plan: PlanInfo | null, wanted: number): number {
-  if (!plan || (!plan.monthly && !plan.unlimited)) return 100;
-  const fits = sizesFor(plan.monthly, plan.unlimited, TEST_SIZES);
+export function fitSize(plan: PlanInfo | null, wanted: number, video = false): number {
+  if (!plan || !canPickSize(plan, video)) return 100;
+  const fits = sizesFor(plan.monthly, plan.unlimited, TEST_SIZES, video ? 0 : (plan.packs ?? 0));
   return fits.includes(wanted) ? wanted : (fits[fits.length - 1] ?? 100);
 }
 
@@ -86,10 +98,10 @@ export function AdsGate({ plan }: { plan: PlanInfo | null }) {
   if (!plan || plan.ads || plan.unlimited) return null;
   return (
     <div className="card p-6">
-      <p className="t-h3">Video and ad tests come with Growth and Scale</p>
+      <p className="t-h3">Ad Analysis unlocks on Growth</p>
       <p className="mt-2 text-sm text-muted">
-        Simulated viewers watch your ad or creator video frame by frame and tell you where they&apos;d swipe away. Your
-        current plan covers websites, apps, games and stores.
+        Simulated viewers watch your ad or creator video frame by frame and tell you where they&apos;d swipe away. It comes
+        with Growth ($49/month) and up. The free trial, Starter and Crawler packs cover websites, stores and apps.
       </p>
       <Link href="/pricing" className="btn btn-primary mt-4 h-11 px-5">
         See plans

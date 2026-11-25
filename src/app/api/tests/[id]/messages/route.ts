@@ -33,6 +33,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const content = (body.content ?? "").trim();
   if (!content) return jsonError("Please write a question.");
 
+  // 0) A free-trial preview can't be asked about until the full report is unlocked (it would reveal the fixes).
+  const { data: row } = await auth.supabase.from("tests").select("tier").eq("id", id).maybeSingle();
+  if (row?.tier === "trial") {
+    const { data: me } = await auth.supabase.rpc("my_plan");
+    if (!(me as { paid?: boolean } | null)?.paid) {
+      return NextResponse.json({ error: "Unlock the full report to ask about this test.", limitReached: true }, { status: 402 });
+    }
+  }
+
   // 1) Save the question. The database checks the owner, the length and the free limit.
   const { data: remaining, error } = await auth.supabase.rpc("ask_test", { p_test_id: id, p_content: content });
   if (error) {

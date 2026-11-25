@@ -1,125 +1,227 @@
-// /pricing: the plans from src/lib/plans.ts. Monthly plans measured in simulated customers, cancel any time.
-// Paid plans open Stripe Checkout (BuyButton -> /api/checkout). Signed-out visitors sign up first.
-// Without the Stripe keys in the environment, they say "Coming soon".
+// /pricing: Crawler's FINAL pricing (founder, 2026-11-25). Everything here reads src/lib/plans.ts.
+//   1. The five plans in one section (Free trial -> Starter -> Growth -> Pro -> Agency), with a
+//      Monthly / Annual toggle and a clear upgrade path. Growth is emphasised.
+//   2. A launch-offer note (Black Friday window, or a waitlist discount), worked out on the server.
+//   3. Enterprise + "Need more Crawlers?" (a request form).
+//   4. One-time Crawler packs.
+//   5. A feature comparison table, then the honest fine print (auto-renewal, resets, discounts).
+// Features that aren't built yet are tagged "Soon" everywhere on this page.
 import Link from "next/link";
-import { currentUser } from "@/lib/supabase/server";
+import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
-import { PLANS, per100Label, planName } from "@/lib/plans";
+import {
+  ANNUAL_MONTHS_PAID,
+  BLACK_FRIDAY,
+  PACKS,
+  PROMO_MONTHS,
+  STARTER_CUSTOMERS,
+  WAITLIST_TIERS,
+  blackFridayActive,
+  launchDiscount,
+  planName,
+  waitlistPercent,
+} from "@/lib/plans";
 import ManageBilling from "@/components/ManageBilling";
-import { supabaseServer } from "@/lib/supabase/server";
-import { paidPlan, stripeEnabled } from "@/lib/stripe";
-import SwitchPlanButton from "@/components/SwitchPlanButton";
-import { INVITES_TO_UNLOCK, STARTER_CUSTOMERS, TEST_SIZES } from "@/lib/plans";
+import { stripeEnabled } from "@/lib/stripe";
 import BuyButton from "@/components/BuyButton";
+import PricingPlans from "@/components/pricing/PricingPlans";
+import CustomVolume from "@/components/pricing/CustomVolume";
 import { Compare } from "@/components/landing/Sections";
 
-export const metadata = { title: "Pricing", description: "Crawler pricing: start free with 1 test of 25 simulated customers. Monthly plans from $25 for 1,000 simulated customers.", alternates: { canonical: "/pricing" } };
+export const metadata = {
+  title: "Pricing",
+  description: "Crawler pricing: a free trial with 25 Crawlers, then monthly plans from $19 for 1,000 Crawlers. Ad Analysis from $49. One-time Crawler packs from $9.",
+  alternates: { canonical: "/pricing" },
+};
+
+const n = (x: number) => x.toLocaleString("en-US");
 
 export default async function Pricing({ searchParams }: { searchParams: Promise<{ cancelled?: string }> }) {
   const { cancelled } = await searchParams;
   const user = await currentUser();
   const payments = stripeEnabled();
   const signedIn = Boolean(user) || !AUTH_ENABLED;
-  // Already paying? Show "Manage billing" instead of a second Subscribe button.
+
+  // Already paying? Their plan + billing period (for switch buttons and "Manage billing").
   let current: string | null = null;
+  let currentYearly = false;
   let billing = false;
-  if (user && AUTH_ENABLED) {
-    const { data } = await (await supabaseServer()).rpc("my_plan");
-    const sub = (data as { subscription?: { plan: string; status: string } | null; billing?: boolean } | null) ?? null;
-    billing = Boolean(sub?.billing);
-    if (sub?.subscription && ["active", "trialing", "past_due"].includes(sub.subscription.status)) current = sub.subscription.plan;
+  let packs = 0;
+  let onWaitlist = false;
+  let waitlistSize = 0;
+  if (AUTH_ENABLED) {
+    const db = await supabaseServer();
+    if (user) {
+      const { data } = await db.rpc("my_plan");
+      const me = (data as { subscription?: { plan: string; status: string; interval?: string } | null; billing?: boolean; packs?: number } | null) ?? null;
+      billing = Boolean(me?.billing);
+      packs = Number(me?.packs ?? 0);
+      if (me?.subscription && ["active", "trialing", "past_due"].includes(me.subscription.status)) {
+        current = me.subscription.plan;
+        currentYearly = me.subscription.interval === "year";
+      }
+      const { data: offer } = await db.rpc("launch_offer");
+      const o = (offer ?? {}) as { on_waitlist?: boolean; waitlist_size?: number };
+      onWaitlist = Boolean(o.on_waitlist);
+      waitlistSize = Number(o.waitlist_size ?? 0);
+    } else {
+      const { data } = await db.rpc("waitlist_count");
+      waitlistSize = Number(data ?? 0);
+    }
   }
+  const bf = blackFridayActive();
+  // the discount THIS visitor would get on a monthly plan (the server applies the same rule at checkout)
+  const offerPercent = launchDiscount({ interval: "month", onWaitlist, waitlistSize });
+  const waitlistNow = waitlistPercent(waitlistSize);
+  const bfEnds = new Date(new Date(BLACK_FRIDAY.end).getTime() - 1).toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "America/New_York" });
 
   return (
-    <div className="mx-auto max-w-7xl">
-      {/* Summarized, card-first layout: name, one-line promise, the button, the price, a short list. */}
-      <h1 className="text-center text-4xl font-semibold tracking-tight sm:text-5xl">Pick your crowd</h1>
-      <p className="mx-auto mt-4 max-w-xl text-center text-muted">Pay for simulated customers. Cancel any time.</p>
+    <div className="mx-auto max-w-[88rem]">
+      <h1 className="text-center text-4xl font-bold tracking-tight sm:text-5xl">Pick your crowd</h1>
+      <p className="mx-auto mt-4 max-w-2xl text-center text-muted">
+        1 Crawler = 1 simulated customer. Start free, then pick how many Crawlers you need each month.
+        <br className="hidden sm:block" /> <strong className="font-semibold text-fg">Starter</strong> tests your website.{" "}
+        <strong className="font-semibold text-fg">Growth</strong> tests your website and your ads.{" "}
+        <strong className="font-semibold text-fg">Pro and Agency</strong> test your whole marketing.
+      </p>
+
+      {/* launch offer: one discount at a time, never stacked */}
+      {(bf || offerPercent > 0 || waitlistNow > 0) && (
+        <div className="offer-note mx-auto mt-8 max-w-2xl">
+          {bf ? (
+            <p>
+              <strong>Black Friday:</strong> {BLACK_FRIDAY.percent}% off your first {PROMO_MONTHS} months on any monthly plan, until {bfEnds}.
+            </p>
+          ) : onWaitlist ? (
+            <p>
+              <strong>Your launch offer:</strong> you&apos;re on the waitlist, so you get {offerPercent}% off your first {PROMO_MONTHS} months on a monthly plan.
+              It&apos;s applied automatically at checkout.
+            </p>
+          ) : (
+            <p>
+              <strong>On our waitlist?</strong> Sign up with the same email and get {waitlistNow}% off your first {PROMO_MONTHS} months on a monthly plan.
+              The discount grows to {WAITLIST_TIERS[WAITLIST_TIERS.length - 1].percent}% as the waitlist grows.
+            </p>
+          )}
+          <p className="mt-1 text-xs opacity-80">One discount per customer. Discounts don&apos;t stack and don&apos;t apply to annual billing or packs.</p>
+        </div>
+      )}
 
       {cancelled && (
         <p role="status" className="card mx-auto mt-8 max-w-xl p-4 text-center text-sm">
           Checkout cancelled. Nothing was charged.
         </p>
       )}
-      {billing && (
+      {(billing || packs > 0) && (
         <p className="card mx-auto mt-8 flex max-w-xl flex-wrap items-center justify-center gap-3 p-4 text-sm">
-          {current ? `You're on ${planName(current)}.` : "You've paid before."}
-          <ManageBilling className="btn btn-secondary h-9 px-4 text-sm" />
+          {current ? `You're on ${planName(current)}${currentYearly ? " (annual)" : ""}.` : "You've paid before."}
+          {packs > 0 && ` ${n(packs)} pack Crawlers left.`}
+          {billing && <ManageBilling className="btn btn-secondary h-9 px-4 text-sm" />}
         </p>
       )}
 
-      <div className="mt-12 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {PLANS.map((p) => {
-          const free = p.priceUsd === 0;
-          const rec = p.id === "starter";
-          const copy = PLAN_COPY[p.id];
-          return (
-            <div key={p.id} className={`plan-card flex flex-col rounded-3xl border p-7 ${rec ? "plan-rec" : "border-line bg-subtle"}`}>
-              <div className="flex min-h-8 items-center justify-between gap-2">
-                <p className="text-lg font-medium">{p.name}</p>
-                {rec && <span className="plan-badge">Recommended</span>}
-              </div>
-              <h2 className="mt-5 text-2xl font-semibold tracking-tight">{copy.title}</h2>
-              <p className="mt-2 min-h-12 text-muted">{copy.line}</p>
+      {/* the five plans get the full screen width (the page column is too narrow for five cards) */}
+      <div className="bleed-full mt-10">
+        <div className="home-wide">
+          <PricingPlans signedIn={signedIn} payments={payments} current={current} currentYearly={currentYearly} offerPercent={bf || onWaitlist ? offerPercent : 0} />
+        </div>
+      </div>
 
+      {/* Enterprise + custom volume */}
+      <div className="mt-12">
+        <CustomVolume enabled={AUTH_ENABLED} />
+      </div>
+
+      {/* one-time packs */}
+      <section className="mt-20" aria-labelledby="packs-title">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="eyebrow14 justify-center">One-time Crawler packs</p>
+          <h2 id="packs-title" className="mt-4 text-3xl font-bold tracking-tight">Not ready for a subscription?</h2>
+          <p className="mt-3 text-muted">Buy Crawlers once. They never expire and nothing renews. Packs are for website, store and app tests. Ad Analysis needs Growth or higher.</p>
+        </div>
+        <ul className="mx-auto mt-10 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {PACKS.map((pk) => (
+            <li key={pk.id} className="pack-card flex flex-col rounded-3xl border border-line p-6">
+              <p className="text-2xl font-bold tracking-tight">{n(pk.crawlers)}</p>
+              <p className="text-sm text-muted">Crawlers, once</p>
+              <p className="mt-5 text-3xl font-bold tracking-tight">${pk.priceUsd}</p>
+              <p className="text-xs text-faint">${((pk.priceUsd / pk.crawlers) * 100).toFixed(2)} per 100 Crawlers</p>
               <div className="plan-cta mt-6">
-                {free ? (
-                  <Link href={signedIn ? "/app" : "/signup"} className="btn btn-secondary w-full rounded-full">
-                    Start free
-                  </Link>
-                ) : !payments ? (
+                {!payments ? (
                   <span className="btn btn-ghost w-full cursor-default rounded-full text-faint" aria-disabled>
                     Coming soon
                   </span>
-                ) : current === p.id ? (
-                  <span className="btn btn-ghost w-full cursor-default rounded-full" aria-disabled>
-                    Your current plan
-                  </span>
-                ) : current && paidPlan(current) ? (
-                  <SwitchPlanButton planId={p.id} planName={p.name} price={p.priceUsd} upgrade={p.priceUsd > (paidPlan(current)?.priceUsd ?? 0)} />
-                ) : current ? (
-                  <ManageBilling className="btn btn-secondary w-full rounded-full" label="Manage billing" />
-                ) : user || !AUTH_ENABLED ? (
-                  <BuyButton planId={p.id as "starter" | "growth" | "scale"} label="Start now" primary={rec} />
+                ) : signedIn ? (
+                  <BuyButton packId={pk.id} label="Buy once" />
                 ) : (
-                  <Link href="/signup?next=/pricing" className={`btn w-full rounded-full ${rec ? "btn-primary" : "btn-secondary"}`}>
-                    Start now
+                  <Link href="/signup?next=/pricing" className="btn btn-secondary w-full rounded-full">
+                    Buy once
                   </Link>
                 )}
               </div>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-              <p className="mt-7 flex items-baseline gap-1">
-                <span className="text-sm text-muted">$</span>
-                <span className="text-4xl font-semibold tracking-tight">{p.priceUsd}</span>
-                <span className="text-muted">{free ? "" : "/ month"}</span>
-              </p>
-              <p className="mt-1 text-sm text-faint">{free ? "No card needed" : per100Label(p)}</p>
-
-              <ul className="mt-7 space-y-3.5 text-[15px]">
-                {copy.points.map(([icon, text]) => (
-                  <li key={text} className="flex gap-3">
-                    <PlanIcon name={icon} />
-                    <span>{text}</span>
-                  </li>
+      {/* feature comparison */}
+      <section className="mt-24" aria-labelledby="compare-title">
+        <h2 id="compare-title" className="text-center text-3xl font-bold tracking-tight">
+          Compare plans
+        </h2>
+        <p className="mt-3 text-center text-muted">&ldquo;Soon&rdquo; means it&apos;s on our roadmap and not available yet.</p>
+        <p className="t-label mt-6 sm:hidden" aria-hidden>
+          swipe the table sideways →
+        </p>
+        <div className="mt-3 overflow-x-auto sm:mt-8">
+          <table className="compare-plans w-full min-w-[44rem] border-separate border-spacing-0 text-left text-sm">
+            <caption className="sr-only">What each plan includes</caption>
+            <thead>
+              <tr>
+                <th scope="col" className="w-[34%]">
+                  <span className="sr-only">Feature</span>
+                </th>
+                {["Starter", "Growth", "Pro", "Agency"].map((h) => (
+                  <th key={h} scope="col" className={h === "Growth" ? "is-hot" : ""}>
+                    {h}
+                  </th>
                 ))}
-              </ul>
-            </div>
-          );
-        })}
+              </tr>
+            </thead>
+            <tbody>
+              {COMPARE.map(([label, cells]) => (
+                <tr key={label}>
+                  <th scope="row">{label}</th>
+                  {cells.map((c, k) => (
+                    <td key={k} className={k === 1 ? "is-hot" : ""}>
+                      <Cell v={c} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Auto-renewal + discount disclosure (clear terms BEFORE paying, easy cancel). */}
+      <div className="mx-auto mt-14 max-w-3xl space-y-3 text-center text-sm text-muted">
+        <p>
+          Plans renew automatically at the price shown, every month or every year (annual = {ANNUAL_MONTHS_PAID} months&apos; price for 12), until you cancel.
+          Cancel any time from Manage billing on your dashboard: you keep the plan until the end of the period you paid for.
+        </p>
+        <p>
+          Your Crawlers reset every month, on annual plans too, and unused ones don&apos;t carry over. Pack Crawlers never expire and are used after your
+          monthly Crawlers. A test that fails on our side doesn&apos;t use any Crawlers. The free trial is one test with {STARTER_CUSTOMERS} Crawlers; upgrading
+          unlocks its full report.
+        </p>
+        <p>
+          Launch discounts take {BLACK_FRIDAY.percent}% or less off the first {PROMO_MONTHS} monthly payments, one per customer, and never stack.
+        </p>
       </div>
+      <p className="t-label mt-6 text-center">every test: simulated customers · buying intent, not real purchases · secure checkout by Stripe</p>
 
-      {/* Auto-renewal disclosure (clear terms BEFORE paying, easy cancel: required by auto-renewal laws). */}
-      <p className="mx-auto mt-10 max-w-2xl text-center text-sm text-muted">
-        Paid plans renew automatically every month at the price shown until you cancel. Cancel any time from Manage billing
-        on your dashboard: you keep the plan until the end of the month you paid for. Each month&apos;s simulated customers
-        reset when the plan renews (unused ones don&apos;t carry over). A test that fails on our side doesn&apos;t count.
-      </p>
-      <p className="t-label mt-6 text-center">
-        every test: simulated customers · buying intent, not real purchases · secure checkout by Stripe
-      </p>
-
-      {/* Crawler's own simulated customers asked for this: how it compares with panels and A/B tests.
-          It sits on a washed-black band (night18 in globals.css): white melts into black and back. */}
+      {/* how Crawler compares with panels and A/B tests, on a washed-black band */}
       <div className="night18 mt-16">
         <Compare />
       </div>
@@ -127,69 +229,40 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
   );
 }
 
-// The short, summarized words on each card. Every number matches src/lib/plans.ts (and the database).
-const n = (x: number) => x.toLocaleString("en-US");
-const customersOf = (id: string) => PLANS.find((p) => p.id === id)?.customers ?? 0;
-const PLAN_COPY: Record<string, { title: string; line: string; points: [IconName, string][] }> = {
-  free: {
-    title: "Try Crawler",
-    line: "See what simulated customers think, once.",
-    points: [
-      ["crowd", `1 test with ${STARTER_CUSTOMERS} simulated customers`],
-      ["report", "Full report with ranked fixes"],
-      ["gift", `Invite ${INVITES_TO_UNLOCK} friends: +1 test of 100`],
-      ["card", "No card needed"],
-    ],
-  },
-  starter: {
-    title: "Launch ready",
-    line: "Test, fix and re-test before you ship.",
-    points: [
-      ["crowd", `${n(customersOf("starter"))} simulated customers a month`],
-      ["test", "About 10 tests of 100"],
-      ["globe", "Websites, apps, games and stores"],
-      ["repeat", "AI explorer and re-tests"],
-      ["report", "Fix tracker, PDF and fix prompt"],
-    ],
-  },
-  growth: {
-    title: "Bigger crowds",
-    line: "For launches you can't afford to get wrong.",
-    points: [
-      ["crowd", `${n(customersOf("growth"))} simulated customers a month`],
-      ["test", `Tests up to ${n(TEST_SIZES[TEST_SIZES.length - 1])} customers each`],
-      ["video", "Video, ad and creator tests"],
-      ["check", "Everything in Starter"],
-    ],
-  },
-  scale: {
-    title: "Always shipping",
-    line: "For studios and teams testing every week.",
-    points: [
-      ["crowd", `${n(customersOf("scale"))} simulated customers a month`],
-      ["test", `Tests up to ${n(TEST_SIZES[TEST_SIZES.length - 1])} customers each`],
-      ["video", "Video, ad and creator tests"],
-      ["check", "Everything in Growth"],
-    ],
-  },
-};
+// ---------- the comparison table (true today, or tagged "soon") ----------
+type CellValue = boolean | string | { soon: string | true };
+const SOON = { soon: true as const };
+const COMPARE: [string, CellValue[]][] = [
+  ["Crawlers per month", ["1,000", "5,000", "15,000", "40,000"]],
+  ["Website, store and app analysis", [true, true, true, true]],
+  ["Purchase intent", [true, true, true, true]],
+  ["Objections and ranked fixes", [true, true, true, true]],
+  ["Ad Analysis (video, ad and creator tests)", [false, true, true, true]],
+  ["Advanced ad testing", [false, "Basic", { soon: "Full" }, { soon: "Full" }]],
+  ["Simulation processing", ["Standard", "Standard", "Priority", "Highest priority"]],
+  ["Analysis history", ["Standard", "Standard", "Standard", "Expanded"]],
+  ["Multiple brands and projects", [false, false, { soon: "Limited" }, SOON]],
+  ["Team workspaces", [false, false, false, SOON]],
+];
 
-type IconName = "crowd" | "report" | "gift" | "card" | "test" | "globe" | "repeat" | "video" | "check";
-const ICON_PATHS: Record<IconName, string> = {
-  crowd: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20a6 6 0 0 1 12 0M17 11a2.5 2.5 0 1 0 0-5M21 20a5 5 0 0 0-4-4.9",
-  report: "M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6",
-  gift: "M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-2-3-5-3-5-1s5 1 5 1zm0 0c2-3 5-3 5-1s-5 1-5 1z",
-  card: "M3 6h18v12H3zM3 10h18M7 15h4",
-  test: "M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3",
-  globe: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z",
-  repeat: "M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5",
-  video: "M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM10 9v6l5-3z",
-  check: "M5 12.5l4.5 4.5L19 7",
-};
-function PlanIcon({ name }: { name: IconName }) {
+function Cell({ v }: { v: CellValue }) {
+  if (v === true)
+    return (
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="tick-green" role="img" aria-label="Included">
+        <path d="M5 12.5l4.5 4.5L19 7" />
+      </svg>
+    );
+  if (v === false)
+    return (
+      <span className="text-faint" aria-label="Not included">
+        —
+      </span>
+    );
+  if (typeof v === "string") return <span>{v}</span>;
   return (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0 text-muted" aria-hidden>
-      <path d={ICON_PATHS[name]} />
-    </svg>
+    <span className="text-faint">
+      {v.soon === true ? "Included" : v.soon}
+      <span className="soon-tag">Soon</span>
+    </span>
   );
 }

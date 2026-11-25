@@ -150,10 +150,31 @@ const UID = "11111111-2222-3333-4444-555555555555";
 const { readSubscription, portalConfigForm } = require(path.join(lib, "stripe.js"));
 const { subscriptionLine, sizesFor } = require(path.join(lib, "dashboard.js"));
 const { PLANS, TEST_SIZES } = require(path.join(lib, "plans.js"));
-test("plans: $25 = 1,000, $100 = 10,000, $250 = 30,000 customers a month; only Growth and Scale include ads", () =>
-  eq(PLANS.map((p) => [p.id, p.priceUsd, p.customers, p.ads]), [["free", 0, 25, false], ["starter", 25, 1000, false], ["growth", 100, 10000, true], ["scale", 250, 30000, true]], "plans"));
+test("final pricing: free 25 once, $19 = 1,000, $49 = 5,000, $99 = 15,000, $199 = 40,000 Crawlers; Ad Analysis from Growth; priority on Pro/Agency", () =>
+  eq(PLANS.map((p) => [p.id, p.priceUsd, p.customers, p.ads, p.priority]), [["free", 0, 25, false, 0], ["starter", 19, 1000, false, 0], ["growth", 49, 5000, true, 0], ["pro", 99, 15000, true, 1], ["agency", 199, 40000, true, 2]], "plans"));
+{
+  const P = require(path.join(lib, "plans.js"));
+  test("packs: 500 $9, 2,000 $29, 10,000 $99, 25,000 $199; annual = 10 months' price", () =>
+    eq([P.PACKS.map((x) => [x.id, x.crawlers, x.priceUsd]), P.yearlyUsd(P.PLANS[2]), P.annualMonthlyUsd(P.PLANS[1]), P.findPack("pack2000")?.crawlers, P.findPack("nope")],
+      [[["pack500", 500, 9], ["pack2000", 2000, 29], ["pack10000", 10000, 99], ["pack25000", 25000, 199]], 490, 15.83, 2000, null], "packs"));
+  test("launch discount: Black Friday 30%, waitlist tiers 10/20/30, never stacked, never on annual", () => {
+    const bf = new Date("2026-11-28T12:00:00Z"), before = new Date("2026-11-20T12:00:00Z"), after = new Date("2026-12-03T12:00:00Z");
+    return eq([
+      P.launchDiscount({ interval: "month", onWaitlist: false, waitlistSize: 0, now: bf }),
+      P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 500, now: bf }),
+      P.launchDiscount({ interval: "year", onWaitlist: true, waitlistSize: 500, now: bf }),
+      P.launchDiscount({ interval: "month", onWaitlist: false, waitlistSize: 500, now: before }),
+      P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 0, now: after }),
+      P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 120, now: after }),
+      P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 250, now: after }),
+      P.discounted(19, 30), P.discounted(199, 30),
+    ], [30, 30, 0, 0, 10, 20, 30, "13.30", "139.30"], "discount");
+  });
+}
 test("test sizes offered = only what fits in what's left this month", () =>
-  eq([sizesFor({ allowance: 1000, used: 700, left: 300, resets: null }, false, TEST_SIZES), sizesFor(null, false, TEST_SIZES), sizesFor(null, true, TEST_SIZES), sizesFor({ allowance: 1000, used: 950, left: 50, resets: null }, false, TEST_SIZES)], [[100, 250], [], [100, 250, 500, 1000], []], "sizes"));
+  eq([sizesFor({ allowance: 1000, used: 700, left: 300, resets: null }, false, TEST_SIZES), sizesFor(null, false, TEST_SIZES), sizesFor(null, true, TEST_SIZES), sizesFor({ allowance: 1000, used: 950, left: 50, resets: null }, false, TEST_SIZES),
+      sizesFor(null, false, TEST_SIZES, 500), sizesFor({ allowance: 1000, used: 950, left: 50, resets: null }, false, TEST_SIZES, 200)],
+    [[100, 250], [], [100, 250, 500, 1000], [], [100, 250, 500], [100, 250]], "sizes"));
 const subEv = (o = {}, type = "customer.subscription.updated") => ({
   type, created: NOW, data: { object: { id: "sub_test_abc123", customer: "cus_test_abc123", status: "active", cancel_at_period_end: false, metadata: { user_id: UID, plan_id: "growth" }, items: { data: [{ current_period_start: NOW, current_period_end: NOW + 86400 * 30 }] }, ...o } },
 });
@@ -166,15 +187,60 @@ test("subscription events: status, month start + renew date (new API: on the ite
     c && c.cancelling && c.periodEnd && d && d.status === "canceled" && bad.every((x) => x === null)
     ? null : JSON.stringify({ a, c, d, bad });
 });
-test("checkout is a MONTHLY subscription; price, plan and who come from the server", () => {
+test("checkout: monthly or annual subscription; price, plan and who come from the server", () => {
   const f = checkoutForm(paidPlan("growth"), { id: UID, email: "a@b.co" }, "https://crawler.test");
   const g = checkoutForm(paidPlan("starter"), { id: UID, email: "a@b.co", customer: "cus_123" }, "https://crawler.test");
+  const y = checkoutForm(paidPlan("agency"), { id: UID }, "https://crawler.test", { interval: "year" });
   return eq(
-    [f.get("line_items[0][price_data][unit_amount]"), f.get("line_items[0][price_data][recurring][interval]"), f.get("mode"), f.get("subscription_data[metadata][plan_id]"), f.get("subscription_data[metadata][user_id]"), g.get("customer"), g.get("customer_email"), paidPlan("free"), paidPlan("x")],
-    ["10000", "month", "subscription", "growth", UID, "cus_123", null, null, null],
+    [f.get("line_items[0][price_data][unit_amount]"), f.get("line_items[0][price_data][recurring][interval]"), f.get("mode"), f.get("subscription_data[metadata][plan_id]"), f.get("subscription_data[metadata][user_id]"), g.get("customer"), g.get("customer_email"), paidPlan("free"), paidPlan("x"),
+      y.get("line_items[0][price_data][unit_amount]"), y.get("line_items[0][price_data][recurring][interval]"), y.get("subscription_data[metadata][interval]")],
+    ["4900", "month", "subscription", "growth", UID, "cus_123", null, null, null, "199000", "year", "year"],
     "form",
   );
 });
+{
+  const S = require(path.join(lib, "stripe.js"));
+  const P = require(path.join(lib, "plans.js"));
+  test("launch coupon: one discount only (coupon replaces promo codes), 3 months, monthly", () => {
+    const withCoupon = S.checkoutForm(S.paidPlan("growth"), { id: UID }, "https://crawler.test", { coupon: S.couponId(30) });
+    const plain = S.checkoutForm(S.paidPlan("growth"), { id: UID }, "https://crawler.test");
+    const c = S.couponForm(30);
+    return eq([withCoupon.get("discounts[0][coupon]"), withCoupon.get("allow_promotion_codes"), plain.get("allow_promotion_codes"), c.get("percent_off"), c.get("duration"), c.get("duration_in_months"), c.get("id")],
+      ["crawler-launch-30-3m", null, "true", "30", "repeating", "3", "crawler-launch-30-3m"], "coupon");
+  });
+  test("pack checkout: one-time payment, server price, pack + user in metadata", () => {
+    const f = S.packCheckoutForm(P.findPack("pack2000"), { id: UID, email: "a@b.co" }, "https://crawler.test");
+    return eq([f.get("mode"), f.get("line_items[0][price_data][unit_amount]"), f.get("metadata[kind]"), f.get("metadata[pack_id]"), f.get("metadata[user_id]"), f.get("customer_creation"), f.get("line_items[0][price_data][recurring][interval]")],
+      ["payment", "2900", "pack", "pack2000", UID, "always", null], "pack");
+  });
+  const packEv = (o = {}, type = "checkout.session.completed") => ({ type, data: { object: { id: "cs_test_abcdefgh123", mode: "payment", payment_status: "paid", amount_total: 2900, currency: "usd", customer: "cus_123", metadata: { kind: "pack", pack_id: "pack2000", user_id: UID }, ...o } } });
+  test("pack webhook: only paid one-time sessions with our metadata and a fair amount add Crawlers", () => {
+    const ok = S.readPackCheckout(packEv(), P.PACKS);
+    const bad = [
+      S.readPackCheckout(packEv({ payment_status: "unpaid" }), P.PACKS),
+      S.readPackCheckout(packEv({ mode: "subscription" }), P.PACKS),
+      S.readPackCheckout(packEv({ amount_total: 99999 }), P.PACKS),
+      S.readPackCheckout(packEv({ metadata: { kind: "pack", pack_id: "pack999", user_id: UID } }), P.PACKS),
+      S.readPackCheckout(packEv({ metadata: { kind: "pack", pack_id: "pack2000", user_id: "nope" } }), P.PACKS),
+      S.readPackCheckout(packEv({}, "invoice.paid"), P.PACKS),
+    ];
+    return ok && ok.pack === "pack2000" && ok.amountCents === 2900 && ok.customer === "cus_123" && bad.every((x) => x === null) ? null : JSON.stringify({ ok, bad });
+  });
+  test("subscription events carry monthly vs annual billing", () => {
+    const y = S.readSubscription({ type: "customer.subscription.updated", created: NOW, data: { object: { id: "sub_test_abc123", customer: "cus_test_abc123", status: "active", metadata: { user_id: UID, plan_id: "pro" }, items: { data: [{ current_period_start: NOW, current_period_end: NOW + 86400 * 365, price: { recurring: { interval: "year" } } }] } } } });
+    const m = S.readSubscription({ type: "customer.subscription.updated", created: NOW, data: { object: { id: "sub_test_abc124", customer: "cus_test_abc123", status: "active", metadata: { user_id: UID, plan_id: "agency" }, items: { data: [{ current_period_start: NOW, current_period_end: NOW + 86400 * 30 }] } } } });
+    return eq([y && y.interval, y && y.plan, m && m.interval, m && m.plan], ["year", "pro", "month", "agency"], "interval");
+  });
+}
+{
+  const PV = require(path.join(lib, "preview.js"));
+  test("free-trial preview: keeps the score + top 3 reasons, removes fixes, customers and quotes, counts what's locked", () => {
+    const run = { id: "t1", url: "https://x.co", stats: { total: 25, buy: 4, objections: [1, 2, 3, 4].map((i) => ({ category: "c" + i, count: 5, examples: ["a", "b"], changeMind: ["m"] })), bestQuotes: [1, 2, 3], allQuotes: [1, 2] }, advice: { summary: "Price hidden.", fixes: [{}, {}, {}, {}], headlineOptions: ["h"], subheadline: "s", pricingCopy: "p" }, verdicts: [{}, {}], personas: [{}], journey: { steps: [1] } };
+    const p = PV.toPreview(run);
+    return eq([p.stats.buy, p.stats.objections.length, p.stats.objections[0].examples.length, p.stats.objections[0].changeMind.length, p.stats.allQuotes.length, p.advice.fixes.length, p.advice.headlineOptions.length, p.advice.summary, p.verdicts.length, p.personas.length, p.journey, p.preview],
+      [4, 3, 1, 0, 0, 0, 0, "Price hidden.", 0, 0, undefined, { fixes: 4, customers: 25 }], "preview");
+  });
+}
 test("billing page: cancel at the end of the month, no plan switching", () => {
   const f = portalConfigForm();
   return eq([f.get("features[subscription_cancel][mode]"), f.get("features[subscription_update][enabled]"), f.get("features[payment_method_update][enabled]")], ["at_period_end", "false", "true"], "portal");
@@ -379,14 +445,16 @@ test("cleanProfile keeps only known objectives", () => {
   return JSON.stringify(p.focus) === '["buy","blockers"]' ? null : JSON.stringify(p.focus);
 });
 
-test("plan switch: upgrade charges the difference now and fails on a bad card; downgrade credits; right price + metadata", () => {
+test("plan switch: upgrade charges the difference now and fails on a bad card; downgrade credits; annual stays annual", () => {
   const S = require(path.join(lib, "stripe.js"));
   const up = S.switchForm(S.paidPlan("growth"), S.paidPlan("starter"), "u1", "si_1", "prod_1");
-  const down = S.switchForm(S.paidPlan("starter"), S.paidPlan("scale"), "u1", "si_1", "prod_1");
+  const down = S.switchForm(S.paidPlan("starter"), S.paidPlan("agency"), "u1", "si_1", "prod_1");
+  const yearly = S.switchForm(S.paidPlan("pro"), S.paidPlan("growth"), "u1", "si_1", "prod_1", "year");
   const ok =
     up.get("proration_behavior") === "always_invoice" && up.get("payment_behavior") === "error_if_incomplete" &&
-    up.get("items[0][price_data][unit_amount]") === "10000" && up.get("metadata[plan_id]") === "growth" && up.get("items[0][id]") === "si_1" &&
-    down.get("proration_behavior") === "create_prorations" && !down.get("payment_behavior") && down.get("items[0][price_data][unit_amount]") === "2500";
+    up.get("items[0][price_data][unit_amount]") === "4900" && up.get("metadata[plan_id]") === "growth" && up.get("items[0][id]") === "si_1" &&
+    down.get("proration_behavior") === "create_prorations" && !down.get("payment_behavior") && down.get("items[0][price_data][unit_amount]") === "1900" &&
+    yearly.get("items[0][price_data][unit_amount]") === "99000" && yearly.get("items[0][price_data][recurring][interval]") === "year";
   return ok ? null : up.toString() + " | " + down.toString();
 });
 

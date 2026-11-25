@@ -4,13 +4,17 @@
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { SITE_URL } from "@/lib/config";
+import { findPack } from "@/lib/plans";
 import DashboardView from "@/components/dashboard/DashboardView";
 import { analyses, fixQueue, nextMoves, recurringBlockers, type DashboardData, type PlanData, type TestRow, type Trends } from "@/lib/dashboard";
 
 export const metadata = { title: "Dashboard", robots: { index: false } };
 
-export default async function Dashboard({ searchParams }: { searchParams: Promise<{ paid?: string }> }) {
-  const { paid } = await searchParams;
+const HISTORY_STANDARD = 20;
+const HISTORY_EXPANDED = 100;
+
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ paid?: string; pack?: string }> }) {
+  const { paid, pack } = await searchParams;
   if (!AUTH_ENABLED) {
     return (
       <div className="paper mx-auto max-w-3xl px-6 py-12 sm:px-10">
@@ -26,15 +30,21 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     // Only the small parts of each test the dashboard needs (not the whole saved report).
     supabase
       .from("tests")
-      .select("id, url, goal, status, score, total, created_at, crawl_id, kind:data->>kind, ptype:data->profile->>productType, objections:data->stats->objections, fixes:data->advice->fixes")
+      .select("id, url, goal, status, score, total, created_at, crawl_id, tier, kind:data->>kind, ptype:data->profile->>productType, objections:data->stats->objections, fixes:data->advice->fixes")
       .order("created_at", { ascending: false })
-      .limit(20),
+      .limit(HISTORY_EXPANDED),
     supabase.from("saved_audiences").select("id, name, audience, updated_at").order("updated_at", { ascending: false }),
     supabase.rpc("my_plan"),
     supabase.rpc("crawler_trends"),
   ]);
 
-  const rows = (testsRes.data ?? []) as unknown as (TestRow & { crawl_id: string | null })[];
+  // Agency (and admins) get the expanded history; everyone else sees their latest 20 tests here.
+  const plan0 = planRes.data as { plan?: string; unlimited?: boolean; paid?: boolean } | null;
+  const expanded = Boolean(plan0?.unlimited) || plan0?.plan === "agency";
+  const rows = ((testsRes.data ?? []) as unknown as (TestRow & { crawl_id: string | null; tier?: string | null })[])
+    .slice(0, expanded ? HISTORY_EXPANDED : HISTORY_STANDARD)
+    // a free-trial report is a preview until they pay: its fixes stay locked here too
+    .map((r) => (r.tier === "trial" && !plan0?.paid ? { ...r, fixes: null } : r));
 
   // Thumbnails: the first screenshot of each test's page (websites/stores) or its first uploaded
   // screen (apps/games). Shown through /api/files, which only ever serves your own files.
@@ -74,5 +84,6 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     plan,
     trends: (trendsRes.data as Trends | null) ?? null,
   };
-  return <DashboardView data={data} paid={paid === "starter" || paid === "growth" || paid === "scale" ? paid : undefined} />;
+  const thanks = (["starter", "growth", "pro", "agency"] as string[]).includes(paid ?? "") ? paid : findPack(pack) ? pack : undefined;
+  return <DashboardView data={data} paid={thanks} />;
 }

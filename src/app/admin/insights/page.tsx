@@ -20,6 +20,9 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   if (error || !data) notFound(); // not an admin (or not signed in): this page doesn't exist for you
   const d = data as Insights;
   const tips = advice(d.groups, d.signups);
+  // "Need more Crawlers?" requests from the pricing page (migration 0023; admins only, newest first)
+  const { data: reqs } = await (await supabaseServer()).rpc("admin_sales_requests");
+  const requests = (reqs ?? []) as { id: number; name: string; email: string; company: string | null; volume: string | null; message: string | null; created_at: string }[];
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -74,6 +77,28 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
           <Table key={k} title={DIM_LABELS[k]?.title ?? k} labels={DIM_LABELS[k]?.labels} rows={d.groups[k]} />
         ))}
       </div>
+
+      <section className="card mt-6 p-6" aria-labelledby="sales">
+        <h2 id="sales" className="t-h3">Custom volume requests</h2>
+        <p className="mt-1 text-sm text-muted">From &quot;Need more Crawlers?&quot; on the pricing page. Reply to them by email.</p>
+        {requests.length === 0 ? (
+          <p className="mt-4 text-sm text-faint">None yet.</p>
+        ) : (
+          <ul className="mt-4 divide-y divide-line text-sm">
+            {requests.map((r) => (
+              <li key={r.id} className="py-3">
+                <p>
+                  <span className="font-medium">{r.name}</span> · <a className="underline underline-offset-4" href={`mailto:${r.email}`}>{r.email}</a>
+                  {r.company && ` · ${r.company}`}
+                  {r.volume && <span className="text-muted"> · wants {r.volume}</span>}
+                  <span className="text-faint"> · {new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                </p>
+                {r.message && <p className="mt-1 text-muted">{r.message}</p>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {d.other.length > 0 && (
         <section className="card mt-6 p-6">

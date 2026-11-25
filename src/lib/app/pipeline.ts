@@ -35,6 +35,9 @@ export type AppRun = {
   stats?: AppStats;
   quality?: Quality; // checks on the answers themselves (../quality.ts)
   advice?: AppAdvice;
+  // set by the API (never saved) when this is a free-trial test and the owner hasn't paid yet:
+  // the report shows a preview and these counts of what's locked (src/lib/preview.ts)
+  preview?: { fixes: number; customers: number };
   costs: CallCost[];
   totalCostUsd?: number;
 };

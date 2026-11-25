@@ -126,13 +126,13 @@ async function startTest(
   if (error) {
     if (error.message.includes("LIMIT_REACHED")) {
       return NextResponse.json(
-        { error: "That's more simulated customers than your plan has left. Pick a smaller test, or upgrade on the Pricing page.", limitReached: true },
+        { error: "That's more Crawlers than you have left. Pick a smaller test, buy a Crawler pack, or upgrade on the Pricing page.", limitReached: true },
         { status: 402 },
       );
     }
     if (error.message.includes("PLAN_NO_ADS")) {
       return NextResponse.json(
-        { error: "Video, ad and creator tests come with the Growth and Scale plans. See the Pricing page.", limitReached: true },
+        { error: "Ad Analysis (video, ad and creator tests) starts on the Growth plan. Crawler packs don't include it. See the Pricing page.", limitReached: true },
         { status: 402 },
       );
     }

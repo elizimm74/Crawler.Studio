@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AudiencePicker from "@/components/AudiencePicker";
 import Working from "@/components/Working";
 import { MyMindsCards, SaveMind } from "@/components/dashboard/minds";
-import { SizePicker, StarterNote, fitSize, usePlan, AdsGate } from "@/components/dashboard/usePlan";
+import { SizePicker, canPickSize, StarterNote, fitSize, usePlan, AdsGate } from "@/components/dashboard/usePlan";
 import { Arrow } from "@/components/landing/UrlForm";
 import { Chevron, ErrorNote, Heading, Nav, PRESET_HINT, PresetCard, Stepper, Summary, waitForCrawl } from "@/components/wizard";
 import { DEFAULT_AUDIENCE, PRESETS } from "@/lib/presets";
@@ -36,7 +36,7 @@ export default function VideoWizard() {
   const params = useSearchParams();
   const plan = usePlan();
   const [size, setSize] = useState(100); // paid plans pick 100 / 250 / 500 / 1,000
-  const viewers = plan && (plan.monthly || plan.unlimited) ? fitSize(plan, size) : (plan?.customers ?? 100);
+  const viewers = canPickSize(plan, true) ? fitSize(plan, size, true) : (plan?.customers ?? 100);
   const [step, setStep] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [frames, setFrames] = useState<Frame[]>([]);
@@ -162,7 +162,7 @@ export default function VideoWizard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          count: fitSize(plan, size), // only a request: the database checks it against the plan
+          count: fitSize(plan, size, true), // only a request: the database checks it against the plan
           crawlId,
           audience,
           profile,
@@ -414,7 +414,7 @@ export default function VideoWizard() {
             <Summary label="Audience" value={`${viewers} × 3 · ${presetName}`} />
             <Summary label="View range" value={usual ? `from ${compact(usual)} usual` : "add views to see it"} />
           </dl>
-          <SizePicker plan={plan} value={fitSize(plan, size)} onChange={setSize} />
+          <SizePicker plan={plan} value={fitSize(plan, size, true)} onChange={setSize} video />
           <StarterNote plan={plan} />
           <ErrorNote error={error} />
           <div className="flex items-center justify-between gap-4 border-t border-line pt-6">

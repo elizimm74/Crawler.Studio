@@ -126,7 +126,7 @@ export default function NextSteps({
             </span>
             <p className="mt-2 font-medium">Keep testing as you fix</p>
             <p className="text-sm text-muted">
-              {pack.name}: {pack.customers.toLocaleString("en-US")} simulated customers a month (about 10 tests) for {priceLabel(pack)}/month. Cancel any time.
+              {pack.name}: {pack.customers.toLocaleString("en-US")} Crawlers a month (about 10 tests) for {priceLabel(pack)}/month. Cancel any time.
             </p>
             <span className="mt-auto pt-2 text-sm text-faint">
               See plans <span className="arrow inline-block">→</span>

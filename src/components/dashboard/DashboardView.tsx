@@ -27,7 +27,7 @@ import { PLAYS } from "@/lib/playbook";
 import { subscriptionLine, summarize, type Analysis, type DashboardData } from "@/lib/dashboard";
 import ManageBilling from "@/components/ManageBilling";
 import Mark from "@/components/Mark";
-import { PLANS, planName } from "@/lib/plans";
+import { PLANS, findPack, planName } from "@/lib/plans";
 
 const VIEWS = [
   ["overview", "Overview"],
@@ -192,7 +192,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
       return { label, kind: list[0].kind, url: list[0].url, tests: list.length, last: list[0].created_at, latest: finished[0], best: finished.reduce<number | null>((m, a) => (a.pct !== null && (m === null || a.pct > m) ? a.pct : m), null) };
     });
   }, [data.analyses]);
-  const planLabel = plan.unlimited ? "Admin" : plan.plan === "pack" ? "Paid tests" : `${planName(plan.plan)} plan`;
+  const planLabel = plan.unlimited ? "Admin" : plan.plan === "pack" ? "Crawler packs" : plan.plan === "free" ? "Free trial" : `${planName(plan.plan)} plan`;
   const subLine = subscriptionLine(plan.subscription);
   const summary = latest
     ? `${latest.label} ${latest.delta === null ? "scored" : latest.delta > 0 ? "climbed to" : latest.delta < 0 ? "slipped to" : "held at"} ${latest.score} of ${latest.total}.${latest.blocker ? ` Biggest blocker: ${latest.blocker}.` : ""}`
@@ -260,13 +260,19 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                 {plan.monthly && !plan.unlimited ? (
                   <>
                     <div className="flex items-baseline justify-between text-sm">
-                      <span className="font-medium">Customers this month</span>
+                      <span className="font-medium">Crawlers this month</span>
                       <span className="text-xs tabular-nums text-faint">{plan.monthly.left.toLocaleString("en-US")} left</span>
                     </div>
                     <div className="mt-3">
                       <Bar pct={(plan.monthly.used / Math.max(1, plan.monthly.allowance)) * 100} />
                     </div>
+                    {(plan.packs ?? 0) > 0 && <p className="mt-2 text-xs text-faint">+ {(plan.packs ?? 0).toLocaleString("en-US")} pack Crawlers</p>}
                   </>
+                ) : (plan.packs ?? 0) > 0 && !plan.unlimited ? (
+                  <div className="flex items-baseline justify-between text-sm">
+                    <span className="font-medium">Pack Crawlers</span>
+                    <span className="text-xs tabular-nums text-faint">{(plan.packs ?? 0).toLocaleString("en-US")} left</span>
+                  </div>
                 ) : (
                   <>
                     <div className="flex items-baseline justify-between text-sm">
@@ -366,7 +372,9 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
             <p role="status" className="fl-panel p-4 text-sm">
               <span className="font-medium">Payment received. Thank you!</span>{" "}
               <span className="text-muted">
-                Your {planName(paid)} plan is on: {(PLANS.find((p) => p.id === paid)?.customers ?? 0).toLocaleString("en-US")} simulated customers this month. Refresh in a few seconds if it hasn&apos;t shown up yet. It renews monthly until you cancel in Manage billing.
+                {findPack(paid)
+                  ? `${findPack(paid)!.crawlers.toLocaleString("en-US")} Crawlers were added to your account. They never expire. Refresh in a few seconds if they haven't shown up yet.`
+                  : `Your ${planName(paid)} plan is on: ${(PLANS.find((p) => p.id === paid)?.customers ?? 0).toLocaleString("en-US")} Crawlers a month, and any free-trial report is now unlocked. Refresh in a few seconds if it hasn't shown up yet. It renews until you cancel in Manage billing.`}
               </span>
             </p>
           )}

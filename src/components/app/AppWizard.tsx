@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AudiencePicker from "@/components/AudiencePicker";
 import Working from "@/components/Working";
 import { MyMindsCards, SaveMind } from "@/components/dashboard/minds";
-import { SizePicker, StarterNote, fitSize, usePlan } from "@/components/dashboard/usePlan";
+import { SizePicker, canPickSize, StarterNote, fitSize, usePlan } from "@/components/dashboard/usePlan";
 import { Arrow } from "@/components/landing/UrlForm";
 import { Chevron, ErrorNote, Heading, Nav, PRESET_HINT, PresetCard, Stepper, Summary, waitForCrawl } from "@/components/wizard";
 import PaywallEditor, { ChecksList } from "./PaywallEditor";
@@ -33,7 +33,7 @@ export default function AppWizard() {
   const plan = usePlan(); // how many customers per crowd this account gets (25 starter / 100 full)
   const [size, setSize] = useState(100); // paid plans pick 100 / 250 / 500 / 1,000
   // shown on the launch step: the picked size on paid plans, else what the server will give (25 / 100)
-  const customers = plan && (plan.monthly || plan.unlimited) ? fitSize(plan, size) : (plan?.customers ?? 100);
+  const customers = canPickSize(plan) ? fitSize(plan, size) : (plan?.customers ?? 100);
   const [shots, setShots] = useState<Shot[]>([]);
   const [shotsB, setShotsB] = useState<Shot[]>([]);
   const [busy, setBusy] = useState<null | "uploading" | "reading" | "starting">(null);

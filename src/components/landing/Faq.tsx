@@ -10,7 +10,7 @@ const QA: [string, string][] = [
     "How accurate is it?",
     "The facts are as accurate as you make them: you confirm every price, button and screen before the test runs. Predictions can't be perfect, so we run apps 3 times to show a range, compare against published subscription-app benchmarks, and publish predicted vs real results on our accuracy page.",
   ],
-  ["What does it cost?", "Free: 1 test with 25 simulated customers, no card. Invite 3 friends who verify their email to get 1 more test with 100. Paid plans are monthly: Starter $25 (1,000 simulated customers a month, about ten 100-customer tests), Growth $100 (10,000) and Scale $250 (30,000); Growth and Scale add video and ad tests. Allowances reset each billing month. Cancel any time."],
+  ["What does it cost?", "1 Crawler = 1 simulated customer. The free trial is one test with 25 Crawlers, no card. Plans are monthly (or annual, 2 months free): Starter $19 for 1,000 Crawlers a month, Growth $49 for 5,000 (Ad Analysis starts here), Pro $99 for 15,000 and Agency $199 for 40,000. Crawlers reset every month. Prefer no subscription? One-time Crawler packs start at $9 for 500. Cancel any time."],
   [
     "Do you test apps too?",
     "Yes. Drop in screenshots of your onboarding and paywall. You get a screen-by-screen drop-off, App Store and Google Play rule checks, an A/B verdict for two paywalls, and rewritten copy.",

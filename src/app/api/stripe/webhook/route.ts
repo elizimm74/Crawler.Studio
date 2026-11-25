@@ -4,10 +4,12 @@
 //    active, past_due (payment failed, Stripe is retrying), canceled, "cancels at the end of the month",
 //    and the billing period (the month's simulated-customer allowance is counted from its start).
 // 3. invoice.paid -> save the payment (record_payment) for revenue tracking + the founder's Slack alerts.
+// 4. checkout.session.completed for a one-time Crawler PACK -> add the Crawlers (record_pack, once).
 //    Other events are acknowledged and ignored.
 // This is the ONE web route that uses the Supabase secret key, because only the server may change plans.
 import { NextResponse } from "next/server";
-import { readPayment, readSubscription, verifyStripeSignature } from "@/lib/stripe";
+import { readPackCheckout, readPayment, readSubscription, verifyStripeSignature } from "@/lib/stripe";
+import { PACKS } from "@/lib/plans";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function POST(req: Request) {
@@ -35,6 +37,7 @@ export async function POST(req: Request) {
       p_period_end: sub.periodEnd,
       p_cancel: sub.cancelling,
       p_event_at: sub.eventAt,
+      p_interval: sub.interval,
     });
     if (error) return retry("sync_subscription", error.message);
     console.log(JSON.stringify({ event: "subscription", sub: sub.sub, status: sub.status, cancelling: sub.cancelling, applied: data }));
@@ -53,6 +56,21 @@ export async function POST(req: Request) {
     });
     if (error) return retry("record_payment", error.message);
     console.log(JSON.stringify({ event: "payment", invoice: pay.invoice, cents: pay.amountCents, saved: data }));
+    return NextResponse.json({ received: true });
+  }
+
+  const pack = readPackCheckout(event, PACKS);
+  if (pack) {
+    const { error, data } = await supabaseAdmin().rpc("record_pack", {
+      p_session: pack.session,
+      p_user: pack.userId,
+      p_pack: pack.pack,
+      p_amount: pack.amountCents,
+      p_currency: pack.currency,
+      p_customer: pack.customer,
+    });
+    if (error) return retry("record_pack", error.message);
+    console.log(JSON.stringify({ event: "pack", session: pack.session, pack: pack.pack, added: data }));
     return NextResponse.json({ received: true });
   }
 

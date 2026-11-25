@@ -22,6 +22,7 @@ import NextSteps from "@/components/report/NextSteps";
 import CopyFixPrompt from "@/components/report/CopyFixPrompt";
 import { FixProgress, FixStatusProvider } from "@/components/report/FixStatus";
 import PrintButton from "@/components/report/PrintButton";
+import PreviewLock from "@/components/report/PreviewLock";
 import { priorityFor } from "@/lib/priority";
 import FixCard from "@/components/report/FixCard";
 
@@ -51,6 +52,36 @@ export default function AppReport({ run, demo = false }: { run: AppRun; demo?: b
     { id: "why", label: "Why" },
     ...(demo ? [] : [{ id: "revenue", label: "Revenue" }, { id: "next", label: "Next steps" }, { id: "share", label: "Share" }]),
   ];
+
+  // FREE TRIAL, not paid yet: the score, the summary and where most people quit, then the locked panel.
+  if (run.preview) {
+    return (
+      <ReportShell sections={[{ id: "answer", label: "Answer" }, { id: "unlock", label: "Full report" }]}>
+        <ReportHero
+          label={isGame ? "game first session + shop" : "app onboarding + paywall"}
+          tag="free trial preview"
+          value={middle}
+          total={stats.perSample}
+          headline={`would ${goal}`}
+          sub={`range across ${stats.samples} crowds: ${rangeText(stats.convert)}`}
+          summary={advice.summary}
+          pills={worst?.quit > 0 ? [{ text: `Most quit at screen ${worst.n} (${worst.type}) · ${pct(worst.quitPct)}`, warn: true }] : []}
+          yes={middle}
+          crowdTotal={stats.perSample}
+          crowdCaption="one dot = one simulated customer · the middle crowd"
+          actions={
+            <a href="#unlock" className="btn btn-primary h-11 px-5 text-sm">
+              See what to fix
+            </a>
+          }
+        />
+        <PreviewLock fixes={run.preview.fixes} customers={run.preview.customers} kind="app" />
+        <p className="text-center text-xs text-faint">
+          Simulation result: these are AI-simulated customers. Their buying intent is a strong hint about what to fix, not a real conversion rate.
+        </p>
+      </ReportShell>
+    );
+  }
 
   return (
     <FixStatusProvider testId={run.id} demo={demo}>
