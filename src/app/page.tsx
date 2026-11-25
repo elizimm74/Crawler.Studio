@@ -12,6 +12,7 @@ import { PERSONAS } from "@/components/landing/home/sections";
 import SimConsole from "@/components/landing/v14/SimConsole";
 import ReportPreview from "@/components/landing/v14/ReportPreview";
 import LabSequence, { type LabStage } from "@/components/landing/lab/LabSequence";
+import { STONE_URL } from "@/components/landing/lab/stone";
 import ScrubBand from "@/components/landing/v14/ScrubBand";
 import Manifesto from "@/components/landing/motion/Manifesto";
 import Reveal from "@/components/Reveal";
@@ -100,10 +101,10 @@ export default function Home() {
       {/* ================= THE BLOCKERS, sliding past as you scroll (klad-style scrubbed band) ================= */}
       <ScrubBand />
 
-      {/* ================= THE LAB (dark): the statement, then two scroll-driven animations =================
+      {/* ================= THE LAB (washed gray stone): the statement, then two scroll-driven animations =================
           01 Customer simulation + 03 Behavioral patterns (founder's brief). Each one pins while you
-          scroll through its four stages; illustration with demo data, labelled on screen. */}
-      <section className="night18 lab" aria-label="How a simulation works">
+          scroll through its four stages, after the gray cracks open to unveil it (crack.ts); illustration with demo data. */}
+      <section className="night18 lab" aria-label="How a simulation works" style={{ "--stone": `url("${STONE_URL}")` } as React.CSSProperties}>
         <div className="home-wide">
           <Manifesto
             bare

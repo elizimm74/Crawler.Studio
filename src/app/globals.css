@@ -2950,3 +2950,56 @@ html[data-calm] .scrub-echo { display: none; }
 }
 @media (prefers-reduced-motion: reduce) and (min-width: 900px) { .lab-list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media print { .lab-track { height: auto; } .lab-pin { position: relative; height: 70vh; } }
+
+
+/* =================================================================================================
+   LAB v2 "WASHED GRAY + CRACKS" (2026-11-25, founder's photo: "washed gray exactly like the photo,
+   then cracks in it unveiling the things as you scroll"). The lab region is now a soft cloudy
+   warm-gray stone (src/components/landing/lab/stone.ts, made in code, matched to the photo's tones:
+   average #8b8a82) that washes in from the white page. Text on the stone is dark. Each animation
+   sits on its near-black stage UNDER a plate of the same stone; the plate cracks and breaks away as
+   you scroll in (crack.ts). The plate's texture is offset to the region's corner, so they line up.
+   ================================================================================================= */
+.lab {
+  --fg: #151513;
+  --fg-muted: #2e2d2a;
+  --fg-faint: #3d3c38;
+  --line: rgb(20 20 18 / 0.14);
+  --line-strong: rgb(20 20 18 / 0.26);
+}
+.lab::before {
+  background:
+    linear-gradient(180deg,
+      #ffffff 0,
+      rgb(255 255 255 / 0.86) calc(var(--wash) * 0.2),
+      rgb(255 255 255 / 0.55) calc(var(--wash) * 0.45),
+      rgb(255 255 255 / 0.2) calc(var(--wash) * 0.72),
+      rgb(255 255 255 / 0) var(--wash),
+      rgb(255 255 255 / 0) calc(100% - var(--wash)),
+      rgb(255 255 255 / 0.2) calc(100% - var(--wash) * 0.72),
+      rgb(255 255 255 / 0.55) calc(100% - var(--wash) * 0.45),
+      rgb(255 255 255 / 0.86) calc(100% - var(--wash) * 0.2),
+      #ffffff 100%),
+    var(--stone, none) 0 0 / 720px 720px repeat scroll,
+    #8b8a82;
+}
+.lab .text-accent, .lab .hl14 { color: #14237a !important; }
+.lab ::selection { background: rgb(20 35 122 / 0.35); color: #000; }
+/* the animation stages stay near-black with light text */
+.lab-pin {
+  background: #05070b;
+  --fg: #f4f6fb;
+  --fg-muted: #a3aab8;
+  --fg-faint: #7d8594;
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.16);
+  color: var(--fg);
+}
+.lab-plate { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; display: block; pointer-events: none; }
+.lab-bridge::before { background: linear-gradient(transparent, rgb(20 20 18 / 0.35) 30%, rgb(20 35 122 / 0.6) 70%, transparent); }
+.lab-seq.is-still .lab-plate, html[data-calm] .lab-plate { display: none; }
+@media (prefers-reduced-motion: reduce) { .lab-plate { display: none; } }
+@media print { .lab-plate { display: none; } }
+/* the still version's list of stages sits on the stone: dark text */
+.lab-seq.is-still .lab-list .lab-code, html[data-calm] .lab-list .lab-code { color: #14237a; }
+@media (prefers-reduced-motion: reduce) { .lab-list .lab-code { color: #14237a; } }
