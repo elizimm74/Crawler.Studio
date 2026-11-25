@@ -118,8 +118,9 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
         every test: simulated customers · buying intent, not real purchases · secure checkout by Stripe
       </p>
 
-      {/* Crawler's own simulated customers asked for this: how it compares with panels and A/B tests */}
-      <div className="mt-24">
+      {/* Crawler's own simulated customers asked for this: how it compares with panels and A/B tests.
+          It sits on a washed-black band (night18 in globals.css): white melts into black and back. */}
+      <div className="night18 mt-16">
         <Compare />
       </div>
     </div>

@@ -2400,3 +2400,113 @@ h1, h2, .t-h1, .t-h2, .t-display { font-weight: 700 !important; letter-spacing: 
 .mini-flag { color: #17221b; background: #f1f4f2; border-color: var(--line-strong); }
 /* text boxes already draw their own soft green focus ring, so skip the extra outline */
 .field:focus-visible, .url14 input:focus-visible { outline: none; }
+
+/* =================================================================================================
+   v18 "WASHED BLACK" (2026-11-25, founder: "I like the switching with the washed black; show it more
+   through the page and on the dashboard"). The site stays mostly WHITE with the green accent; a few
+   sections go deep green-black, and the page melts into them and back out through a soft, eased
+   gradient ("the wash") instead of a hard edge.
+   HOW TO USE: add `night18` to a section. It gets a full-screen-width black background with a wash
+   above and below (drawn by ::before, so no extra markup), extra top/bottom space so the content
+   sits on the solid black, and light text colours (the tokens are re-set inside it).
+   Dashboard: `dash-wash` on the main column = a black header that washes down into the white cards.
+   ================================================================================================= */
+.night18, .night18 .card, .night18 .card-raised, .night18 .paper, .night18 .glass,
+.dash-app .dash-wash .dash-banner, .dash-app .dash-wash .fl-search {
+  --bg: #0c120e;
+  --subtle: #121915;
+  --raised: #151d18;
+  --bg-subtle: rgb(255 255 255 / 0.04);
+  --bg-raised: #151d18;
+  --surface: #121915;
+  --fg: #f3f6f4;
+  --fg-muted: #aeb8b1;
+  --fg-faint: #8a948d;
+  --line: rgb(255 255 255 / 0.09);
+  --line-strong: rgb(255 255 255 / 0.17);
+  --accent: #078f3b;
+  --accent-hover: #0a9e43;
+  --accent-fg: #ffffff;
+  --accent-ink: #5fd68b;
+}
+.night18 {
+  --wash: clamp(8rem, 22vh, 15rem); /* how tall each soft fade is */
+  position: relative;
+  isolation: isolate;
+  color: var(--fg);
+  padding-block: calc(var(--wash) + 4.5rem) !important;
+}
+.night18::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 calc(50% - 50vw); /* full screen width, even inside a centered column */
+  pointer-events: none;
+  background:
+    radial-gradient(60% calc(var(--wash) * 1.2) at 50% var(--wash), rgb(7 143 59 / 0.12), transparent 70%),
+    radial-gradient(60% calc(var(--wash) * 1.2) at 50% calc(100% - var(--wash)), rgb(7 143 59 / 0.1), transparent 70%),
+    linear-gradient(180deg,
+      #ffffff 0,
+      #f3f5f4 calc(var(--wash) * 0.14),
+      #dbe0dd calc(var(--wash) * 0.3),
+      #a7afaa calc(var(--wash) * 0.46),
+      #66706a calc(var(--wash) * 0.62),
+      #313a34 calc(var(--wash) * 0.78),
+      #151c18 calc(var(--wash) * 0.9),
+      #0c120e var(--wash),
+      #0c120e calc(100% - var(--wash)),
+      #151c18 calc(100% - var(--wash) * 0.9),
+      #313a34 calc(100% - var(--wash) * 0.78),
+      #66706a calc(100% - var(--wash) * 0.62),
+      #a7afaa calc(100% - var(--wash) * 0.46),
+      #dbe0dd calc(100% - var(--wash) * 0.3),
+      #f3f5f4 calc(100% - var(--wash) * 0.14),
+      #ffffff 100%);
+}
+@media (max-width: 639px) { .night18 { --wash: 7rem; padding-block: calc(var(--wash) + 3rem) !important; } }
+.night18 ::selection { background: rgb(7 143 59 / 0.45); color: #fff; }
+
+/* things inside a night section */
+.night18 .text-accent, .night18 .serif, .night18 .hl14 { color: #5fd68b !important; }
+.night18 .eyebrow14 { color: var(--fg-muted); }
+.night18 .head14 { border-color: var(--line); }
+.night18 .tile14, .night18 .bento14-cell, .night18 .honest14 .tile14 { background: #121915; box-shadow: none; }
+.night18 .tile14:hover, .night18 .bento14-cell:hover { background: #172019; box-shadow: 0 20px 44px -26px rgb(0 0 0 / 0.7); }
+.night18 .honest14 { background: rgb(255 255 255 / 0.02); border-color: var(--line); }
+.night18 .bento14-visual { background: #0f1612; }
+.night18 .mini-plan { background: rgb(255 255 255 / 0.04); }
+.night18 .mini-blur { color: #f3f6f4 !important; }
+.night18 .mini-flag { color: #f3f6f4; background: rgb(255 255 255 / 0.06); border-color: var(--line-strong); }
+.night18 .sim-meter { background: rgb(255 255 255 / 0.08); }
+.night18 .bento14-cell .icon14 { color: #5fd68b; background: rgb(7 143 59 / 0.16); border-color: rgb(7 143 59 / 0.32); }
+.night18 .bento14-cell:hover .icon14 { background: #078f3b; color: #fff; border-color: #078f3b; }
+.night18 .plan14 { background: linear-gradient(180deg, rgb(7 143 59 / 0.18), rgb(7 143 59 / 0.06)) !important; border-color: rgb(7 143 59 / 0.45) !important; }
+.night18 .btn-secondary { background: rgb(255 255 255 / 0.06) !important; color: #f3f6f4 !important; border-color: rgb(255 255 255 / 0.18) !important; }
+.night18 .btn-secondary:hover:not(:disabled) { background: rgb(255 255 255 / 0.12) !important; border-color: rgb(255 255 255 / 0.28) !important; }
+.night18 .btn-text { color: var(--fg-muted); }
+.night18 .btn-text:hover { color: var(--fg); }
+.night18 :focus-visible { outline-color: #5fd68b; }
+.night18 table.card { background: #121915; }
+
+/* ---------- dashboard: a black header that washes down into the white workspace ---------- */
+.dash-app .dash-wash { position: relative; isolation: isolate; }
+.dash-app .dash-wash::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: clamp(440px, 58vh, 560px);
+  pointer-events: none;
+  background:
+    radial-gradient(50% 60% at 80% 0%, rgb(7 143 59 / 0.22), transparent 70%),
+    linear-gradient(180deg, #0c120e 0, #0c120e 46%, #151c18 56%, #313a34 66%, #66706a 76%, #a7afaa 85%, #dbe0dd 93%, #ffffff 100%);
+}
+.dash-app .dash-wash .dash-banner { background: rgb(255 255 255 / 0.03) !important; border-color: rgb(255 255 255 / 0.09) !important; color: var(--fg); }
+.dash-app .dash-wash .dash-banner .fl-label { color: #5fd68b !important; }
+.dash-app .dash-wash .fl-search { background: rgb(255 255 255 / 0.06) !important; border: 1px solid rgb(255 255 255 / 0.12) !important; color: var(--fg); }
+.dash-app .dash-wash .fl-search kbd, .dash-app .dash-wash .fl-search .fl-chip { background: rgb(255 255 255 / 0.08); color: var(--fg-muted); border-color: rgb(255 255 255 / 0.14); }
+.dash-app .dash-wash .dash-banner .btn-secondary { background: rgb(255 255 255 / 0.06) !important; color: #f3f6f4 !important; border-color: rgb(255 255 255 / 0.18) !important; }
+.dash-app .dash-wash .fl-search input { background: transparent !important; color: var(--fg) !important; border: 0 !important; }
+.dash-hello { color: #067a32; }
+.dash-app .dash-wash .dash-hello { color: #5fd68b; }
+.night18 tr.bg-subtle, .night18 tr.bg-subtle th, .night18 tr.bg-subtle td { background: rgb(7 143 59 / 0.12); }

@@ -75,8 +75,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= STATEMENT (two-tone, like Linear's) ================= */}
-      <section className="home-wide py-16 sm:py-24" aria-label="What Crawler is">
+      {/* ================= STATEMENT (two-tone, like Linear's), on a washed-black band (night18) ================= */}
+      <section className="night18 home-wide" aria-label="What Crawler is">
         <Reveal>
           <p className="statement14 max-w-5xl">
             A focus group that never sleeps. <span className="text-faint">Crawler sends simulated customers through your launch before real ones arrive, so the first people to hit the price, the signup or the cart are ones who can tell you why they left.</span>
@@ -94,7 +94,7 @@ export default function Home() {
       </section>
 
       {/* ================= MEET YOUR CUSTOMERS ================= */}
-      <section className="band17 home-wide py-20 sm:py-28" aria-labelledby="meet-title">
+      <section className="home-wide py-20 sm:py-28" aria-labelledby="meet-title">
         <Head
           eyebrow="Meet your customers"
           id="meet-title"
@@ -141,7 +141,7 @@ export default function Home() {
       </section>
 
       {/* ================= WHAT CRAWLER ANALYZES ================= */}
-      <section className="home-wide py-20 sm:py-28" aria-labelledby="areas-title">
+      <section className="night18 home-wide" aria-labelledby="areas-title">
         <Head eyebrow="What Crawler analyzes" id="areas-title" title="Everything a first-time visitor judges." sub="On desktop and on a phone, from the first screen to the cart or signup." />
         <ul className="bento14 mt-14">
           {AREAS.map(([title, body, icon], k) => (
@@ -207,7 +207,7 @@ export default function Home() {
       </section>
 
       {/* ================= HONEST BY DESIGN + FREE PLAN ================= */}
-      <section className="band17 home-wide py-20 sm:py-28" aria-labelledby="honest-title">
+      <section className="night18 home-wide" aria-labelledby="honest-title">
         <div className="honest14">
           <div>
             <p className="eyebrow14">Honest by design</p>

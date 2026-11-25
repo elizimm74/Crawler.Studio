@@ -331,7 +331,8 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
         </aside>
 
         {/* ================= main ================= */}
-        <div className="min-w-0 space-y-6 px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pt-8 [&>*]:mx-auto [&>*]:max-w-[1180px]">
+        {/* dash-wash: a black header that washes down into the white workspace (globals.css, v18) */}
+        <div className="dash-wash min-w-0 space-y-6 px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pt-8 [&>*]:mx-auto [&>*]:max-w-[1180px]">
           {/* top bar: search + the ONE main button */}
           <div className="flex items-center gap-3">
             <label className="fl-search flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl px-4">
@@ -377,7 +378,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
               {/* the greeting banner: a quiet blue-black panel (no photos: the product is the visual) */}
               <div className="dash-banner relative flex flex-wrap items-end justify-between gap-6 overflow-hidden rounded-2xl border border-line px-6 py-8 sm:px-8 sm:py-10">
                 <div className="relative z-10 min-w-0">
-                  <p className="fl-label !text-[#067a32]">
+                  <p className="fl-label dash-hello">
                     {hello}, {data.name}
                   </p>
                   <h1 className="mt-3 max-w-3xl text-[1.75rem] font-semibold leading-tight tracking-tight sm:text-[2.1rem]">{summary}</h1>
