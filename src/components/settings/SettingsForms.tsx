@@ -29,7 +29,7 @@ export function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
       </label>
       <div className="flex flex-col gap-2 sm:flex-row">
         <input id="new-pw" type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="New password, 8+ characters" className="field h-11 flex-1" />
-        <button disabled={state === "busy" || !pw} className="btn btn-secondary h-11 px-5 text-sm">
+        <button disabled={state === "busy" || !pw} aria-busy={state === "busy"} className="btn btn-secondary h-11 px-5 text-sm">
           {state === "busy" ? "Saving…" : "Save password"}
         </button>
       </div>
@@ -100,7 +100,7 @@ export function DeleteAccount() {
           </label>
           <div className="flex flex-col gap-2 sm:flex-row">
             <input id="del-confirm" value={text} onChange={(e) => setText(e.target.value)} className="field h-11 flex-1" autoComplete="off" />
-            <button type="button" onClick={del} disabled={busy || text !== "DELETE"} className="btn btn-primary h-11 px-5 text-sm">
+            <button type="button" onClick={del} disabled={busy || text !== "DELETE"} aria-busy={busy} className="btn btn-primary h-11 px-5 text-sm">
               {busy ? "Deleting…" : "Delete forever"}
             </button>
             <button type="button" onClick={() => setOpen(false)} disabled={busy} className="btn btn-ghost h-11 px-4 text-sm">

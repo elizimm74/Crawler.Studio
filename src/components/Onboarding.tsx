@@ -158,7 +158,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
                   />
                 </div>
                 {!check?.ok && (
-                  <button type="submit" disabled={checking || url.trim().length < 4} className="btn btn-secondary h-14 px-6">
+                  <button type="submit" disabled={checking || url.trim().length < 4} aria-busy={checking} className="btn btn-secondary h-14 px-6">
                     {checking ? "Checking…" : "Check site"}
                   </button>
                 )}
@@ -314,7 +314,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
             />
           </fieldset>
 
-          <button type="submit" disabled={busy || focus.length === 0} className="btn btn-primary mt-10 h-14 w-full text-base">
+          <button type="submit" disabled={busy || focus.length === 0} aria-busy={busy} className="btn btn-primary mt-10 h-14 w-full text-base">
             {busy ? "Starting…" : firstTime ? "Next" : nextLabel}
             {!busy && <Arrow />}
           </button>
@@ -356,7 +356,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
           <Choice legend="Where is your product?" options={STAGES} value={about.stage} onPick={(v) => pick("stage", v)} />
           <Choice legend="What do you want most?" options={GOALS} value={about.goal} onPick={(v) => pick("goal", v)} />
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <button type="submit" disabled={busy} className="btn btn-primary h-14 flex-1 text-base">
+            <button type="submit" disabled={busy} aria-busy={busy} className="btn btn-primary h-14 flex-1 text-base">
               {busy ? "Starting…" : nextLabel}
               {!busy && <Arrow />}
             </button>

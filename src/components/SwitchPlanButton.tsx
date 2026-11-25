@@ -40,7 +40,7 @@ export default function SwitchPlanButton({ planId, planName, price, upgrade, yea
         <div className="space-y-2">
           <p className="text-sm text-muted">{bill}</p>
           <div className="flex gap-2">
-            <button type="button" onClick={go} disabled={step === "busy"} className="btn btn-primary flex-1">
+            <button type="button" onClick={go} disabled={step === "busy"} aria-busy={step === "busy"} className="btn btn-primary flex-1">
               {step === "busy" ? "Switching…" : "Confirm"}
             </button>
             <button type="button" onClick={() => setStep("idle")} disabled={step === "busy"} className="btn btn-ghost">

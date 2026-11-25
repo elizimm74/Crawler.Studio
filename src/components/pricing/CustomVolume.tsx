@@ -103,7 +103,7 @@ export default function CustomVolume({ enabled }: { enabled: boolean }) {
             {/* bots fill this in; people never see it */}
             <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
             <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
-              <button type="submit" className="btn btn-primary h-11 rounded-full px-6" disabled={state === "busy"}>
+              <button type="submit" className="btn btn-primary h-11 rounded-full px-6" disabled={state === "busy"} aria-busy={state === "busy"}>
                 {state === "busy" ? "Sending…" : "Send request"}
               </button>
               <p className="text-xs text-faint">We only use your email to reply about this request.</p>

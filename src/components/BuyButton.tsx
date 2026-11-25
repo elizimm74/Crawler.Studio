@@ -29,7 +29,7 @@ export default function BuyButton({ planId, interval = "month", packId, label, p
   }
   return (
     <div className={className}>
-      <button type="button" onClick={buy} disabled={busy} className={`btn w-full ${primary ? "btn-primary" : "btn-secondary"}`}>
+      <button type="button" onClick={buy} disabled={busy} aria-busy={busy} className={`btn w-full ${primary ? "btn-primary" : "btn-secondary"}`}>
         {busy ? "Opening secure checkout…" : label}
       </button>
       {error && (

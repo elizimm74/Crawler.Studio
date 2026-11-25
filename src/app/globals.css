@@ -2571,3 +2571,195 @@ h1, h2, .t-h1, .t-h2, .t-display { font-weight: 700 !important; letter-spacing: 
 .lock-ghost em { height: 22px; width: 44px; border-radius: 99px; background: #078f3b; opacity: 0.6; }
 .lock-body { position: relative; max-width: 40rem; margin-top: 180px; padding: 24px; border-radius: 20px; background: rgb(255 255 255 / 0.92); border: 1px solid var(--line); box-shadow: 0 24px 60px -36px rgb(23 34 27 / 0.35); }
 @media (max-width: 639px) { .lock-body { margin-top: 140px; padding: 18px; } }
+
+/* =================================================================================================
+   v19 "PREMIUM INTERACTIONS" (2026-11-25, founder's interaction + scroll brief).
+   ONE motion language for the whole site. Layout unchanged; only how things FEEL changes.
+     hover  ~220ms, a smooth ease-out (lift, shadow, light)
+     press  ~110ms, scale ~0.975 (press-in); release = a tiny spring back
+     reveal ~600ms fade-up, 20px, short stagger (AutoReveal + Reveal)
+   Buttons are glass: primary = rich Crawler green with a soft top highlight, a delicate inner
+   border and a realistic shadow; secondary = frosted white glass. All motion stops for
+   "reduce motion" and the footer's "Calmer motion" switch.
+   ================================================================================================= */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --t-hover: 220ms;
+  --t-press: 110ms;
+}
+
+/* ---------- 1. the button system ---------- */
+.btn {
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--t-hover) var(--ease-spring),
+    box-shadow var(--t-hover) var(--ease-out),
+    background-color var(--t-hover) var(--ease-out),
+    background-image var(--t-hover) var(--ease-out),
+    border-color var(--t-hover) var(--ease-out),
+    color var(--t-hover) var(--ease-out),
+    opacity var(--t-hover) var(--ease-out);
+}
+/* primary: rich green glass */
+.btn-primary, .dash-app .btn-primary, .nav-pill .btn-primary, .plan-rec .btn-primary, .field14-btn.is-next {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.17) 0%, rgb(255 255 255 / 0.05) 46%, rgb(0 0 0 / 0.05) 100%), #078f3b !important;
+  border: 1px solid #067a32 !important;
+  color: #ffffff !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    inset 0 0 0 1px rgb(255 255 255 / 0.07),
+    0 1px 2px rgb(4 60 26 / 0.28),
+    0 6px 16px -8px rgb(7 143 59 / 0.55) !important;
+}
+/* secondary: frosted white glass */
+.btn-secondary, .dash-app .btn-secondary {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.94), rgb(255 255 255 / 0.72)) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid rgb(23 34 27 / 0.1) !important;
+  color: #17221b !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.95),
+    0 1px 2px rgb(23 34 27 / 0.06),
+    0 6px 16px -10px rgb(23 34 27 / 0.22) !important;
+}
+.night18 .btn-secondary, .dash-app .dash-wash .dash-banner .btn-secondary { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 6px 16px -10px rgb(0 0 0 / 0.5) !important; }
+/* ghost: quiet until you point at it */
+.btn-ghost { background: transparent; border: 1px solid rgb(23 34 27 / 0.12); }
+/* text buttons (nav links, small actions): a soft pill appears on hover */
+.btn-text { border-radius: 999px; }
+/* the page you're on, in the top nav */
+.nav-link[aria-current="page"] { background: #eaf5ed !important; color: #067a32 !important; }
+
+@media (hover: hover) {
+  .btn-primary:hover:not(:disabled), .dash-app .btn-primary:hover:not(:disabled), .nav-pill .btn-primary:hover:not(:disabled), .plan-rec .btn-primary:hover:not(:disabled), .field14-btn.is-next:hover:not(:disabled) {
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.22) 0%, rgb(255 255 255 / 0.07) 46%, rgb(0 0 0 / 0.03) 100%), #0a9842 !important;
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.34),
+      inset 0 0 0 1px rgb(255 255 255 / 0.08),
+      0 2px 4px rgb(4 60 26 / 0.24),
+      0 12px 24px -10px rgb(7 143 59 / 0.6) !important;
+  }
+  .btn-secondary:hover:not(:disabled), .dash-app .btn-secondary:hover:not(:disabled) {
+    background: linear-gradient(180deg, #ffffff, rgb(255 255 255 / 0.86)) !important;
+    border-color: rgb(23 34 27 / 0.16) !important;
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 #ffffff, 0 2px 4px rgb(23 34 27 / 0.06), 0 12px 24px -12px rgb(23 34 27 / 0.28) !important;
+  }
+  .btn-ghost:hover:not(:disabled):not([aria-disabled="true"]) { background: rgb(255 255 255 / 0.75); border-color: rgb(23 34 27 / 0.18); transform: translateY(-1px); box-shadow: 0 8px 18px -12px rgb(23 34 27 / 0.3); }
+  .btn-text:hover:not(:disabled) { background: rgb(23 34 27 / 0.05); color: var(--fg); }
+  .night18 .btn-text:hover:not(:disabled) { background: rgb(255 255 255 / 0.08); }
+}
+/* press-in: quick down, springy back up (the release uses the base .btn transition above) */
+.btn:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(0) scale(0.975) !important;
+  transition-duration: var(--t-press), var(--t-press), var(--t-press), var(--t-press), var(--t-press), var(--t-press), var(--t-press);
+  transition-timing-function: var(--ease-out);
+}
+.btn-primary:active:not(:disabled), .dash-app .btn-primary:active:not(:disabled), .nav-pill .btn-primary:active:not(:disabled), .plan-rec .btn-primary:active:not(:disabled) {
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.16), inset 0 0 0 1px rgb(255 255 255 / 0.05), 0 1px 2px rgb(4 60 26 / 0.22) !important;
+}
+.btn-secondary:active:not(:disabled) { box-shadow: inset 0 1px 2px rgb(23 34 27 / 0.08), 0 1px 2px rgb(23 34 27 / 0.06) !important; }
+/* a "Coming soon" / disabled-looking button never moves */
+.btn[aria-disabled="true"] { transform: none !important; box-shadow: none !important; cursor: default; }
+.btn:disabled:not([aria-busy="true"]) { opacity: 0.45; }
+
+/* focus: a clear, calm ring for keyboard users (never shown for mouse clicks) */
+.btn:focus-visible, .chip:focus-visible, .bill-toggle button:focus-visible, .field14-btn:focus-visible, summary:focus-visible {
+  outline: 2px solid #078f3b;
+  outline-offset: 3px;
+}
+.night18 .btn:focus-visible, .dash-wash .btn:focus-visible { outline-color: #5fd68b; }
+
+/* loading: the button keeps its colour, a small spinner leads the label, and it can't be pressed twice */
+.btn[aria-busy="true"] { opacity: 1 !important; cursor: progress; pointer-events: none; }
+.btn[aria-busy="true"]::before {
+  content: "";
+  height: 14px;
+  width: 14px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  opacity: 0.85;
+  animation: btn-spin 700ms linear infinite;
+}
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+
+/* success: the new label pops in, and the button gets a soft green halo for a moment */
+.pop-ok { display: inline-block; animation: pop-ok 420ms var(--ease-spring) both; }
+@keyframes pop-ok { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+.btn[data-done] { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 0 0 4px rgb(7 143 59 / 0.16), 0 6px 16px -8px rgb(7 143 59 / 0.5) !important; }
+
+/* ---------- 2. small controls + clickable cards share the same feel ---------- */
+.chip, .bill-toggle button, .seg button, .field14-btn, .rnav a, [role="tab"] {
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--t-hover) var(--ease-spring), background-color var(--t-hover) var(--ease-out), color var(--t-hover) var(--ease-out), border-color var(--t-hover) var(--ease-out), box-shadow var(--t-hover) var(--ease-out);
+}
+.chip:active, .bill-toggle button:active, .seg button:active, .field14-btn:active:not(:disabled), .rnav a:active, [role="tab"]:active {
+  transform: scale(0.97);
+  transition-duration: var(--t-press);
+}
+a.card, a.nextcard, a.pathstep, a.tile14 { -webkit-tap-highlight-color: transparent; }
+a.card:active, a.nextcard:active, a.pathstep:active, a.tile14:active { transform: scale(0.99) !important; transition-duration: var(--t-press); }
+/* cards: soft lift + a slightly deeper shadow on hover (desktop only; phones don't "hover") */
+@media (hover: hover) {
+  .plan-card:hover, .pack-card:hover { transform: translateY(-3px); }
+  .plan-rec:hover { transform: translateY(-6px); }
+}
+@media (hover: none) {
+  .tile14:hover, .bento14-cell:hover, a.card:hover, .plan-card:hover, .pack-card:hover, .win-card:hover, .drow:hover { transform: none; }
+}
+.plan-card, .pack-card { transition: transform 320ms var(--ease-out), box-shadow 320ms var(--ease-out), border-color 320ms var(--ease-out); }
+
+/* ---------- 3. navigation: glass that turns solid once you scroll ---------- */
+.nav-pill {
+  background: rgb(255 255 255 / 0.55) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  backdrop-filter: blur(16px) saturate(1.6);
+  border: 1px solid rgb(23 34 27 / 0.06) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6) !important;
+  transition: background-color 320ms var(--ease-out), border-color 320ms var(--ease-out), box-shadow 320ms var(--ease-out), max-width 420ms var(--ease-out);
+}
+html[data-scrolled] .nav-pill {
+  background: rgb(255 255 255 / 0.88) !important;
+  border-color: rgb(23 34 27 / 0.09) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 10px 30px -18px rgb(23 34 27 / 0.32) !important;
+}
+
+/* ---------- 4. reveals: one timing everywhere (450-700ms), small distance ---------- */
+.ar { translate: 0 20px; transition: opacity 600ms var(--ease-out), translate 700ms var(--ease-out); }
+.reveal { transform: translateY(24px); transition: opacity 650ms var(--ease-out), transform 750ms var(--ease-out); }
+.rise { animation-duration: 650ms; animation-timing-function: var(--ease-out); }
+/* bars inside a card that rises in grow from the left once it's in view */
+.ar .sim-meter i { transform-origin: left; transform: scaleX(0); transition: transform 900ms var(--ease-out) 200ms; }
+.ar.ar-in .sim-meter i { transform: scaleX(1); }
+/* pricing: the five plans settle in one after another when the page opens */
+@keyframes card-in { from { opacity: 0; translate: 0 18px; } to { opacity: 1; translate: 0 0; } }
+.plan-card { animation: card-in 600ms var(--ease-out) both; }
+.plan-card:nth-child(2) { animation-delay: 60ms; }
+.plan-card:nth-child(3) { animation-delay: 120ms; }
+.plan-card:nth-child(4) { animation-delay: 180ms; }
+.plan-card:nth-child(5) { animation-delay: 240ms; }
+.price-path li { animation: card-in 600ms var(--ease-out) both; }
+.price-path li:nth-child(2) { animation-delay: 60ms; } .price-path li:nth-child(3) { animation-delay: 120ms; }
+.price-path li:nth-child(4) { animation-delay: 180ms; } .price-path li:nth-child(5) { animation-delay: 240ms; }
+
+/* jumps to a section stop below the floating nav (the scroller reads this; phones use it natively) */
+@layer base { section[id], div[id="custom"] { scroll-margin-top: 96px; } }
+
+/* ---------- 5. reduced motion / "Calmer motion": colours may still change, nothing moves ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .btn, .chip, .bill-toggle button, .plan-card, .pack-card, a.card, a.nextcard { transition-property: background-color, border-color, color, box-shadow, opacity; }
+  .btn:hover, .btn:active, .plan-card:hover, .pack-card:hover, .plan-rec:hover, .chip:active, a.card:active, a.nextcard:active { transform: none !important; }
+  .plan-card, .price-path li, .pop-ok { animation: none; }
+  .ar .sim-meter i { transform: none; transition: none; }
+}
+html[data-calm] .btn:hover, html[data-calm] .btn:active, html[data-calm] .plan-card:hover, html[data-calm] .pack-card:hover, html[data-calm] .plan-rec:hover, html[data-calm] .chip:active { transform: none !important; }
+html[data-calm] .ar .sim-meter i { transform: none; }
+@media print { .plan-card, .price-path li { animation: none; } .ar .sim-meter i { transform: none; } }

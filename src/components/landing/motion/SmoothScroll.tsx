@@ -4,17 +4,20 @@
 //   - The mouse wheel / trackpad moves a TARGET position; the page eases toward it every frame.
 //   - ONLY on desktop-style pointers (mouse / trackpad). Phones and tablets keep their own native
 //     momentum scrolling. Anyone who asked for reduced motion keeps normal scrolling.
-//   - Keyboard, scrollbar dragging and find-in-page still work (we notice and re-sync).
+//   - Keyboard (space, page down, arrows), scrollbar dragging and find-in-page keep the browser's
+//     own SMOOTH scrolling (CSS scroll-behavior); we only switch it off while our own glide runs,
+//     so the two never fight.
 //   - Scrollable boxes inside the page, text fields and pinch-zoom are left alone.
-//   - Links like <a href="#features"> glide to their spot instead of jumping.
+//   - Links like <a href="#features"> glide to their spot and stop just below the floating nav.
+//   - It never locks or "snaps" the page: stop scrolling and it stops.
 import { useEffect } from "react";
 
-// How fast the page catches up with the wheel. Lower = slower and softer (was 8 on the old home page).
-const EASE = 4.6;
-// Pages that ask for it (the home page: <div data-soft-scroll>) glide even slower, and each wheel
-// notch moves a bit less, so scrolling feels calm and you can watch the animations.
-const SOFT_EASE = 3.2;
-const SOFT_STEP = 0.8;
+// How fast the page catches up with the wheel (a smooth deceleration). Lower = slower and softer.
+const EASE = 5;
+// Pages that ask for it (the home page: <div data-soft-scroll>) glide a little softer, and each wheel
+// notch moves a bit less, so you can watch the animations (soft, but never sluggish).
+const SOFT_EASE = 3.6;
+const SOFT_STEP = 0.9;
 const isSoft = () => document.querySelector("[data-soft-scroll]") !== null;
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
@@ -42,8 +45,13 @@ export default function SmoothScroll() {
 
     const root = document.documentElement;
     const before = root.style.scrollBehavior;
-    root.style.scrollBehavior = "auto"; // the page CSS says "smooth"; we do the easing ourselves
     const maxScroll = () => Math.max(0, root.scrollHeight - window.innerHeight);
+    // Where a jump to a section should stop: its own scroll-margin, else just below the floating nav.
+    const offsetFor = (el: Element) => {
+      const margin = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+      const nav = document.querySelector(".site-header")?.getBoundingClientRect().bottom ?? 64;
+      return Math.max(margin, nav + 16);
+    };
 
     let target = window.scrollY;
     let current = window.scrollY;
@@ -61,10 +69,12 @@ export default function SmoothScroll() {
       }
       window.scrollTo(0, current);
       if (moving) raf = requestAnimationFrame(tick);
+      else root.style.scrollBehavior = before; // glide finished: keyboard scrolling is smooth again
     };
     const go = () => {
       if (moving) return;
       moving = true;
+      root.style.scrollBehavior = "auto"; // while WE glide, the browser mustn't animate each step too
       last = performance.now();
       raf = requestAnimationFrame(tick);
     };
@@ -91,17 +101,37 @@ export default function SmoothScroll() {
       if (id && !el) return;
       e.preventDefault();
       if (!moving) target = current = window.scrollY;
-      target = clamp(el ? el.getBoundingClientRect().top + window.scrollY - 64 : 0, 0, maxScroll());
+      target = clamp(el ? el.getBoundingClientRect().top + window.scrollY - offsetFor(el) : 0, 0, maxScroll());
+      const oldUrl = window.location.href;
       history.replaceState(null, "", id ? `#${id}` : window.location.pathname);
+      // replaceState is silent, so tell the page the #hash changed (e.g. the pricing page opens its
+      // "Need more Crawlers?" form when the address says #custom)
+      if (window.location.href !== oldUrl) window.dispatchEvent(new HashChangeEvent("hashchange", { oldURL: oldUrl, newURL: window.location.href }));
       go();
     };
 
+    // Any OTHER way of scrolling (keyboard, grabbing the scrollbar) instantly ends our glide and
+    // hands control back to the browser, so the two never fight over the page.
+    const stop = () => {
+      if (!moving) return;
+      moving = false;
+      cancelAnimationFrame(raf);
+      target = current = window.scrollY;
+      root.style.scrollBehavior = before;
+    };
+    const SCROLL_KEYS = ["PageDown", "PageUp", "Home", "End", "ArrowDown", "ArrowUp", " ", "Spacebar"];
+    const onKey = (e: KeyboardEvent) => SCROLL_KEYS.includes(e.key) && stop();
+
     window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("keydown", onKey, { capture: true });
+    window.addEventListener("pointerdown", stop, { passive: true });
     document.addEventListener("click", onClick);
     return () => {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("keydown", onKey, { capture: true });
+      window.removeEventListener("pointerdown", stop);
       document.removeEventListener("click", onClick);
       cancelAnimationFrame(raf);
       root.style.scrollBehavior = before;

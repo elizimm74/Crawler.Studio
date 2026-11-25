@@ -63,7 +63,7 @@ export default function ResetPassword() {
               {message}
             </p>
           )}
-          <button disabled={busy || signedIn === null} className="btn btn-primary w-full">
+          <button disabled={busy || signedIn === null} aria-busy={busy} className="btn btn-primary w-full">
             {busy ? "Saving…" : "Save password"}
           </button>
         </form>

@@ -29,6 +29,9 @@ const BLOCKS = [
   ".rp",
   ".honest14",
   ".final14",
+  ".pack-card",
+  ".lock-panel",
+  "#custom",
   "[data-reveal]",
 ].join(",");
 
@@ -58,8 +61,10 @@ export default function AutoReveal() {
         flush = requestAnimationFrame(() => {
           queue.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top || a.getBoundingClientRect().left - b.getBoundingClientRect().left);
           queue.forEach((el, k) => {
-            el.style.transitionDelay = `${Math.min(k, 6) * 80}ms`;
+            el.style.transitionDelay = `${Math.min(k, 6) * 70}ms`; // a short stagger, so a row reads left to right
             el.classList.add("ar-in");
+            // once it has risen in, drop the delay so hover/press effects react instantly
+            window.setTimeout(() => (el.style.transitionDelay = ""), 1200);
           });
           queue = [];
         });

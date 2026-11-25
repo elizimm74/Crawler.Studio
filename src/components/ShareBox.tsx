@@ -41,7 +41,7 @@ export default function ShareBox({ testId, headline }: { testId: string; headlin
         that the customers are simulated.
       </p>
       {!link ? (
-        <button onClick={create} disabled={busy} className="btn btn-primary mt-4 h-12 px-6">
+        <button onClick={create} disabled={busy} aria-busy={busy} className="btn btn-primary mt-4 h-12 px-6">
           {busy ? "Making link…" : "Create my scorecard link"}
         </button>
       ) : (

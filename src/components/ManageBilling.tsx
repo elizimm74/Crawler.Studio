@@ -21,7 +21,7 @@ export default function ManageBilling({ className = "", label = "Manage billing"
   }
   return (
     <>
-      <button type="button" onClick={open} disabled={busy} className={className}>
+      <button type="button" onClick={open} disabled={busy} aria-busy={busy} className={className}>
         {busy ? "Opening…" : label}
       </button>
       {error && (

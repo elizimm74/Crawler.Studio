@@ -75,7 +75,7 @@ export default function ActualBox({ testId, kind }: { testId: string; kind: "web
             Over how many days (optional)
           </label>
           <input id="actual-days" type="number" min={1} step="1" value={days} onChange={(e) => setDays(e.target.value)} placeholder="days (optional)" className="field h-12 sm:w-36" />
-          <button className="btn btn-secondary h-12 px-6" disabled={state === "busy" || !value}>
+          <button className="btn btn-secondary h-12 px-6" disabled={state === "busy" || !value} aria-busy={state === "busy"}>
             {state === "busy" ? "Saving…" : "Save my real result"}
           </button>
         </form>

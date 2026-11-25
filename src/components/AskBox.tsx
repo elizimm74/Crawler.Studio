@@ -146,7 +146,7 @@ export default function AskBox({ testId, rerunHref }: { testId: string; rerunHre
               className="field h-12 flex-1"
               disabled={busy}
             />
-            <button className="btn btn-primary h-12 px-6" disabled={busy || !text.trim()}>
+            <button className="btn btn-primary h-12 px-6" disabled={busy || !text.trim()} aria-busy={busy}>
               {busy ? "Asking…" : "Ask"}
             </button>
           </form>

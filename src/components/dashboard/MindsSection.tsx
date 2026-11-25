@@ -85,7 +85,7 @@ export default function MindsSection({ minds }: { minds: DashboardData["minds"] 
             </p>
           )}
           <div className="flex gap-2">
-            <button onClick={save} disabled={busy || !editing.name.trim()} className="btn btn-primary h-11 px-6">
+            <button onClick={save} disabled={busy || !editing.name.trim()} aria-busy={busy} className="btn btn-primary h-11 px-6">
               {busy ? "Saving…" : editing.id ? "Save changes" : "Save my mind"}
             </button>
             <button onClick={() => (setEditing(null), setError(null))} className="btn btn-text h-11">

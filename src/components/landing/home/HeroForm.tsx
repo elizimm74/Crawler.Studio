@@ -44,7 +44,7 @@ export default function HeroForm({ cta = "Test My Website Free", id = "hero-url"
           aria-invalid={Boolean(problem)}
           aria-describedby={problem ? `${id}-error` : undefined}
         />
-        <button type="submit" disabled={busy} className="btn btn-primary h-14 px-6 text-base">
+        <button type="submit" disabled={busy} aria-busy={busy} className="btn btn-primary h-14 px-6 text-base">
           {busy ? "Opening…" : cta}
           {!busy && <Arrow />}
         </button>

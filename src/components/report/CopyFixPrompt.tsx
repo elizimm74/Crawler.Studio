@@ -36,8 +36,8 @@ export default function CopyFixPrompt({ input }: { input: PromptInput }) {
           <button type="button" onClick={() => setOpen(!open)} className="btn btn-ghost h-11 px-4 text-sm" aria-expanded={open}>
             {open ? "Hide" : "Preview"}
           </button>
-          <button type="button" onClick={copy} className="btn btn-primary h-11 px-5 text-sm" aria-live="polite">
-            {copied ? "Copied ✓" : "Copy fix prompt"}
+          <button type="button" onClick={copy} className="btn btn-primary h-11 px-5 text-sm" aria-live="polite" data-done={copied || undefined}>
+            <span key={copied ? "done" : "idle"} className={copied ? "pop-ok" : undefined}>{copied ? "Copied ✓" : "Copy fix prompt"}</span>
           </button>
         </div>
       </div>

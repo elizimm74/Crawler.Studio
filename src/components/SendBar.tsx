@@ -51,8 +51,8 @@ export default function SendBar({ url, text, subject }: { url: string; text: str
             {label}
           </a>
         ))}
-        <button type="button" onClick={copy} className={canShare ? btn : "btn btn-primary h-11 px-5 text-sm"}>
-          {copied ? "Copied ✓" : "Copy link"}
+        <button type="button" onClick={copy} className={canShare ? btn : "btn btn-primary h-11 px-5 text-sm"} data-done={copied || undefined}>
+          <span key={copied ? "done" : "idle"} className={copied ? "pop-ok" : undefined}>{copied ? "Copied ✓" : "Copy link"}</span>
         </button>
       </div>
       {note && (

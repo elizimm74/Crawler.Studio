@@ -152,7 +152,7 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
             {message}
           </p>
         )}
-        <button disabled={busy} className="btn btn-primary w-full">
+        <button disabled={busy} aria-busy={busy} className="btn btn-primary w-full">
           {busy ? "One sec…" : mode === "signup" ? "Create account" : "Sign in"}
         </button>
         {mode === "signin" && (

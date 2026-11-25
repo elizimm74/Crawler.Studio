@@ -154,7 +154,7 @@ export default function Home() {
                 </span>
               )}
               <h3 className={`${k < 2 ? "mt-8" : "mt-5"} font-medium tracking-tight`}>
-                {title} <span className="text-faint">→</span>
+                {title}
               </h3>
               <p className="mt-1.5 text-sm leading-relaxed text-muted">{body}</p>
             </li>

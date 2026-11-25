@@ -365,7 +365,7 @@ function Wizard() {
             <button onClick={() => setStep(2)} className="btn btn-text">
               Back
             </button>
-            <button onClick={launch} disabled={busy !== null} className="btn btn-primary h-12 px-8">
+            <button onClick={launch} disabled={busy !== null} aria-busy={busy !== null} className="btn btn-primary h-12 px-8">
               {busy === "starting" ? "Starting…" : `Run ${customers} customers`}
               {busy !== "starting" && <Arrow />}
             </button>
