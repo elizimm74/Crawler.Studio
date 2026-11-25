@@ -12,7 +12,6 @@ import SimConsole from "@/components/landing/v14/SimConsole";
 import ReportPreview from "@/components/landing/v14/ReportPreview";
 import SimField from "@/components/landing/v14/SimField";
 import Reveal from "@/components/Reveal";
-import SmoothScroll from "@/components/landing/motion/SmoothScroll";
 import Faq from "@/components/landing/Faq";
 import { homeDemo } from "@/lib/homeDemo";
 import { PLANS, STARTER_CUSTOMERS } from "@/lib/plans";
@@ -272,7 +271,6 @@ export default function Home() {
         </div>
       </section>
       {/* soft, inertial scrolling (mouse / trackpad only; off for reduced motion) */}
-      <SmoothScroll />
     </div>
   );
 }

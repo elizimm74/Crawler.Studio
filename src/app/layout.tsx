@@ -1,5 +1,7 @@
 // The frame around every page: <html>, <body>, the top bar and the footer.
 import NavScroll from "@/components/NavScroll";
+import SmoothScroll from "@/components/landing/motion/SmoothScroll";
+import AutoReveal from "@/components/AutoReveal";
 import CalmToggle from "@/components/CalmToggle";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -59,6 +61,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </a>
         {/* a floating glass nav pill (it tightens up once you scroll: NavScroll) */}
         <NavScroll />
+        {/* soft, slow wheel scrolling + things gently rising in as you scroll, on every page */}
+        <SmoothScroll />
+        <AutoReveal />
         <header className="site-header sticky top-3 z-40 px-3 sm:top-4 sm:px-4">
           <div className="nav-pill mx-auto flex h-14 max-w-[64rem] items-center justify-between gap-4 pl-5 pr-2">
             <Logo />

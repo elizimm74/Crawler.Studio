@@ -1,5 +1,5 @@
 "use client";
-// Inertial ("buttery") scrolling for the home page, in the spirit of Lenis (lenis.dev), written
+// Inertial ("buttery") scrolling for EVERY page (mounted once in layout.tsx), in the spirit of Lenis (lenis.dev), written
 // by hand so it needs no extra package.
 //   - The mouse wheel / trackpad moves a TARGET position; the page eases toward it every frame.
 //   - ONLY on desktop-style pointers (mouse / trackpad). Phones and tablets keep their own native
@@ -8,6 +8,9 @@
 //   - Scrollable boxes inside the page, text fields and pinch-zoom are left alone.
 //   - Links like <a href="#features"> glide to their spot instead of jumping.
 import { useEffect } from "react";
+
+// How fast the page catches up with the wheel. Lower = slower and softer (was 8 on the old home page).
+const EASE = 4.6;
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
@@ -46,7 +49,7 @@ export default function SmoothScroll() {
     const tick = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
-      current += (target - current) * (1 - Math.exp(-dt * 8)); // frame-rate independent easing
+      current += (target - current) * (1 - Math.exp(-dt * EASE)); // frame-rate independent easing
       if (Math.abs(target - current) < 0.4) {
         current = target;
         moving = false;

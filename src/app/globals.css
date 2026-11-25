@@ -2248,3 +2248,39 @@ html, body, html:has(.dash-app), body:has(.dash-app), .dash-app { background: #f
 .field14-progress i.is-on { background: #0b0f0c; }
 .field14-progress i.is-done { background: rgb(11 15 12 / 0.35); }
 .statement14 { color: #0b0f0c; }
+
+/* ==================== MOTION EVERYWHERE (2026-11-25) ====================
+   Soft scrolling is SmoothScroll (layout.tsx, every page). Blocks below the screen fade and rise
+   in once (src/components/AutoReveal.tsx adds .ar, then .ar-in). `translate` is used instead of
+   `transform` so the cards' own hover lifts keep working. Off for reduced / calmer motion. */
+.ar {
+  opacity: 0;
+  translate: 0 32px;
+  transition:
+    opacity 900ms ease,
+    translate 1150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ar.ar-in { opacity: 1; translate: 0 0; }
+
+/* soft hover lifts on things you can click or read as a unit */
+@media (hover: hover) {
+  a.card, .fl-tile, .bento14-cell, .rp-fix, a.tile14 {
+    transition: transform 350ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 350ms ease, border-color 350ms ease, background-color 350ms ease;
+  }
+  a.card:hover, .fl-tile:hover, .bento14-cell:hover { transform: translateY(-3px); box-shadow: 0 18px 40px -26px rgb(15 30 20 / 0.28); }
+  .rp-fix:hover { transform: translateX(4px); }
+  details > summary { transition: color 250ms ease; }
+  details > summary:hover { color: var(--fg); }
+}
+/* FAQ answers ease open */
+details[open] > :not(summary) { animation: ar-open 450ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes ar-open { from { opacity: 0; translate: 0 -6px; } to { opacity: 1; translate: 0 0; } }
+
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+  .ar { opacity: 1; translate: none; transition: none; }
+  details[open] > :not(summary) { animation: none; }
+  a.card:hover, .fl-tile:hover, .bento14-cell:hover, .rp-fix:hover { transform: none; }
+}
+html[data-calm] .ar { opacity: 1; translate: none; }
+html[data-calm] a.card:hover, html[data-calm] .fl-tile:hover, html[data-calm] .bento14-cell:hover, html[data-calm] .rp-fix:hover { transform: none; }
+@media print { .ar { opacity: 1 !important; translate: none !important; } }
