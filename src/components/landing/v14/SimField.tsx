@@ -7,9 +7,14 @@
 //   3. Send them to your site — the camera tilts; every customer streams up into a sketch of a site
 //   4. See who buys, and why — they land in three groups: would buy / maybe / left (demo counts)
 // Each dot moves between "poses" (one per step) with a little stagger, so it feels organic.
-// Reduced motion / "Calmer motion": no animation loop; each step is drawn as a still picture.
+// SCROLL-DRIVEN: the animation stays pinned on screen (CSS sticky) while you scroll through a tall
+// "track"; how far you've scrolled picks the step, and each change fades slowly into the next.
+// The arrows still work: they scroll the page to that step, so scroll and step never disagree.
+// A small "crawler" status chip on the stage says what Crawler is doing in each step.
+// Reduced motion / "Calmer motion": not pinned, no animation loop; arrows show still pictures.
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CrowdPoint } from "@/lib/homeDemo";
+import Mark from "@/components/Mark";
 
 type V3 = [number, number, number];
 const GREEN = "#02aa3d";
@@ -18,12 +23,30 @@ const MAYBE_BLUE = "#6b93f5"; // "maybe" = blue (white + many colours, never yel
 const GREY = "#b9c3bd";
 const MIND_COLORS = ["#02aa3d", "#0ea5a4", "#4c8ee8", "#9b7be0", "#59635e"];
 
+// Crawler's own words for each step. `status` is the little live chip on the stage.
 const STEPS = [
-  { title: "Pick your customers", body: "Crawler samples 100 simulated customers from the audience you choose. Never 100 copies of one person." },
-  { title: "Give each one a mind", body: "A budget, a mood, a patience level and a reason to visit, so every customer reacts differently." },
-  { title: "Send them to your site", body: "Each customer visits your pages on a phone or laptop and decides as they go." },
-  { title: "See who buys, and why", body: "Counted in code: who would buy, who might, who left, and the reason they gave." },
+  {
+    title: "Crawler builds your crowd",
+    body: "From the audience you pick, Crawler samples 100 simulated customers: different ages, budgets and devices. Never 100 copies of one person.",
+    status: "Sampling 100 customers",
+  },
+  {
+    title: "Every customer gets a mind",
+    body: "A budget, a mindset, a dealbreaker and a reason they clicked, rolled in code from public research. So each one reacts differently.",
+    status: "Giving each one a mind",
+  },
+  {
+    title: "They visit your website",
+    body: "Crawler's browser reads your page, pricing and signup once. Every customer judges it on a phone or laptop and decides as they go.",
+    status: "Visiting",
+  },
+  {
+    title: "You get the why, and the fix",
+    body: "Counted in code, not guessed: who would buy, who might, who left, the reason each one gave, and the fix that wins the most back.",
+    status: "Report ready",
+  },
 ] as const;
+const FADE_MS = 2300; // how long one step takes to melt into the next (slow on purpose)
 
 // a tiny seeded random, so the picture is identical on every load
 function rng(seed: number) {
@@ -92,8 +115,13 @@ function build(crowd: CrowdPoint[]): { dots: Dot[]; minds: string[]; counts: { b
   return { dots, minds, counts };
 }
 
-export default function SimField({ crowd }: { crowd: CrowdPoint[] }) {
+type Props = { crowd: CrowdPoint[]; host?: string; topFix?: string; winBack?: number };
+
+export default function SimField({ crowd, host = "yoursite.com", topFix, winBack }: Props) {
+  const track = useRef<HTMLDivElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
+  // pinned = scroll-driven. Turned off for reduced motion / Calmer motion (set in the effect below).
+  const [pinned, setPinned] = useState(true);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [step, setStep] = useState(0);
   const [auto, setAuto] = useState(true);
@@ -112,12 +140,49 @@ export default function SimField({ crowd }: { crowd: CrowdPoint[] }) {
     if (byHand) setAuto(false);
   }, []);
 
-  // autoplay while on screen (stops once someone uses the arrows)
+  // autoplay only when NOT scroll-driven (the scroll moves the steps otherwise)
   useEffect(() => {
-    if (!auto) return;
+    if (!auto || pinned) return;
     const t = setInterval(() => state.current.visible && !state.current.still && go(state.current.to + 1), 4800);
     return () => clearInterval(t);
-  }, [auto, go]);
+  }, [auto, go, pinned]);
+
+  // SCROLL -> STEP: how far through the tall track you are picks the step (0..3)
+  useEffect(() => {
+    if (!pinned) return;
+    let raf = 0;
+    const read = () => {
+      raf = 0;
+      const el = track.current;
+      if (!el) return;
+      const total = el.offsetHeight - window.innerHeight;
+      if (total <= 0) return;
+      const p = Math.min(0.9999, Math.max(0, -el.getBoundingClientRect().top / total));
+      const n = Math.floor(p * STEPS.length);
+      if (n !== state.current.to) go(n);
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(read);
+    };
+    read();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [pinned, go]);
+
+  // the arrows: when pinned, glide the page to the middle of that step's stretch of the track
+  const jump = (n: number) => {
+    const el = track.current;
+    if (!pinned || !el) return go(n, true);
+    const k = Math.max(0, Math.min(STEPS.length - 1, n));
+    const total = el.offsetHeight - window.innerHeight;
+    const top = el.getBoundingClientRect().top + window.scrollY + total * ((k + 0.5) / STEPS.length);
+    window.scrollTo({ top, behavior: "smooth" });
+  };
 
   useEffect(() => {
     const el = canvas.current!;
@@ -125,6 +190,7 @@ export default function SimField({ crowd }: { crowd: CrowdPoint[] }) {
     const ctx = el.getContext("2d")!;
     const s = state.current;
     s.still = window.matchMedia("(prefers-reduced-motion: reduce)").matches || Boolean(document.documentElement.dataset.calm);
+    if (s.still) setPinned(false);
     let W = 0, H = 0, dpr = 1, raf = 0;
     const resize = () => {
       dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -151,7 +217,7 @@ export default function SimField({ crowd }: { crowd: CrowdPoint[] }) {
     const TURN = [0, 0.35, 0.12, 0];
 
     function draw(now: number) {
-      const T = s.still ? 1 : Math.min(1, (now - s.start) / 1700);
+      const T = s.still ? 1 : Math.min(1, (now - s.start) / FADE_MS);
       const from = s.still ? s.to : s.from;
       const to = s.to;
       const time = now / 1000;
@@ -307,48 +373,72 @@ export default function SimField({ crowd }: { crowd: CrowdPoint[] }) {
     if (state.current.still) redraw.current?.();
   }, [step]);
 
+  const status = step === 2 ? `Visiting ${host}` : STEPS[step].status;
+  const last = step === STEPS.length - 1;
   return (
-    <div className="field14">
-      <div ref={wrap} className="field14-stage">
-        <canvas ref={canvas} aria-hidden />
-      </div>
-      <div className="field14-card" aria-live="polite">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-[12px] font-medium text-faint">
-              {step + 1} / {STEPS.length}
-            </p>
-            <h3 className="mt-1 text-lg font-medium tracking-tight">{STEPS[step].title}</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted">{STEPS[step].body}</p>
-            {step === 1 && (
-              <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-muted">
-                {minds.map((m, k) => (
-                  <span key={m} className="inline-flex items-center gap-1.5 capitalize">
-                    <i className="h-2 w-2 rounded-full" style={{ background: MIND_COLORS[k % MIND_COLORS.length] }} /> {m}
-                  </span>
-                ))}
-              </p>
-            )}
-            {step === 3 && (
-              <p className="mt-3 text-[12px] text-faint">
-                {counts.buy} would buy · {counts.maybe} maybe · {counts.no} left. Demo data from a made-up site.
-              </p>
-            )}
+    <div ref={track} className={pinned ? "field14-track" : undefined}>
+      <div className={pinned ? "field14-pin" : undefined}>
+        <div className="field14">
+          <div ref={wrap} className="field14-stage">
+            <canvas ref={canvas} aria-hidden />
+            {/* what Crawler is doing right now (demo) */}
+            <div className="field14-chip" aria-hidden>
+              <span className="logo-tile is-small">
+                <Mark size={13} className="text-white" />
+              </span>
+              <span className="font-medium text-fg">crawler</span>
+              <span className="text-faint">·</span>
+              <span key={step} className="field14-fade inline-flex items-center gap-1.5 text-muted">
+                <i className={`field14-dot ${last ? "is-done" : ""}`} />
+                {status}
+              </span>
+            </div>
           </div>
-          <div className="flex shrink-0 gap-2">
-            <button type="button" className="field14-btn" aria-label="Previous step" onClick={() => go(step - 1, true)}>
-              ←
-            </button>
-            <button type="button" className="field14-btn is-next" aria-label="Next step" onClick={() => go(step + 1, true)}>
-              →
-            </button>
+          <div className="field14-card" aria-live="polite">
+            <div className="flex items-start justify-between gap-4">
+              <div key={step} className="field14-fade min-w-0">
+                <p className="text-[12px] font-medium text-faint">
+                  Step {step + 1} of {STEPS.length}
+                </p>
+                <h3 className="mt-1 text-lg font-medium tracking-tight">{STEPS[step].title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">{STEPS[step].body}</p>
+                {step === 1 && (
+                  <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-muted">
+                    {minds.map((m, k) => (
+                      <span key={m} className="inline-flex items-center gap-1.5 capitalize">
+                        <i className="h-2 w-2 rounded-full" style={{ background: MIND_COLORS[k % MIND_COLORS.length] }} /> {m}
+                      </span>
+                    ))}
+                  </p>
+                )}
+                {last && (
+                  <p className="mt-3 text-[12px] text-faint">
+                    {counts.buy} would buy · {counts.maybe} maybe · {counts.no} left
+                    {topFix ? ` · Fix #1: ${topFix}${winBack ? ` (+${winBack})` : ""}` : ""}. Demo data from a made-up site.
+                  </p>
+                )}
+              </div>
+              <div className="flex shrink-0 gap-2">
+                <button type="button" className="field14-btn" aria-label="Previous step" disabled={pinned && step === 0} onClick={() => jump(step - 1)}>
+                  ←
+                </button>
+                <button type="button" className="field14-btn is-next" aria-label="Next step" disabled={pinned && last} onClick={() => jump(step + 1)}>
+                  →
+                </button>
+              </div>
+            </div>
+            <div className="field14-progress" aria-hidden>
+              {STEPS.map((_, k) => (
+                <i key={k} className={k === step ? "is-on" : k < step ? "is-done" : ""} />
+              ))}
+            </div>
           </div>
         </div>
-        <div className="field14-progress" aria-hidden>
-          {STEPS.map((_, k) => (
-            <i key={k} className={k === step ? "is-on" : k < step ? "is-done" : ""} />
-          ))}
-        </div>
+        {pinned && (
+          <p className={`field14-hint ${last ? "is-gone" : ""}`} aria-hidden>
+            Keep scrolling <span>↓</span>
+          </p>
+        )}
       </div>
     </div>
   );

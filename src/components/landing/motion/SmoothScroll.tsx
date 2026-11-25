@@ -11,6 +11,11 @@ import { useEffect } from "react";
 
 // How fast the page catches up with the wheel. Lower = slower and softer (was 8 on the old home page).
 const EASE = 4.6;
+// Pages that ask for it (the home page: <div data-soft-scroll>) glide even slower, and each wheel
+// notch moves a bit less, so scrolling feels calm and you can watch the animations.
+const SOFT_EASE = 3.2;
+const SOFT_STEP = 0.8;
+const isSoft = () => document.querySelector("[data-soft-scroll]") !== null;
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
@@ -49,7 +54,7 @@ export default function SmoothScroll() {
     const tick = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
-      current += (target - current) * (1 - Math.exp(-dt * EASE)); // frame-rate independent easing
+      current += (target - current) * (1 - Math.exp(-dt * (isSoft() ? SOFT_EASE : EASE))); // frame-rate independent easing
       if (Math.abs(target - current) < 0.4) {
         current = target;
         moving = false;
@@ -71,7 +76,7 @@ export default function SmoothScroll() {
       e.preventDefault();
       if (!moving) target = current = window.scrollY;
       const unit = e.deltaMode === 1 ? 32 : e.deltaMode === 2 ? window.innerHeight : 1;
-      target = clamp(target + e.deltaY * unit, 0, maxScroll());
+      target = clamp(target + e.deltaY * unit * (isSoft() ? SOFT_STEP : 1), 0, maxScroll());
       go();
     };
     // Something else scrolled the page (keyboard, scrollbar, find-in-page): follow it.

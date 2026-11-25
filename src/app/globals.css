@@ -2284,3 +2284,37 @@ details[open] > :not(summary) { animation: ar-open 450ms cubic-bezier(0.2, 0.8, 
 html[data-calm] .ar { opacity: 1; translate: none; }
 html[data-calm] a.card:hover, html[data-calm] .fl-tile:hover, html[data-calm] .bento14-cell:hover, html[data-calm] .rp-fix:hover { transform: none; }
 @media print { .ar { opacity: 1 !important; translate: none !important; } }
+
+/* ==================== SCROLL-DRIVEN SIMULATION (2026-11-25) ====================
+   SimField.tsx: a tall track; the animation stays pinned (sticky) while you scroll through it and
+   each quarter of the track is one step. Text and the status chip fade slowly between steps. */
+.field14-track { position: relative; height: 380vh; }
+.field14-pin { position: sticky; top: 84px; }
+.field14-track .field14-stage { height: min(clamp(380px, 52vw, 600px), calc(100vh - 300px)); min-height: 320px; }
+.field14-chip {
+  position: absolute; left: 16px; top: 16px; z-index: 2; display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px 6px 6px; border-radius: 999px; font-size: 12px;
+  background: rgb(255 255 255 / 0.85); border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px -20px rgb(15 30 20 / 0.35);
+}
+.field14-dot { display: inline-block; height: 7px; width: 7px; border-radius: 99px; background: #2f63ee; animation: field14-pulse 1.6s ease-in-out infinite; }
+.field14-dot.is-done { background: #02aa3d; animation: none; }
+@keyframes field14-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.field14-fade { animation: field14-fade 1100ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes field14-fade { from { opacity: 0; translate: 0 8px; filter: blur(3px); } to { opacity: 1; translate: 0 0; filter: blur(0); } }
+.field14-btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+.field14-hint { margin-top: 14px; text-align: center; font-size: 12px; color: var(--fg-faint); transition: opacity 600ms ease; }
+.field14-hint span { display: inline-block; animation: field14-bob 1.8s ease-in-out infinite; }
+.field14-hint.is-gone { opacity: 0; }
+@keyframes field14-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 4px; } }
+@media (max-width: 639px) {
+  .field14-track { height: 340vh; }
+  .field14-pin { top: 72px; }
+  .field14-track .field14-stage { height: min(360px, calc(100vh - 340px)); min-height: 260px; }
+  .field14-chip { left: 10px; top: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .field14-fade, .field14-dot, .field14-hint span { animation: none; }
+}
+html[data-calm] .field14-fade, html[data-calm] .field14-dot, html[data-calm] .field14-hint span { animation: none; }

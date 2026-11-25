@@ -30,7 +30,7 @@ export default function Home() {
   const s = demo.sample;
 
   return (
-    <div className="v14 bleed-full">
+    <div className="v14 bleed-full" data-soft-scroll>
       {/* ================= HERO ================= */}
       <section className="hero14 home-wide pb-16 pt-12 sm:pt-20" aria-labelledby="hero-title">
         <h1 id="hero-title" className="h14 rise d1 max-w-6xl">
@@ -86,10 +86,10 @@ export default function Home() {
 
       {/* ================= HOW IT WORKS ================= */}
       <section id="how" className="home-wide scroll-mt-24 py-20 sm:py-28" aria-labelledby="how-title">
-        <Head tone="blue" eyebrow="How a simulation works" id="how-title" title="From a link to a list of fixes." sub="No setup, no tracking code, no real visitors needed. Use the arrows to step through it." />
+        <Head tone="blue" eyebrow="How a simulation works" id="how-title" title="From a link to a list of fixes." sub="No setup, no tracking code, no real visitors needed. Scroll to watch Crawler run a simulation, step by step." />
         {/* the animated "how a simulation works" field (demo data), see SimField.tsx */}
         <div className="mt-14">
-          <SimField crowd={demo.crowd} />
+          <SimField crowd={demo.crowd} host={demo.sample.host} topFix={demo.sample.fixes[0]?.title} winBack={demo.sample.fixes[0]?.winBack} />
         </div>
       </section>
 
