@@ -160,6 +160,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <Link href="/accuracy" className="hover:text-fg">
                 Accuracy
               </Link>
+              <Link href="/case-studies" className="hover:text-fg">
+                Case studies
+              </Link>
             </nav>
             <CalmToggle />
             <span>© {new Date().getFullYear()}</span>

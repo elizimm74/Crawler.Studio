@@ -29,6 +29,7 @@ import { ASSUMPTIONS, FACTS } from "@/components/landing/Science";
 import { homeDemo } from "@/lib/homeDemo";
 import { ENTERPRISE, PLANS, STARTER_CUSTOMERS, allowanceLabel } from "@/lib/plans";
 import { FOCUS } from "@/lib/productTypes";
+import { publishedCaseStudies } from "@/lib/caseStudies";
 
 export const metadata = {
   title: { absolute: "Crawler: meet your customers before they meet your website" },
@@ -63,6 +64,7 @@ export default function Home() {
     "Your audience": AUDIENCE_ITEMS.map((a) => ({ ...a, source: "You choose" })),
   };
   const p = s.people[0];
+  const real = publishedCaseStudies();
 
   return (
     <div className="v14 bleed-full">
@@ -549,9 +551,41 @@ export default function Home() {
           eyebrow="Founder case studies"
           id="cases-title"
           title="What a test turns up."
-          sub="Three illustrative scenarios built from the problems Crawler looks for. They are not real companies or results; real case studies will appear here, with permission, once founders share them."
+          sub="Real founders who agreed to share their story, plus illustrative scenarios built from the problems Crawler looks for (clearly marked, not real companies or results)."
         />
-        <ul className="mt-14 grid gap-4 lg:grid-cols-3">
+        {/* REAL case studies first (src/lib/caseStudies.ts, with the founder's permission) */}
+        {real.map((c) => (
+          <Reveal key={c.slug} className="mt-14">
+            <Link href={`/case-studies/${c.slug}`} className="cs-card group grid md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+              <div className="cs-card-photo !aspect-[4/3] md:!aspect-auto md:min-h-[20rem]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={c.photo} alt={c.photoAlt} loading="lazy" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={c.icon} alt="" aria-hidden className="cs-card-icon" />
+              </div>
+              <div className="flex flex-col justify-center p-6 sm:p-10">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#56554f]">
+                  Real founder · {c.product} · {c.kind}
+                </p>
+                <h3 className="mt-3 text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+                  {c.founder} built {c.product} at {c.age}.
+                </h3>
+                <p className="mt-3 text-[#45443f]">{c.summary}</p>
+                <dl className="mt-6 flex flex-wrap gap-6">
+                  {c.stats.slice(1).map((st) => (
+                    <div key={st.label}>
+                      <dd className="text-3xl font-semibold tabular-nums">{st.value}</dd>
+                      <dt className="text-xs text-[#56554f]">{st.label}</dt>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-2 text-[11px] text-[#56554f]">As reported by {c.founder.split(" ")[0]}. Crawler test results coming soon.</p>
+                <p className="mt-5 text-sm font-semibold underline-offset-4 group-hover:underline">Read the case study →</p>
+              </div>
+            </Link>
+          </Reveal>
+        ))}
+        <ul className="mt-6 grid gap-4 lg:grid-cols-3">
           {CASES.map((c, k) => (
             <li key={c.title} className="h-full">
               <Reveal delay={k * 80} className="tile14 case23 h-full">

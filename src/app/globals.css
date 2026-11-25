@@ -3239,3 +3239,18 @@ html[data-calm] .rl-body, html[data-calm] .rl-bar i { animation: none; }
 .night18 .seg button, .night18 .seg [role="tab"] { color: #c4c3bd; }
 .night18 .seg [aria-pressed="true"], .night18 .seg [aria-selected="true"] { background: #3e4a6e !important; color: #ffffff !important; }
 .night18 .crowd-model .cm-dot { stroke: none; }
+
+/* ---------- founder case studies (/case-studies, src/lib/caseStudies.ts) ---------- */
+.cs-photo { position: relative; max-width: 24rem; }
+.cs-photo > img:first-child { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 40%; border-radius: 28px; box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.55); }
+.cs-icon { position: absolute; right: -1rem; bottom: -1.25rem; width: 6.5rem; height: 6.5rem; border-radius: 26px; background: #fff; box-shadow: 0 16px 32px -16px rgb(0 0 0 / 0.5); border: 4px solid #f2f1ec; object-fit: cover; }
+.cs-stat { border-radius: 18px; background: #f2f1ec; padding: 1rem; color: #0b0b0a; }
+.cs-stat .text-muted { color: #45443f; }
+.cs-test { border-radius: 24px; background: #f2f1ec; color: #0b0b0a; padding: 1.75rem; --fg-muted: #45443f; --fg-faint: #56554f; }
+.cs-cta { border-top: 1px solid var(--line); padding-top: 2.5rem; }
+.cs-card { overflow: hidden; border-radius: 24px; background: #f2f1ec; color: #0b0b0a; --fg-muted: #45443f; --fg-faint: #56554f; transition: transform 0.25s var(--ease-out, ease); }
+@media (hover: hover) { .cs-card:hover { transform: translateY(-2px); } }
+.cs-card-photo { position: relative; aspect-ratio: 16 / 10; overflow: hidden; }
+.cs-card-photo > img:first-child { width: 100%; height: 100%; object-fit: cover; object-position: 50% 38%; }
+.cs-card-icon { position: absolute; left: 1rem; bottom: 1rem; width: 3.5rem; height: 3.5rem; border-radius: 16px; background: #fff; border: 3px solid #f2f1ec; }
+.case23.is-real { padding: 0 !important; overflow: hidden; }
