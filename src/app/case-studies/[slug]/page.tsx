@@ -57,7 +57,12 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
               </div>
             ))}
           </dl>
-          <p className="mt-3 text-xs text-faint">Figures as reported by {first}. They come from before his Crawler test.</p>
+          <p className="mt-3 text-xs text-faint">Figures as reported by {first}.</p>
+          {c.x && (
+            <a href={`https://x.com/${c.x}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary mt-6 h-11 px-5 text-sm">
+              <XLogo /> Follow {first} on X · @{c.x}
+            </a>
+          )}
         </div>
       </header>
 
@@ -132,10 +137,10 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
           ) : (
             <>
               <h2 id="cs-test-title" className="mt-3 text-2xl font-semibold tracking-tight">
-                Results coming soon.
+                Full results coming soon.
               </h2>
               <p className="mt-3 text-muted">
-                {first} is running {c.product} through Crawler. When the test is done we&apos;ll publish what the simulated customers said, what he changed, and what happened next. Nothing here will be made up.
+                {first} tested {c.product} with Crawler. We&apos;re writing up what the simulated customers said, what he changed and what happened next. Nothing here will be made up.
               </p>
             </>
           )}
@@ -157,7 +162,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
         <section aria-label="Share this story">
           <p className="text-sm font-semibold">Share {first}&apos;s story</p>
           <div className="mt-3">
-            <SendBar url={`${SITE_URL}/case-studies/${c.slug}`} text={`${c.founder} built ${c.product} at ${c.age}. Read his story on Crawler:`} subject={`${c.founder} built ${c.product} at ${c.age}`} />
+            <SendBar url={`${SITE_URL}/case-studies/${c.slug}`} text={`${c.founder}${c.x ? ` (@${c.x})` : ""} built ${c.product} at ${c.age}. Read his story on Crawler:`} subject={`${c.founder} built ${c.product} at ${c.age}`} />
           </div>
         </section>
         </div>
@@ -174,11 +179,25 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
               </div>
             ))}
           </dl>
+          {c.x && (
+            <a href={`https://x.com/${c.x}`} target="_blank" rel="noopener noreferrer" className="mt-3 flex min-h-11 items-center gap-2 text-sm font-medium underline-offset-4 hover:underline">
+              <XLogo /> @{c.x} on X
+            </a>
+          )}
           <Link href="/onboarding" className="btn btn-primary mt-5 h-11 w-full text-sm">
             Test your app free
           </Link>
         </aside>
       </div>
     </article>
+  );
+}
+
+// the X logo (plain shape, current text colour)
+function XLogo() {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden>
+      <path d="M18.9 2H22l-6.8 7.8L23 22h-6.1l-4.8-6.3L6.6 22H3.5l7.3-8.3L1 2h6.2l4.4 5.8zm-1.1 18.2h1.7L6.3 3.7H4.5z" />
+    </svg>
   );
 }

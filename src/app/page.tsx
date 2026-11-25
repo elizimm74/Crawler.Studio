@@ -579,7 +579,9 @@ export default function Home() {
                     </div>
                   ))}
                 </dl>
-                <p className="mt-2 text-[11px] text-[#56554f]">As reported by {c.founder.split(" ")[0]}. Crawler test results coming soon.</p>
+                <p className="mt-2 text-[11px] text-[#56554f]">
+                  As reported by {c.founder.split(" ")[0]}{c.x ? ` (@${c.x} on X)` : ""}. Crawler test results coming soon.
+                </p>
                 <p className="mt-5 text-sm font-semibold underline-offset-4 group-hover:underline">Read the case study →</p>
               </div>
             </Link>
@@ -650,6 +652,30 @@ export default function Home() {
       <section className="home-wide pb-20 sm:pb-28">
         <Faq />
       </section>
+
+      {/* founder spotlight (real case study): his face + the app icon, linking to the story */}
+      {real.slice(0, 1).map((c) => (
+        <section key={c.slug} className="home-wide pb-20" aria-label={`Founder spotlight: ${c.founder}`}>
+          <Reveal>
+            <Link href={`/case-studies/${c.slug}`} className="spot23 group">
+              <span className="spot23-faces" aria-hidden>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={c.photo} alt="" className="spot23-face" loading="lazy" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={c.icon} alt="" className="spot23-icon" loading="lazy" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#56554f]">Founder spotlight</span>
+                <span className="mt-1 block text-xl font-semibold leading-snug tracking-tight sm:text-2xl">
+                  {c.founder}, {c.age}, tested {c.product} with Crawler.
+                </span>
+                <span className="mt-1 block text-sm text-[#45443f]">See how a 15-year-old founder uses simulated customers on his app.</span>
+              </span>
+              <span className="btn btn-primary h-11 shrink-0 px-5 text-sm">Read his story</span>
+            </Link>
+          </Reveal>
+        </section>
+      ))}
 
       {/* ================= 11. FINAL CTA ================= */}
       <section className="home-wide pb-28" aria-labelledby="final-title">

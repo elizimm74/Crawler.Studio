@@ -22,6 +22,7 @@ export type CaseStudy = {
   stats: { value: string; label: string }[]; // as reported by the founder
   story: { heading: string; body: string[] }[];
   glance: { label: string; value: string }[]; // the "At a glance" card (facts only)
+  x?: string; // the founder's X (Twitter) handle, without the @
   // how this founder's Crawler test runs; status moves to "done" as each step really happens
   plan: { title: string; body: string; status: "done" | "now" | "next" }[];
   questions: string[]; // what every simulated customer answers in this test
@@ -51,36 +52,38 @@ export const CASE_STUDIES: CaseStudy[] = [
         heading: "The founder",
         body: [
           "Rubin Netai is 15. He created Handle Lab, a basketball app, and runs it himself.",
-          "He agreed to share how he builds and launches, and to run Handle Lab through Crawler so other young founders can see what a test turns up.",
+          "He agreed to share how he builds and launches, and how he used Crawler to test Handle Lab, so other young founders can see what a test turns up.",
         ],
       },
       {
         heading: "The traction so far",
         body: [
           "Handle Lab has climbed more than 150 places in the sports rankings and does 10k+ a month, as reported by Rubin.",
-          "Those results came before Crawler. This case study is about what comes next: finding what still stops people from downloading, starting a trial or paying.",
+          "Those are Rubin's own numbers. We don't claim Crawler caused them; this case study shows how he used Crawler to look for what still stops people from downloading, starting a trial or paying.",
         ],
       },
       {
-        heading: "Why test with Crawler",
+        heading: "How Rubin used Crawler",
         body: [
+          "Rubin used Crawler to test Handle Lab. He added screenshots of the app's onboarding and paywall, picked the kind of people he wants as customers, and let simulated customers go through the screens one by one.",
           "Even an app that is growing loses many of the people who look at it. Crawler sends simulated customers through the app's onboarding and paywall, from screenshots, and reports where they hesitate and why.",
           "Every fix comes ranked by how many simulated customers it could win back, so Rubin can decide what to change first.",
         ],
       },
     ],
+    x: "rubin901",
     glance: [
       { label: "Founder", value: "Rubin Netai, 15" },
       { label: "Product", value: "Handle Lab" },
       { label: "Type", value: "Basketball app" },
       { label: "Traction", value: "+150 in sports rankings · 10k+ a month (reported)" },
       { label: "Crawler test", value: "Mobile app: onboarding and paywall" },
-      { label: "Status", value: "In progress" },
+      { label: "Status", value: "Tested with Crawler · results coming soon" },
     ],
     plan: [
-      { title: "Collect the screens", body: "Rubin adds screenshots of Handle Lab's onboarding and paywall, in order. Crawler never logs into the app.", status: "now" },
-      { title: "Pick the crowd", body: "He chooses who the simulated customers are: their ages, budgets, mindsets and what they use today.", status: "next" },
-      { title: "Run the simulation", body: "Each simulated customer goes through the screens on their own phone, with their own patience and dealbreaker, and decides.", status: "next" },
+      { title: "Collect the screens", body: "Rubin adds screenshots of Handle Lab's onboarding and paywall, in order. Crawler never logs into the app.", status: "done" },
+      { title: "Pick the crowd", body: "He chooses who the simulated customers are: their ages, budgets, mindsets and what they use today.", status: "done" },
+      { title: "Run the simulation", body: "Each simulated customer goes through the screens on their own phone, with their own patience and dealbreaker, and decides.", status: "done" },
       { title: "Fix and re-test", body: "Rubin gets fixes ranked by how many customers each could win back, ships the top ones, then re-tests the same crowd.", status: "next" },
     ],
     questions: [

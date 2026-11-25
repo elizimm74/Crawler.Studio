@@ -3262,3 +3262,10 @@ html[data-calm] .rl-body, html[data-calm] .rl-bar i { animation: none; }
 .cs-status.is-done { background: #0b0b0a; color: #ffffff; }
 .cs-q { border-radius: 14px; background: rgb(255 255 255 / 0.55); border: 1px solid rgb(0 0 0 / 0.08); padding: 0.8rem 1rem; font-size: 14px; color: #0b0b0a; }
 .cs-q-n { margin-right: 0.35rem; font-weight: 700; color: #3e4a6e; }
+/* home: founder spotlight band (real case study) */
+.spot23 { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem 1.75rem; border-radius: 28px; background: #f2f1ec; color: #0b0b0a; padding: 1.25rem 1.5rem; box-shadow: 0 30px 60px -36px rgb(0 0 0 / 0.5); transition: transform 0.25s var(--ease-out, ease); }
+@media (hover: hover) { .spot23:hover { transform: translateY(-2px); } }
+.spot23-faces { position: relative; flex: none; width: 6.5rem; height: 6.5rem; }
+.spot23-face { width: 100%; height: 100%; border-radius: 999px; object-fit: cover; object-position: 50% 38%; border: 4px solid #ffffff; }
+.spot23-icon { position: absolute; right: -0.6rem; bottom: -0.4rem; width: 2.9rem; height: 2.9rem; border-radius: 14px; background: #ffffff; border: 3px solid #f2f1ec; }
+@media (max-width: 639px) { .spot23 .btn { width: 100%; } }
