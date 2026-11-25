@@ -139,16 +139,17 @@ const record = (r) => {
     await p.getByRole("button", { name: /Mobile app \(screenshots\)/ }).click();
     await p.getByRole("heading", { name: /Testing a mobile app/ }).waitFor();
   });
-  await flow("home: the live simulation preview runs and the sample report shows ranked fixes", async () => {
+  await flow("home: the wordmark screen, the two animations and the sample report are there", async () => {
     await p.goto(BASE + "/", { waitUntil: "networkidle" });
-    // the preview starts at customer 1 and moves on by itself (demo data)
-    await p.getByText(/Simulating \d+\/100/).first().waitFor({ timeout: 5000 });
+    await p.locator(".wordmark21").first().waitFor({ timeout: 5000 });
+    await p.locator("#how .lab-track").waitFor({ timeout: 3000 });
+    await p.locator("#patterns .lab-track").waitFor({ timeout: 3000 });
     await p.getByText("Ranked fixes", { exact: true }).first().waitFor({ timeout: 3000 });
     await p.getByText("Show the price on the homepage").first().waitFor({ timeout: 3000 });
     await p.getByText(/Simulated results · demo data/).first().waitFor({ timeout: 3000 });
   });
-  await flow("home: the sample-report link and final URL box are there", async () => {
-    await p.locator('a[href="#report"]').first().waitFor();
+  await flow("home: the full-report link and final URL box are there", async () => {
+    await p.locator('a[href="/example"]').first().waitFor();
     await p.locator("#final-url").waitFor();
   });
   await flow("home: FAQ answers open", async () => {

@@ -9,10 +9,8 @@
 import Link from "next/link";
 import HeroForm from "@/components/landing/home/HeroForm";
 import { PERSONAS } from "@/components/landing/home/sections";
-import SimConsole from "@/components/landing/v14/SimConsole";
 import ReportPreview from "@/components/landing/v14/ReportPreview";
 import LabSequence, { type LabStage } from "@/components/landing/lab/LabSequence";
-import { STONE_URL } from "@/components/landing/lab/stone";
 import ScrubBand from "@/components/landing/v14/ScrubBand";
 import Manifesto from "@/components/landing/motion/Manifesto";
 import Reveal from "@/components/Reveal";
@@ -52,59 +50,37 @@ export default function Home() {
 
   return (
     <div className="v14 bleed-full">
-      {/* ================= HERO ================= */}
-      <section className="hero14 home-wide pb-16 pt-12 sm:pt-20" aria-labelledby="hero-title">
-        {/* the two lines drift apart as you scroll away (ScrollScrub "leave" -> --p) */}
-        <h1 id="hero-title" className="h14 rise d1 max-w-6xl" data-scrub="leave" data-lag="0.8">
-          <span className="scrub-l inline-block">Meet your customers</span> <span className="hl14 scrub-r inline-block sm:block">before they meet your website.</span>
+      {/* ================= HERO (v7): the big "crawler" wordmark on the gray stone =================
+          Founder, 2026-11-25: "gray with black and white lettering, like the older versions, change the
+          home screen". One screen: wordmark, one sentence, the URL box, two ways in. */}
+      <section className="hero21 home-wide" aria-labelledby="hero-title">
+        {/* the wordmark drifts left as you scroll away (ScrollScrub "leave" -> --p) */}
+        <p className="wordmark21 rise d1" aria-hidden data-scrub="leave" data-lag="0.8">
+          <span className="scrub-l inline-block">crawler</span>
+        </p>
+        <h1 id="hero-title" className="hero21-h rise d2">
+          Meet your customers <span>before they meet your website.</span>
         </h1>
-        <div className="rise d2 mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-          <div className="max-w-2xl">
-            <p className="lead14">Crawler sends 100 AI-simulated customers through your site. See who would buy, why the rest leave, and exactly what to fix, in minutes.</p>
-            <div className="url14 mt-8">
-              <HeroForm cta="Run free simulation" />
-            </div>
-            <p className="mt-4 text-sm text-faint">
-              No credit card · Free: 1 test with {STARTER_CUSTOMERS} simulated customers ·{" "}
-              <Link href="#report" className="text-muted underline-offset-4 hover:text-fg hover:underline">
-                See a sample report
-              </Link>
-            </p>
+        <div className="rise d3 mt-6 max-w-2xl">
+          <p className="lead14">Crawler sends AI-simulated customers through your site. See who would buy, why the rest leave, and exactly what to fix, in minutes.</p>
+          <div className="url14 mt-7">
+            <HeroForm cta="Run free simulation" />
           </div>
-          <Link href="/example" className="badge14 self-start justify-self-start lg:self-end">
-            <span className="badge14-dot" aria-hidden />
-            <span>
-              Websites, stores, apps <span className="text-faint">and ads</span>
-            </span>
-            <span className="text-faint" aria-hidden>
-              →
-            </span>
-          </Link>
-        </div>
-        {/* the product window rises and settles as it comes up (ScrollScrub "enter") */}
-        <div className="rise d4 scrub-rise relative mt-16 text-left" data-scrub="enter" data-lag="0.7">
-          <div className="stage14" aria-hidden />
-          <SimConsole
-            host={s.host}
-            total={s.total}
-            buy={s.buy}
-            maybe={s.maybe}
-            no={s.no}
-            sim={demo.sim}
-            objections={s.objections}
-            topFix={s.fixes[0]?.title ?? ""}
-            winBack={s.fixes[0]?.winBack ?? 0}
-          />
+          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <Link href="/example" className="btn btn-secondary">
+              See a full report, no sign-up
+            </Link>
+            <p className="text-sm text-faint">No credit card · Free: 1 test with {STARTER_CUSTOMERS} simulated customers</p>
+          </div>
         </div>
       </section>
 
-      {/* ================= THE BLOCKERS, sliding past as you scroll (klad-style scrubbed band) ================= */}
       <ScrubBand />
 
       {/* ================= THE LAB (washed gray stone): the statement, then two scroll-driven animations =================
           01 Customer simulation + 03 Behavioral patterns (founder's brief). Each one pins while you
           scroll through its four stages, after the gray cracks open to unveil it (crack.ts); illustration with demo data. */}
-      <section className="night18 lab" aria-label="How a simulation works" style={{ "--stone": `url("${STONE_URL}")` } as React.CSSProperties}>
+      <section className="night18 lab" aria-label="How a simulation works">
         <div className="home-wide">
           <Manifesto
             bare

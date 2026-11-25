@@ -95,7 +95,7 @@ function Delta({ n, suffix = " pts" }: { n: number | null; suffix?: string }) {
   if (n === null) return <span className="text-xs text-faint">first test</span>;
   if (n === 0) return <span className="text-xs text-faint">no change</span>;
   return (
-    <span className={`text-xs font-medium ${n > 0 ? "text-[#078f3b]" : "text-[#f87171]"}`}>
+    <span className={`text-xs font-medium ${n > 0 ? "text-[#0b0b0a]" : "text-[#f87171]"}`}>
       {n > 0 ? "↑" : "↓"} {Math.abs(n)}
       {suffix}
     </span>
@@ -112,7 +112,7 @@ function Thumb({ a, size = "h-11 w-11" }: { a: Analysis; size?: string }) {
     );
   }
   return (
-    <span className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-[#cfe6d6] bg-[#eaf5ed] text-base font-medium text-[#067a32]`} aria-hidden>
+    <span className={`flex ${size} shrink-0 items-center justify-center rounded-xl border border-[#dfdfdf] bg-[#d6d5cf] text-base font-medium text-[#000000]`} aria-hidden>
       {a.kind === "app" || a.kind === "game" || a.kind === "video" ? <Icon name={a.kind === "video" ? "play" : "phone"} /> : a.label.charAt(0).toUpperCase()}
     </span>
   );
@@ -415,7 +415,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                         <Thumb a={latest} size="h-24 w-24" />
                       </span>
                       <div className="min-w-0">
-                        <p className="fl-num text-5xl" style={{ color: "#078f3b" }}>
+                        <p className="fl-num text-5xl" style={{ color: "#0b0b0a" }}>
                           {latest.score ?? "–"}
                           <span className="text-2xl text-faint">/{latest.total ?? 100}</span>
                         </p>
@@ -472,7 +472,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                           <Link href={`/run/${f.testId}`} className="group flex items-center gap-3 py-3.5 transition-colors hover:text-fg">
                             <span className="w-5 font-mono text-xs text-faint">{String(i + 1).padStart(2, "0")}</span>
                             <span className="min-w-0 flex-1 text-sm">{f.title}</span>
-                            {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#078f3b]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
+                            {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#0b0b0a]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
                           </Link>
                         </li>
                       ))}

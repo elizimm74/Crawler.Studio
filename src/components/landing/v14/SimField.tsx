@@ -17,12 +17,12 @@ import type { CrowdPoint } from "@/lib/homeDemo";
 import Mark from "@/components/Mark";
 
 type V3 = [number, number, number];
-const GREEN = "#078f3b";
-const DEEP = "#067a32"; // darker green for the "would buy" number (readable text on white)
-const MAYBE = "#9fd3b0"; // "maybe" = light green (one brand green, in shades)
+const GREEN = "#0b0b0a";
+const DEEP = "#000000"; // darker green for the "would buy" number (readable text on white)
+const MAYBE = "#8f8e87"; // "maybe" = light green (one brand green, in shades)
 const GREY = "#c9d1cb";
 // mindsets in step 2: shades of the brand green plus ink and grey, so the field stays on-brand
-const MIND_COLORS = ["#078f3b", "#5bb57c", "#a9d8b8", "#17221b", "#a3ada6"];
+const MIND_COLORS = ["#0b0b0a", "#9f9f9f", "#cacaca", "#17221b", "#a3ada6"];
 
 // Crawler's own words for each step. `status` is the little live chip on the stage.
 const STEPS = [
@@ -333,7 +333,7 @@ export default function SimField({ crowd, host = "yoursite.com", topFix, winBack
         const al = ease(Math.max(0, (T - 0.45) / 0.55));
         const labels: [number, string, number, string][] = [
           [-0.95, "would buy", cnt.buy, GREEN],
-          [0, "maybe", cnt.maybe, "#4a9a66"],
+          [0, "maybe", cnt.maybe, "#868686"],
           [0.95, "left", cnt.no, "#68736b"],
         ];
         ctx.globalAlpha = al;

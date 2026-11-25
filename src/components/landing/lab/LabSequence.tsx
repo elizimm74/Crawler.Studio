@@ -148,10 +148,10 @@ export default function LabSequence({
       pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       pctx.clearRect(0, 0, w, h);
       if (!tex && img.complete && img.naturalWidth) tex = pctx.createPattern(img, "repeat");
-      // line the texture up with the gray region's own background (it starts at the region's corner)
+      // line the texture up with the page's gray background (it starts at the page's top-left corner)
       const rect = pcv.getBoundingClientRect();
-      const region = (el.closest(".lab") ?? document.body).getBoundingClientRect();
-      plate(pctx, c, tex, region.left - rect.left, region.top - rect.top);
+      const page = document.documentElement.getBoundingClientRect();
+      plate(pctx, c, tex, page.left - rect.left, page.top - rect.top);
       pcv.style.visibility = c >= 1 ? "hidden" : "visible";
     };
     const resize = () => {
