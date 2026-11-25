@@ -146,7 +146,7 @@ export default function RevenuePanel({ latest, rev }: { latest: Analysis | undef
               step={1}
               value={Math.round(inputs.share * 100)}
               onChange={(e) => set({ share: Number(e.target.value) / 100 })}
-              className="mt-2 w-full accent-[#058a37]"
+              className="mt-2 w-full accent-[#078f3b]"
             />
           </div>
         </div>
@@ -185,8 +185,8 @@ function RevenueChart({ p }: { p: RevenueProjection }) {
       <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={`Projected revenue over 12 months: ${money(p.yearAsIs)} as is, ${money(p.yearFixed)} with the fixes`}>
         <defs>
           <linearGradient id="rev-fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#058a37" stopOpacity="0.5" />
-            <stop offset="1" stopColor="#058a37" stopOpacity="0" />
+            <stop offset="0" stopColor="#078f3b" stopOpacity="0.5" />
+            <stop offset="1" stopColor="#078f3b" stopOpacity="0" />
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75].map((f) => (
@@ -198,7 +198,7 @@ function RevenueChart({ p }: { p: RevenueProjection }) {
         <text x={x(FIX_MONTH) + 6} y={T + 10} fill="currentColor" fillOpacity="0.55" fontSize="11" fontFamily="var(--font-mono)">
           fixes ship
         </text>
-        <path d={line(p.fixed)} fill="none" stroke="#047a30" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="trend-line" pathLength={1} />
+        <path d={line(p.fixed)} fill="none" stroke="#067a32" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="trend-line" pathLength={1} />
         <circle cx={x(MONTHS)} cy={y(p.yearFixed)} r="5" fill="currentColor" className="fade-in" />
         {[0, 3, 6, 9, 12].map((m) => (
           <text key={m} x={x(m)} y={H - 6} textAnchor={m === 0 ? "start" : m === MONTHS ? "end" : "middle"} fill="currentColor" fillOpacity="0.4" fontSize="11" fontFamily="var(--font-mono)">
@@ -208,7 +208,7 @@ function RevenueChart({ p }: { p: RevenueProjection }) {
       </svg>
       <figcaption className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-faint">
         <span className="flex items-center gap-2">
-          <i className="inline-block h-0.5 w-5 rounded bg-[#047a30]" /> with fixes · {money(p.yearFixed)}
+          <i className="inline-block h-0.5 w-5 rounded bg-[#067a32]" /> with fixes · {money(p.yearFixed)}
         </span>
         <span className="flex items-center gap-2">
           <i className="inline-block h-0.5 w-5 rounded border-t-2 border-dotted border-faint" /> as is · {money(p.yearAsIs)}

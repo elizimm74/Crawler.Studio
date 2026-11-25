@@ -52,7 +52,7 @@ export default function Intro() {
       <div className="intro-half intro-left" />
       <div className="intro-half intro-right" />
       <div className="intro-claws">
-        <Claws color="#058a37" delay={0.1} className="h-72 w-56 sm:h-[26rem] sm:w-80" />
+        <Claws color="#078f3b" delay={0.1} className="h-72 w-56 sm:h-[26rem] sm:w-80" />
       </div>
     </div>
   );

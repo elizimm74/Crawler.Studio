@@ -27,7 +27,7 @@ export default function ReportWindow({ data }: { data: SampleData }) {
         tabs={["Configuration", "Customers", "Report"]}
         active="Report"
         scene="dusk"
-        side={<Props rows={[["Status", <span key="s" className="text-[#02aa3d]">Completed</span>], ["Customers", data.total], ["Run", "01"], ["Data", "Demo"]]} files={["report.pdf", "fix-prompt.txt"]} />}
+        side={<Props rows={[["Status", <span key="s" className="text-[#078f3b]">Completed</span>], ["Customers", data.total], ["Run", "01"], ["Data", "Demo"]]} files={["report.pdf", "fix-prompt.txt"]} />}
       >
         {view === "Summary" && (
           <div className="grid gap-4 sm:grid-cols-[8rem_minmax(0,1fr)]">
@@ -58,7 +58,7 @@ export default function ReportWindow({ data }: { data: SampleData }) {
                     <div className="mt-2 grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-2 text-[11px] text-muted">
                       <span className="win-num">{o.pct}%</span>
                       <span className="h-1.5 overflow-hidden rounded-full bg-subtle">
-                        <span className="block h-full rounded-full bg-[#058a37]" style={{ width: `${o.pct}%` }} />
+                        <span className="block h-full rounded-full bg-[#078f3b]" style={{ width: `${o.pct}%` }} />
                       </span>
                     </div>
                   </div>
@@ -73,7 +73,7 @@ export default function ReportWindow({ data }: { data: SampleData }) {
               <div key={i} className="win-card p-3">
                 <div className="flex items-center justify-between gap-2 text-[12px]">
                   <span className="truncate">{p.label}</span>
-                  <span className={`win-chip ${p.verdict === "buy" ? "!bg-[#058a37] !text-[#ffffff]" : ""}`}>{p.verdict === "buy" ? "Would buy" : p.verdict === "maybe" ? "Maybe" : "No"}</span>
+                  <span className={`win-chip ${p.verdict === "buy" ? "!bg-[#078f3b] !text-[#ffffff]" : ""}`}>{p.verdict === "buy" ? "Would buy" : p.verdict === "maybe" ? "Maybe" : "No"}</span>
                 </div>
                 <p className="mt-2 text-[12.5px] text-muted">“{p.quote}”</p>
               </div>

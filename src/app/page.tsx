@@ -86,7 +86,7 @@ export default function Home() {
 
       {/* ================= HOW IT WORKS ================= */}
       <section id="how" className="home-wide scroll-mt-24 py-20 sm:py-28" aria-labelledby="how-title">
-        <Head tone="blue" eyebrow="How a simulation works" id="how-title" title="From a link to a list of fixes." sub="No setup, no tracking code, no real visitors needed. Scroll to watch Crawler run a simulation, step by step." />
+        <Head eyebrow="How a simulation works" id="how-title" title="From a link to a list of fixes." sub="No setup, no tracking code, no real visitors needed. Scroll to watch Crawler run a simulation, step by step." />
         {/* the animated "how a simulation works" field (demo data), see SimField.tsx */}
         <div className="mt-14">
           <SimField crowd={demo.crowd} host={demo.sample.host} topFix={demo.sample.fixes[0]?.title} winBack={demo.sample.fixes[0]?.winBack} />
@@ -94,9 +94,8 @@ export default function Home() {
       </section>
 
       {/* ================= MEET YOUR CUSTOMERS ================= */}
-      <section className="home-wide py-20 sm:py-28" aria-labelledby="meet-title">
+      <section className="band17 home-wide py-20 sm:py-28" aria-labelledby="meet-title">
         <Head
-          tone="violet"
           eyebrow="Meet your customers"
           id="meet-title"
           title="Not one opinion. A hundred different ones."
@@ -143,7 +142,7 @@ export default function Home() {
 
       {/* ================= WHAT CRAWLER ANALYZES ================= */}
       <section className="home-wide py-20 sm:py-28" aria-labelledby="areas-title">
-        <Head tone="pink" eyebrow="What Crawler analyzes" id="areas-title" title="Everything a first-time visitor judges." sub="On desktop and on a phone, from the first screen to the cart or signup." />
+        <Head eyebrow="What Crawler analyzes" id="areas-title" title="Everything a first-time visitor judges." sub="On desktop and on a phone, from the first screen to the cart or signup." />
         <ul className="bento14 mt-14">
           {AREAS.map(([title, body, icon], k) => (
             <li key={title} className={`bento14-cell ${k < 2 ? "is-big" : ""}`}>
@@ -165,9 +164,8 @@ export default function Home() {
       </section>
 
       {/* ================= SAMPLE REPORT ================= */}
-      <section id="report" className="home-wide scroll-mt-24 py-20 sm:py-28" aria-labelledby="report-title">
+      <section id="report" className="band17 home-wide scroll-mt-24 py-20 sm:py-28" aria-labelledby="report-title">
         <Head
-          tone="green"
           eyebrow="Sample report"
           id="report-title"
           title="A report you'd actually pay for."
@@ -188,7 +186,7 @@ export default function Home() {
 
       {/* ================= USE CASES ================= */}
       <section className="home-wide py-20 sm:py-28" aria-labelledby="uses-title">
-        <Head tone="teal" eyebrow="Use cases" id="uses-title" title="Built for people who launch things." />
+        <Head eyebrow="Use cases" id="uses-title" title="Built for people who launch things." />
         <ul className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {USES.map((u, k) => (
             <li key={u.title} className="h-full">
@@ -209,10 +207,10 @@ export default function Home() {
       </section>
 
       {/* ================= HONEST BY DESIGN + FREE PLAN ================= */}
-      <section className="home-wide py-20 sm:py-28" aria-labelledby="honest-title">
+      <section className="band17 home-wide py-20 sm:py-28" aria-labelledby="honest-title">
         <div className="honest14">
           <div>
-            <p className="eyebrow14 tone-violet">Honest by design</p>
+            <p className="eyebrow14">Honest by design</p>
             <h2 id="honest-title" className="h2-14 mt-4">
               A strong hint, <span className="text-faint">not a crystal ball.</span>
             </h2>
@@ -275,12 +273,12 @@ export default function Home() {
   );
 }
 
-function Head({ eyebrow, id, title, sub, tone = "blue" }: { eyebrow: string; id: string; title: string; sub?: string; tone?: "green" | "blue" | "violet" | "pink" | "teal" }) {
+function Head({ eyebrow, id, title, sub }: { eyebrow: string; id: string; title: string; sub?: string }) {
   // Linear-style split header: label + title on the left, the one-line explanation on the right.
   return (
     <div className="head14">
       <div>
-        <p className={`eyebrow14 tone-${tone}`}>{eyebrow}</p>
+        <p className="eyebrow14">{eyebrow}</p>
         <h2 id={id} className="h2-14 mt-4 max-w-xl">
           {title}
         </h2>

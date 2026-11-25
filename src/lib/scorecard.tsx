@@ -15,7 +15,7 @@ export type Shared = {
   high: number | null;
 };
 
-const BLUE = "#047a30"; // brand green (white text sits on it)
+const BLUE = "#067a32"; // brand green (white text sits on it)
 
 // The site's chunky headline font (Geist 800, the site's only font), fetched once and kept in memory.
 // If Google Fonts can't be reached, the image still draws, just in a plainer font.

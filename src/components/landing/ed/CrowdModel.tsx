@@ -77,7 +77,7 @@ export default function CrowdModel({ points }: { points: CrowdPoint[] }) {
 
   const count = (g: string) => points.filter((p) => (mode === "decision" ? p.v : p.mindset) === g).length;
   const label = (g: string) => (g === "buy" ? "Would buy" : g === "maybe" ? "Maybe" : g === "no" ? "Wouldn't" : g);
-  const fill = (p: CrowdPoint) => (p.v === "buy" ? "#02aa3d" : p.v === "maybe" ? "#6b93f5" : "rgb(12 32 20 / 0.22)");
+  const fill = (p: CrowdPoint) => (p.v === "buy" ? "#078f3b" : p.v === "maybe" ? "#9fd3b0" : "rgb(23 34 27 / 0.22)");
 
   return (
     <div ref={ref} className="dpanel overflow-hidden p-5 sm:p-7">
@@ -97,7 +97,7 @@ export default function CrowdModel({ points }: { points: CrowdPoint[] }) {
       <svg viewBox={`0 0 ${W} ${H}`} className="crowd-model mt-6 w-full" role="img" aria-label={`100 simulated customers grouped ${mode === "crowd" ? "loosely" : `by ${mode}`}`}>
         <g className="crowd-links">
           {links.map(([a, b]) => (
-            <line key={`${a}-${b}`} x1={pos[a].x} y1={pos[a].y} x2={pos[b].x} y2={pos[b].y} stroke="rgb(12 32 20 / 0.12)" strokeWidth="1" />
+            <line key={`${a}-${b}`} x1={pos[a].x} y1={pos[a].y} x2={pos[b].x} y2={pos[b].y} stroke="rgb(23 34 27 / 0.12)" strokeWidth="1" />
           ))}
         </g>
         {points.map((p, i) => (
@@ -105,17 +105,17 @@ export default function CrowdModel({ points }: { points: CrowdPoint[] }) {
         ))}
         {mode !== "crowd" &&
           groups.map((g, i) => (
-            <text key={g} x={((i + 0.5) / groups.length) * W} y={H - 14} textAnchor="middle" fill="rgb(12 32 20 / 0.6)" fontSize="12" style={{ textTransform: "capitalize" }}>
+            <text key={g} x={((i + 0.5) / groups.length) * W} y={H - 14} textAnchor="middle" fill="rgb(23 34 27 / 0.6)" fontSize="12" style={{ textTransform: "capitalize" }}>
               {label(g)} · {count(g)}
             </text>
           ))}
       </svg>
       <div className="mt-2 flex flex-wrap gap-4 text-xs text-faint">
         <span className="flex items-center gap-2">
-          <i className="h-2 w-2 rounded-full bg-[#02aa3d]" /> would buy
+          <i className="h-2 w-2 rounded-full bg-[#078f3b]" /> would buy
         </span>
         <span className="flex items-center gap-2">
-          <i className="h-2 w-2 rounded-full bg-[#6b93f5]" /> maybe
+          <i className="h-2 w-2 rounded-full bg-[#9fd3b0]" /> maybe
         </span>
         <span className="flex items-center gap-2">
           <i className="h-2 w-2 rounded-full bg-[rgb(12_32_20_/_0.08)]" /> wouldn&apos;t

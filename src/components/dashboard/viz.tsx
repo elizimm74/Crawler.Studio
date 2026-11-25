@@ -19,7 +19,7 @@ export function Crowd({ yes, total, size = "lg" }: { yes: number; total: number;
       {Array.from({ length: n }, (_, i) => (
         <span
           key={i}
-          className={`crowd-dot aspect-square rounded-full ${i < lit ? "bg-[#058a37]" : "border border-line"}`}
+          className={`crowd-dot aspect-square rounded-full ${i < lit ? "bg-[#078f3b]" : "border border-line"}`}
           style={{ animationDelay: `${i * 12}ms` }}
         />
       ))}
@@ -77,7 +77,7 @@ export function TrendChart({ points }: { points: { pct: number; date: string }[]
 export function Bar({ pct, delay = 0 }: { pct: number; delay?: number }) {
   return (
     <div className="h-1.5 overflow-hidden rounded-full bg-line">
-      <div className="bar-grow h-full rounded-full bg-[#058a37]" style={{ width: `${Math.max(2, Math.min(100, pct))}%`, animationDelay: `${delay}ms` }} />
+      <div className="bar-grow h-full rounded-full bg-[#078f3b]" style={{ width: `${Math.max(2, Math.min(100, pct))}%`, animationDelay: `${delay}ms` }} />
     </div>
   );
 }
@@ -121,12 +121,12 @@ export function Spark({ values, id }: { values: number[]; id: string }) {
     <svg viewBox={`0 0 ${W} ${H}`} className="h-12 w-full" preserveAspectRatio="none" aria-hidden>
       <defs>
         <linearGradient id={`sp-${id}`} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor="#058a37" stopOpacity="0.45" />
-          <stop offset="1" stopColor="#058a37" stopOpacity="0" />
+          <stop offset="0" stopColor="#078f3b" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#078f3b" stopOpacity="0" />
         </linearGradient>
       </defs>
       {values.length >= 2 && <path d={`${line} L${W},${H} L0,${H} Z`} fill={`url(#sp-${id})`} />}
-      <path d={line} fill="none" stroke="#047a30" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeOpacity={values.length >= 2 ? 1 : 0.3} />
+      <path d={line} fill="none" stroke="#067a32" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeOpacity={values.length >= 2 ? 1 : 0.3} />
     </svg>
   );
 }
@@ -141,8 +141,8 @@ export function Ring({ pct, label }: { pct: number; label: string }) {
         <circle cx="60" cy="60" r={r} fill="none" stroke="url(#ring-g)" strokeWidth="9" strokeLinecap="round" strokeDasharray={`${(p / 100) * c} ${c}`} className="ring-draw" />
         <defs>
           <linearGradient id="ring-g" x1="0" x2="1">
-            <stop offset="0" stopColor="#058a37" />
-            <stop offset="1" stopColor="#047a30" />
+            <stop offset="0" stopColor="#078f3b" />
+            <stop offset="1" stopColor="#067a32" />
           </linearGradient>
         </defs>
       </svg>

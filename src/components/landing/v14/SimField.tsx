@@ -17,11 +17,12 @@ import type { CrowdPoint } from "@/lib/homeDemo";
 import Mark from "@/components/Mark";
 
 type V3 = [number, number, number];
-const GREEN = "#02aa3d";
-const DEEP = "#058a37";
-const MAYBE_BLUE = "#6b93f5"; // "maybe" = blue (white + many colours, never yellow: founder rules)
-const GREY = "#b9c3bd";
-const MIND_COLORS = ["#02aa3d", "#0ea5a4", "#4c8ee8", "#9b7be0", "#59635e"];
+const GREEN = "#078f3b";
+const DEEP = "#067a32"; // darker green for the "would buy" number (readable text on white)
+const MAYBE = "#9fd3b0"; // "maybe" = light green (one brand green, in shades)
+const GREY = "#c9d1cb";
+// mindsets in step 2: shades of the brand green plus ink and grey, so the field stays on-brand
+const MIND_COLORS = ["#078f3b", "#5bb57c", "#a9d8b8", "#17221b", "#a3ada6"];
 
 // Crawler's own words for each step. `status` is the little live chip on the stage.
 const STEPS = [
@@ -106,7 +107,7 @@ function build(crowd: CrowdPoint[]): { dots: Dot[]; minds: string[]; counts: { b
       poses: [p0, cloud, visit, out],
       chosen,
       color1: MIND_COLORS[Math.max(0, minds.indexOf(c.mindset)) % MIND_COLORS.length],
-      color3: c.v === "buy" ? DEEP : c.v === "maybe" ? MAYBE_BLUE : GREY,
+      color3: c.v === "buy" ? DEEP : c.v === "maybe" ? MAYBE : GREY,
       delay: r() * 0.35,
       seed: r() * 100,
       page,
@@ -291,7 +292,7 @@ export default function SimField({ crowd, host = "yoursite.com", topFix, winBack
         if (q.k <= 0) continue;
         let color: string, size: number, alpha: number;
         if (!d.chosen) {
-          color = "#0c2014";
+          color = "#17221b";
           size = 1.35 * q.k;
           const al = [0.2, 0.13, 0.26, 0.08];
           alpha = mix(al[from], al[to], lt);
@@ -331,9 +332,9 @@ export default function SimField({ crowd, host = "yoursite.com", topFix, winBack
       if (to === 3) {
         const al = ease(Math.max(0, (T - 0.45) / 0.55));
         const labels: [number, string, number, string][] = [
-          [-0.95, "would buy", cnt.buy, DEEP],
-          [0, "maybe", cnt.maybe, "#2457e6"],
-          [0.95, "left", cnt.no, "#59635e"],
+          [-0.95, "would buy", cnt.buy, GREEN],
+          [0, "maybe", cnt.maybe, "#4a9a66"],
+          [0.95, "left", cnt.no, "#68736b"],
         ];
         ctx.globalAlpha = al;
         ctx.textAlign = "center";
@@ -342,7 +343,7 @@ export default function SimField({ crowd, host = "yoursite.com", topFix, winBack
           ctx.fillStyle = col;
           ctx.font = `600 ${Math.round(Math.max(18, U * 0.17))}px Geist, system-ui, sans-serif`;
           ctx.fillText(String(n), q.x, q.y);
-          ctx.fillStyle = "#59635e";
+          ctx.fillStyle = "#68736b";
           ctx.font = `500 ${Math.round(Math.max(11, U * 0.075))}px Geist, system-ui, sans-serif`;
           ctx.fillText(word, q.x, q.y + Math.max(16, U * 0.11));
         }

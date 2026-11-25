@@ -82,8 +82,8 @@ function Bars({ seed }: { seed: string }) {
       <svg viewBox="0 0 400 96" className="w-full" aria-hidden>
         {rows.map((p, i) => (
           <g key={i} transform={`translate(0 ${i * 24})`}>
-            <polyline points={p} fill="none" stroke={i % 2 ? "rgb(12 32 20 / 0.22)" : "#ffffff"} strokeWidth="1.4" />
-            <line x1={120 + ((h >> i) % 200)} x2={120 + ((h >> i) % 200)} y1="4" y2="20" stroke="#02aa3d" strokeWidth="2" />
+            <polyline points={p} fill="none" stroke={i % 2 ? "rgb(23 34 27 / 0.22)" : "#ffffff"} strokeWidth="1.4" />
+            <line x1={120 + ((h >> i) % 200)} x2={120 + ((h >> i) % 200)} y1="4" y2="20" stroke="#078f3b" strokeWidth="2" />
           </g>
         ))}
       </svg>
