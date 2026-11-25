@@ -4,6 +4,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CASE_STUDIES, findCaseStudy } from "@/lib/caseStudies";
+import SendBar from "@/components/SendBar";
+import { SITE_URL } from "@/lib/config";
 
 export function generateStaticParams() {
   return CASE_STUDIES.filter((c) => c.published).map((c) => ({ slug: c.slug }));
@@ -59,8 +61,9 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
         </div>
       </header>
 
-      {/* the story */}
-      <div className="mx-auto mt-20 max-w-2xl space-y-14">
+      {/* the story, with the facts card beside it (sticky on desktop) */}
+      <div className="mt-20 grid gap-12 lg:grid-cols-[minmax(0,1fr)_17rem]">
+        <div className="min-w-0 max-w-2xl space-y-14">
         {c.story.map((s) => (
           <section key={s.heading}>
             <h2 className="text-2xl font-semibold tracking-tight">{s.heading}</h2>
@@ -71,6 +74,37 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
             ))}
           </section>
         ))}
+
+        {/* how this test works, step by step, with honest status */}
+        <section aria-labelledby="cs-plan-title">
+          <h2 id="cs-plan-title" className="text-2xl font-semibold tracking-tight">
+            How {first}&apos;s test works
+          </h2>
+          <ol className="mt-6 space-y-3">
+            {c.plan.map((st, i) => (
+              <li key={st.title} className="cs-step">
+                <span className="cs-step-n" aria-hidden>
+                  0{i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-semibold">{st.title}</h3>
+                    <span className={`cs-status is-${st.status}`}>{st.status === "done" ? "Done" : st.status === "now" ? "In progress" : "Up next"}</span>
+                  </div>
+                  <p className="mt-1 text-[15px] leading-relaxed text-muted">{st.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <h3 className="mt-10 font-semibold">What every simulated customer answers</h3>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {c.questions.map((q, i) => (
+              <li key={q} className="cs-q">
+                <span className="cs-q-n">Q{i + 1}</span> {q}
+              </li>
+            ))}
+          </ul>
+        </section>
 
         {/* the Crawler test */}
         <section className="cs-test" aria-labelledby="cs-test-title">
@@ -119,6 +153,31 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
             </Link>
           </div>
         </section>
+
+        <section aria-label="Share this story">
+          <p className="text-sm font-semibold">Share {first}&apos;s story</p>
+          <div className="mt-3">
+            <SendBar url={`${SITE_URL}/case-studies/${c.slug}`} text={`${c.founder} built ${c.product} at ${c.age}. Read his story on Crawler:`} subject={`${c.founder} built ${c.product} at ${c.age}`} />
+          </div>
+        </section>
+        </div>
+
+        <aside className="cs-glance lg:sticky lg:top-28 lg:self-start" aria-label="At a glance">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#56554f]">At a glance</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={c.icon} alt="" aria-hidden className="mt-4 h-14 w-14 rounded-2xl" />
+          <dl className="mt-4 divide-y divide-[rgb(0_0_0/0.08)] text-sm">
+            {c.glance.map((g) => (
+              <div key={g.label} className="py-2.5">
+                <dt className="text-xs text-[#56554f]">{g.label}</dt>
+                <dd className="mt-0.5 font-medium text-[#0b0b0a]">{g.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <Link href="/onboarding" className="btn btn-primary mt-5 h-11 w-full text-sm">
+            Test your app free
+          </Link>
+        </aside>
       </div>
     </article>
   );

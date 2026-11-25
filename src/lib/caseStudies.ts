@@ -21,6 +21,10 @@ export type CaseStudy = {
   summary: string; // one line for cards
   stats: { value: string; label: string }[]; // as reported by the founder
   story: { heading: string; body: string[] }[];
+  glance: { label: string; value: string }[]; // the "At a glance" card (facts only)
+  // how this founder's Crawler test runs; status moves to "done" as each step really happens
+  plan: { title: string; body: string; status: "done" | "now" | "next" }[];
+  questions: string[]; // what every simulated customer answers in this test
   crawler: null | { tested: string; found: string[]; changed: string[]; quote?: string };
 };
 
@@ -64,6 +68,26 @@ export const CASE_STUDIES: CaseStudy[] = [
           "Every fix comes ranked by how many simulated customers it could win back, so Rubin can decide what to change first.",
         ],
       },
+    ],
+    glance: [
+      { label: "Founder", value: "Rubin Netai, 15" },
+      { label: "Product", value: "Handle Lab" },
+      { label: "Type", value: "Basketball app" },
+      { label: "Traction", value: "+150 in sports rankings · 10k+ a month (reported)" },
+      { label: "Crawler test", value: "Mobile app: onboarding and paywall" },
+      { label: "Status", value: "In progress" },
+    ],
+    plan: [
+      { title: "Collect the screens", body: "Rubin adds screenshots of Handle Lab's onboarding and paywall, in order. Crawler never logs into the app.", status: "now" },
+      { title: "Pick the crowd", body: "He chooses who the simulated customers are: their ages, budgets, mindsets and what they use today.", status: "next" },
+      { title: "Run the simulation", body: "Each simulated customer goes through the screens on their own phone, with their own patience and dealbreaker, and decides.", status: "next" },
+      { title: "Fix and re-test", body: "Rubin gets fixes ranked by how many customers each could win back, ships the top ones, then re-tests the same crowd.", status: "next" },
+    ],
+    questions: [
+      "Would you keep going after the first screen?",
+      "Would you start the free trial or pay?",
+      "What stopped you, in your own words?",
+      "What would change your mind?",
     ],
     crawler: null,
   },

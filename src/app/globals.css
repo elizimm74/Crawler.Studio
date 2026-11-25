@@ -3254,3 +3254,11 @@ html[data-calm] .rl-body, html[data-calm] .rl-bar i { animation: none; }
 .cs-card-photo > img:first-child { width: 100%; height: 100%; object-fit: cover; object-position: 50% 38%; }
 .cs-card-icon { position: absolute; left: 1rem; bottom: 1rem; width: 3.5rem; height: 3.5rem; border-radius: 16px; background: #fff; border: 3px solid #f2f1ec; }
 .case23.is-real { padding: 0 !important; overflow: hidden; }
+.cs-glance { border-radius: 22px; background: #f2f1ec; padding: 1.4rem; color: #0b0b0a; }
+.cs-step { display: flex; gap: 1rem; border-radius: 18px; background: #f2f1ec; padding: 1.1rem 1.2rem; color: #0b0b0a; --fg-muted: #45443f; }
+.cs-step-n { flex: none; font-size: 1.6rem; font-weight: 800; line-height: 1; letter-spacing: -0.05em; color: #0b0b0a; }
+.cs-status { border-radius: 999px; padding: 2px 9px; font-size: 11px; font-weight: 600; background: #dcdbd5; color: #0b0b0a; }
+.cs-status.is-now { background: #3e4a6e; color: #ffffff; }
+.cs-status.is-done { background: #0b0b0a; color: #ffffff; }
+.cs-q { border-radius: 14px; background: rgb(255 255 255 / 0.55); border: 1px solid rgb(0 0 0 / 0.08); padding: 0.8rem 1rem; font-size: 14px; color: #0b0b0a; }
+.cs-q-n { margin-right: 0.35rem; font-weight: 700; color: #3e4a6e; }
