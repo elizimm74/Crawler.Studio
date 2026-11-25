@@ -472,7 +472,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                           <Link href={`/run/${f.testId}`} className="group flex items-center gap-3 py-3.5 transition-colors hover:text-fg">
                             <span className="w-5 font-mono text-xs text-faint">{String(i + 1).padStart(2, "0")}</span>
                             <span className="min-w-0 flex-1 text-sm">{f.title}</span>
-                            {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#0b0b0a]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
+                            {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#22d36b]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
                           </Link>
                         </li>
                       ))}

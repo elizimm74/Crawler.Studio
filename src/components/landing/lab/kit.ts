@@ -2,13 +2,13 @@
 // (01 Customer simulation, 03 Behavioral patterns). Plain <canvas> 2D drawing, no library.
 // Colours: black and white only (founder, 2026-11-25: "gray with black and white lettering, no blue
 // or yellow"). The old names stay so the scenes didn't need rewriting: COBALT = mid gray,
-// LIME = white, GREY = dark gray.
+// LIME = bright green #22d36b (v22), GREY = dark gray.
 
 export const INK = "#05070b"; // the near-black behind both animations
 export const WHITE = "#f4f6fb";
 export const COBALT = "#8e8e8a"; // mid gray: "hesitate" dots, the sketch's button (monochrome since 2026-11-25)
 export const COBALT_SOFT = "#c8c8c4"; // light gray for thin lines and small labels on black
-export const LIME = "#ffffff"; // white: "buy" and highlights
+export const LIME = "#22d36b"; // bright green: "buy" and highlights (v22)
 export const GREY = "#4f4f4c"; // dark gray: "leave"
 export const FONT = '"Space Grotesk", Geist, ui-sans-serif, system-ui, sans-serif';
 
