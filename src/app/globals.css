@@ -2196,3 +2196,55 @@ html, body, html:has(.dash-app), body:has(.dash-app), .dash-app { background: #f
 .field14-progress i.is-done { background: rgb(2 170 61 / 0.45); }
 .field14-progress i.is-on { background: #02aa3d; }
 @media (max-width: 639px) { .field14-stage { height: 380px; } .field14-card { margin-top: -64px; } }
+
+/* =================================================================================================
+   v16 "WHITE + MANY COLOURS" (2026-11-25, founder: "white background and then random other colors").
+   - White page stays. The ONE main action is BLACK (white text), so it works next to any colour.
+   - A small spectrum rotates through the page: green, blue, violet, pink, teal (never yellow,
+     amber, gold or orange). Each section label, bento icon and use-case card gets its own colour.
+   - Data colours: would buy = green, maybe = blue, left = grey.
+   ================================================================================================= */
+:root { --c-green: #02aa3d; --c-blue: #2f63ee; --c-violet: #7c5cff; --c-pink: #e0418f; --c-teal: #0d9e9c; }
+
+/* the main button: black everywhere (nav, hero, dashboard, pricing) */
+.btn-primary, .dash-app .btn-primary, .nav-pill .btn-primary, .plan-rec .btn-primary, .field14-btn.is-next {
+  background: #0b0f0c !important; border-color: #0b0f0c !important; color: #ffffff !important;
+  box-shadow: 0 10px 24px -14px rgb(11 15 12 / 0.55) !important;
+}
+.btn-primary:hover:not(:disabled), .dash-app .btn-primary:hover, .nav-pill .btn-primary:hover, .field14-btn.is-next:hover { background: #262b28 !important; }
+.hl14 { color: var(--c-blue); }
+
+/* section labels in rotating colours */
+.eyebrow14 { color: var(--tone, var(--c-blue)); }
+.eyebrow14::before { background: var(--tone, var(--c-blue)); }
+.tone-green { --tone: #047a30; } .tone-blue { --tone: var(--c-blue); } .tone-violet { --tone: var(--c-violet); } .tone-pink { --tone: #c42f78; } .tone-teal { --tone: #0b8584; }
+
+/* bento icons: each card its own colour */
+.bento14-cell:nth-child(5n+1) { --tone: var(--c-blue); } .bento14-cell:nth-child(5n+2) { --tone: var(--c-pink); }
+.bento14-cell:nth-child(5n+3) { --tone: var(--c-violet); } .bento14-cell:nth-child(5n+4) { --tone: var(--c-teal); } .bento14-cell:nth-child(5n+5) { --tone: var(--c-green); }
+.bento14-cell .icon14 { color: var(--tone); background: color-mix(in srgb, var(--tone) 10%, white); border-color: color-mix(in srgb, var(--tone) 25%, white); }
+.bento14-cell:hover .icon14 { background: var(--tone); color: #fff; }
+.bento14-cell:hover { border-color: color-mix(in srgb, var(--tone) 35%, white); }
+
+/* use-case cards: a coloured edge + dot */
+.use14 { position: relative; overflow: hidden; }
+.use14::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--tone); }
+.h-full:nth-child(5n+1) > .use14 { --tone: var(--c-green); } .h-full:nth-child(5n+2) > .use14 { --tone: var(--c-blue); }
+.h-full:nth-child(5n+3) > .use14 { --tone: var(--c-violet); } .h-full:nth-child(5n+4) > .use14 { --tone: var(--c-pink); } .h-full:nth-child(5n+5) > .use14 { --tone: var(--c-teal); }
+
+/* personas: four different colours */
+.avatar14.a0 { background: #058a37; color: #fff; }
+.avatar14.a1 { background: #fde8f2; color: #b0306e; border: 0; }
+.avatar14.a2 { background: #e6edff; color: #2f63ee; border: 0; }
+.avatar14.a3 { background: #efe9ff; color: #6a46f0; }
+
+/* data: maybe = blue */
+.v-maybe { background: #6b93f5 !important; }
+.sim-tag.v-maybe { color: #2457e6 !important; background: #e8efff !important; }
+.sim-person.is-decided .sim-avatar.v-maybe { background: #e8efff !important; color: #2457e6 !important; }
+.mini-crowd i.mid { background: #6b93f5; }
+
+/* animation step bars + statement accent */
+.field14-progress i.is-on { background: #0b0f0c; }
+.field14-progress i.is-done { background: rgb(11 15 12 / 0.35); }
+.statement14 { color: #0b0f0c; }
