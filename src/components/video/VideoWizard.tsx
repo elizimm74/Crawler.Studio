@@ -124,7 +124,7 @@ export default function VideoWizard() {
       } else {
         setPresetName("Gen Z creators");
         setAudience(PRESETS["Gen Z creators"] ?? DEFAULT_AUDIENCE);
-        setError(`We couldn't read everything automatically (${d.suggestError}). Please fill it in below.`);
+        setError(`We couldn't read everything automatically. ${d.suggestError ?? ""} Please fill it in below.`);
       }
       setStep(1);
     } catch (err) {

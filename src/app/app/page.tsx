@@ -135,7 +135,7 @@ function Wizard() {
         setSuggested(null);
         setPresetName("High school teens");
         setAudience(PRESETS["High school teens"]);
-        setError(`We couldn't auto-fill everything (${data.suggestError}). Check it below.`);
+        setError(`We couldn't auto-fill everything. ${data.suggestError ?? ""} Check the details below and fill in what's missing.`);
       }
       setStep(1);
     } catch (err) {

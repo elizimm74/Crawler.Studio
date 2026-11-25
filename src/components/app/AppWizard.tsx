@@ -92,7 +92,7 @@ export default function AppWizard() {
       } else {
         setPresetName("High school teens");
         setAudience(PRESETS["High school teens"]);
-        setError(`We couldn't read everything automatically (${d.suggestError}). Please fill it in below.`);
+        setError(`We couldn't read everything automatically. ${d.suggestError ?? ""} Please fill it in below.`);
       }
       setStep(1);
     } catch (err) {

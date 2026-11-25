@@ -1,5 +1,7 @@
 "use client";
 // The questions asked BEFORE every test (and as first-run onboarding). Short and calm:
+//   0. (only when opened from the home page's "Get started", with no link yet) WHAT are you testing?
+//      Five big tiles: website, online store, mobile app, game, video or ad. Not everything has a URL.
 //   1. Your website: paste it, we CHECK it (real, public, reachable: /api/check-url), show a small
 //      preview and GUESS the category (you can change it). No website? Test an app, game or video.
 //   2. What do you want to learn? (objectives, several allowed) + who it's for (optional)
@@ -22,10 +24,19 @@ type Kind = "website" | "app" | "game" | "store" | "video";
 const WHO = ["Students", "Founders", "Parents", "Small businesses", "Developers", "Everyone"];
 type Check = { ok: true; url: string; host: string; title?: string; category: Category; note?: string } | { ok: false; problem: string };
 
-export default function Onboarding({ startUrl, startKind = "website", mind, preset, firstTime = false }: { startUrl: string; startKind?: Kind; mind?: string; preset?: string; firstTime?: boolean }) {
+// The first question's tiles (step 0). Store = the website test in shop mode (product page + cart).
+const TILES: { kind: Kind; title: string; line: string; icon: string }[] = [
+  { kind: "website", title: "Website", line: "A landing page, SaaS or any site with a link.", icon: "M3 5h18v14H3zM3 9h18" },
+  { kind: "store", title: "Online store", line: "Product page and cart. Never checks out. (Beta)", icon: "M5 7h14l-1.5 12h-11zM9 7a3 3 0 0 1 6 0" },
+  { kind: "app", title: "Mobile app", line: "Your onboarding and paywall, from screenshots.", icon: "M8 3h8v18H8zM11 18h2" },
+  { kind: "game", title: "Game", line: "The first minutes and the shop, from screenshots.", icon: "M6 9h12a3 3 0 0 1 0 8H6a3 3 0 0 1 0-8zM8 13h3M9.5 11.5v3M15 12.5h.01M17 14h.01" },
+  { kind: "video", title: "Video or ad", line: "A TikTok, Reel, Short or ad.", icon: "M4 6h12v12H4zM16 10l4-2v8l-4-2" },
+];
+
+export default function Onboarding({ startUrl, startKind = "website", mind, preset, firstTime = false, choose = false }: { startUrl: string; startKind?: Kind; mind?: string; preset?: string; firstTime?: boolean; choose?: boolean }) {
   const router = useRouter();
   const noSite = startKind === "app" || startKind === "game" || startKind === "video";
-  const [kind, setKind] = useState<Kind>(noSite ? startKind : "website");
+  const [kind, setKind] = useState<Kind>(noSite || startKind === "store" ? startKind : "website");
   const [url, setUrl] = useState(startUrl);
   const [check, setCheck] = useState<Check | null>(null);
   const [checking, setChecking] = useState(false);
@@ -35,9 +46,12 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
   const [who, setWho] = useState("");
   const [whoText, setWhoText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<0 | 1 | 2 | 3>(choose ? 0 : 1);
   const [about, setAbout] = useState<About>({});
-  const steps = firstTime ? 3 : 2;
+  // the tile question counts as a step only when it was shown
+  const first = choose ? 0 : 1;
+  const steps = (firstTime ? 3 : 2) + (choose ? 1 : 0);
+  const shown = step - first + 1; // "step N of M" as the person sees it
   const pick = (k: keyof About, v: string) => setAbout((a) => ({ ...a, [k]: a[k] === v ? undefined : v }));
   const audience = whoText.trim() || who;
   const site = kind === "website" || kind === "store";
@@ -53,7 +67,8 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
       setCheck(data);
       if (data.ok) {
         setUrl(data.url.replace(/^https:\/\//, "").replace(/\/$/, ""));
-        if (startKind !== "store" || data.category === "clothing") setCategory(data.category);
+        // a store keeps "online store" unless we can tell it's clothing
+        if ((kind !== "store" && startKind !== "store") || data.category === "clothing") setCategory(data.category);
         if (data.category === "app") setKind("app");
       }
     } catch {
@@ -62,6 +77,14 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
       setChecking(false);
     }
   }
+  // Every step starts at the top of the page (and so does arriving from the home page).
+  useEffect(() => {
+    const top = () => window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    top();
+    const t = window.setTimeout(top, 120); // again after the page change has settled
+    return () => window.clearTimeout(t);
+  }, [step]);
+
   // Came from the home page with a URL? Check it straight away.
   useEffect(() => {
     if (startUrl && !autoChecked.current) {
@@ -112,17 +135,57 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mx-auto flex max-w-xs gap-2" aria-label={`Step ${step} of ${steps}`}>
+      <div className="mx-auto flex max-w-xs gap-2" aria-label={`Step ${shown} of ${steps}`}>
         {Array.from({ length: steps }, (_, i) => i + 1).map((i) => (
-          <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= step ? "bg-accent" : "bg-line"}`} />
+          <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= shown ? "bg-accent" : "bg-line"}`} />
         ))}
       </div>
 
+      {step === 0 && (
+        <section className="mt-12" aria-labelledby="ob-q0">
+          <p className="t-label">step 1 of {steps}</p>
+          <h1 id="ob-q0" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
+            What do you want to test?
+          </h1>
+          <p className="mt-3 text-muted">Pick one. You don&apos;t need a website: apps, games and videos work from screenshots or the file.</p>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2" role="group" aria-label="What you want to test">
+            {TILES.map((t) => (
+              <button
+                key={t.kind}
+                type="button"
+                onClick={() => {
+                  setKind(t.kind);
+                  if (t.kind === "store") setCategory("ecommerce");
+                  setStep(1);
+                }}
+                className={`ob-tile group flex min-h-24 items-start gap-4 rounded-2xl border border-line bg-[#f2f1ec] p-5 text-left transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lg ${t.kind === "video" ? "sm:col-span-2" : ""}`}
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0b0b0a] text-white transition-colors group-hover:bg-[#22d36b] group-hover:text-[#0b0b0a]" aria-hidden>
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={t.icon} />
+                  </svg>
+                </span>
+                <span>
+                  <span className="block text-lg font-semibold text-[#0b0b0a]">{t.title}</span>
+                  <span className="mt-1 block text-sm text-[#45443f]">{t.line}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-6 text-center text-xs text-faint">Free: 1 test with {STARTER_CUSTOMERS} simulated customers, no card. Nothing runs until you confirm.</p>
+        </section>
+      )}
+
       {step === 1 && (
         <section className="mt-12" aria-labelledby="ob-q1">
-          <p className="t-label">step 1 of {steps}</p>
+          {choose && (
+            <button type="button" onClick={() => setStep(0)} className="btn btn-text -ml-3 mb-4 h-10 text-sm">
+              ← Back
+            </button>
+          )}
+          <p className="t-label">step {shown} of {steps}</p>
           <h1 id="ob-q1" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-            {site ? "What are we testing?" : kind === "video" ? "Testing a video or ad." : kind === "game" ? "Testing a game." : "Testing a mobile app."}
+            {kind === "store" ? "Paste your store's address." : site ? (choose ? "Paste your website." : "What are we testing?") : kind === "video" ? "Testing a video or ad." : kind === "game" ? "Testing a game." : "Testing a mobile app."}
           </h1>
 
           {site ? (
@@ -245,7 +308,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
                   key={k}
                   type="button"
                   aria-pressed={k === "website" ? site : kind === k}
-                  onClick={() => setKind(k)}
+                  onClick={() => setKind(k === "website" && kind === "store" ? "store" : k)}
                   className="chip"
                 >
                   {k === "website" ? "Website or store" : k === "app" ? "Mobile app (screenshots)" : k === "game" ? "Game (screenshots)" : "Video or ad"}
@@ -269,7 +332,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
           <button type="button" onClick={() => setStep(1)} className="btn btn-text -ml-3 h-10 text-sm">
             ← Back
           </button>
-          <p className="t-label mt-4">step 2 of {steps}</p>
+          <p className="t-label mt-4">step {shown} of {steps}</p>
           <h1 id="ob-q2" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
             What do you want to learn?
           </h1>
@@ -336,7 +399,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
           <button type="button" onClick={() => setStep(2)} className="btn btn-text -ml-3 h-10 text-sm">
             ← Back
           </button>
-          <p className="t-label mt-4">step 3 of 3 · optional · 10 seconds</p>
+          <p className="t-label mt-4">step {shown} of {steps} · optional · 10 seconds</p>
           <h1 id="ob-q3" className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
             Quick, about you.
           </h1>

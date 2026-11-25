@@ -7,6 +7,7 @@ import { fileUrl } from "@/lib/urls";
 import type { CrawlData } from "@/worker/jobs";
 import type { AppAnalysis } from "@/lib/app/types";
 import type { VideoAnalysis } from "@/lib/video/types";
+import { friendlyAiError } from "@/lib/friendlyError";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireUser();
@@ -31,7 +32,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       paywallB: a.paywallB,
       profile: a.profile,
       audience: a.audience,
-      suggestError: a.suggestError,
+      suggestError: friendlyAiError(a.suggestError),
     });
   }
   // Video test: the frames with links to the images, + what we read off them.
@@ -48,7 +49,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       platform: v.input.platform,
       profile: v.profile,
       audience: v.audience,
-      suggestError: v.suggestError,
+      suggestError: friendlyAiError(v.suggestError),
     });
   }
   const d = row.data as CrawlData;
@@ -68,6 +69,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     },
     profile: d.profile,
     audience: d.audience,
-    suggestError: d.suggestError,
+    suggestError: friendlyAiError(d.suggestError),
   });
 }

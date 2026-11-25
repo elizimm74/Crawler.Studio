@@ -110,16 +110,28 @@ const record = (r) => {
       record({ type: "flow", check: name, ok: false, detail: e.message.split("\n")[0].slice(0, 200) });
     }
   };
-  await flow("hero: a bad address shows an error and stays on the page", async () => {
+  await flow("hero: 'Get started' opens the onboarding at 'What do you want to test?'", async () => {
     await p.goto(BASE + "/", { waitUntil: "networkidle" });
-    await p.fill("#hero-url", "not a site");
-    await p.getByRole("button", { name: /Run free simulation/ }).first().click();
+    await p.getByRole("link", { name: /Get started/ }).first().click();
+    await p.waitForURL(/\/onboarding$/, { timeout: 8000 });
+    await p.getByRole("heading", { name: /What do you want to test/ }).waitFor();
+    for (const t of ["Website", "Online store", "Mobile app", "Game", "Video or ad"]) await p.getByRole("button", { name: new RegExp("^" + t) }).first().waitFor();
+  });
+  await flow("onboarding: the 'Website' tile asks for the link; a bad address shows an error", async () => {
+    await p.getByRole("button", { name: /^Website/ }).first().click();
+    await p.getByRole("heading", { name: /Paste your website/ }).waitFor();
+    await p.locator("#ob-url").waitFor();
+  });
+  await flow("final box: a bad address shows an error and stays on the page", async () => {
+    await p.goto(BASE + "/", { waitUntil: "networkidle" });
+    await p.fill("#final-url", "not a site");
+    await p.locator("#final-url").press("Enter");
     await p.getByRole("alert").first().waitFor({ timeout: 3000 });
     if (!p.url().endsWith("/")) throw new Error("navigated away");
   });
-  await flow("hero: a good address goes to onboarding WITH the address", async () => {
-    await p.fill("#hero-url", "example.com");
-    await p.getByRole("button", { name: /Run free simulation/ }).first().click();
+  await flow("final box: a good address goes to onboarding WITH the address", async () => {
+    await p.fill("#final-url", "example.com");
+    await p.locator("#final-url").press("Enter");
     await p.waitForURL(/\/onboarding\?url=example\.com/, { timeout: 8000 });
     await p.locator("#ob-url").waitFor();
     const v = await p.inputValue("#ob-url");
@@ -136,7 +148,7 @@ const record = (r) => {
   });
   await flow("onboarding: switching to 'Mobile app' changes the step", async () => {
     await p.goto(BASE + "/onboarding", { waitUntil: "networkidle" });
-    await p.getByRole("button", { name: /Mobile app \(screenshots\)/ }).click();
+    await p.getByRole("button", { name: /^Mobile app/ }).first().click();
     await p.getByRole("heading", { name: /Testing a mobile app/ }).waitFor();
   });
   await flow("home: the wordmark screen, the two animations and the sample report are there", async () => {

@@ -62,11 +62,13 @@ export default function Home() {
           Meet your customers <span>before they meet your website.</span>
         </h1>
         <div className="rise d3 mt-6 max-w-2xl">
-          <p className="lead14">Crawler sends AI-simulated customers through your site. See who would buy, why the rest leave, and exactly what to fix, in minutes.</p>
-          <div className="url14 mt-7">
-            <HeroForm cta="Run free simulation" />
-          </div>
-          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <p className="lead14">Crawler sends AI-simulated customers through your website, store, app, game or ad. See who would buy, why the rest leave, and exactly what to fix, in minutes.</p>
+          {/* "Get started" opens the onboarding at "What do you want to test?": not everything has a URL */}
+          <Link href="/onboarding" className="btn btn-primary hero21-go mt-8 h-14 px-8 text-base">
+            Get started, it&apos;s free
+            <span aria-hidden>→</span>
+          </Link>
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
             <Link href="/example" className="btn btn-secondary">
               See a full report, no sign-up
             </Link>
