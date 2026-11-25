@@ -36,7 +36,7 @@ const BLOCKS = [
 ].join(",");
 
 // never animate these (or anything inside them): they have their own motion or must stay put
-const SKIP = "header, nav, .dash-rail, .fl-rail, .reveal, .sim, .field14, [data-no-reveal]";
+const SKIP = "header, nav, .dash-rail, .fl-rail, .reveal, .sim, .field14, .lab-seq, [data-no-reveal]";
 
 export default function AutoReveal() {
   const pathname = usePathname();

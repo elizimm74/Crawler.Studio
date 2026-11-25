@@ -1,7 +1,8 @@
 // The home page, v6 (2026-11-24, founder's "complete brand, UI/UX & conversion redesign":
 // premium like aaru.com but Crawler's own, blue/black/white, the product as the hero visual).
 //   Hero: badge, headline, URL box (the starting point), live simulation preview
-//   → How it works (4 steps, each with a tiny UI) → Meet your customers → What Crawler analyzes
+//   → THE LAB (dark): statement + 01 Customer simulation + 03 Behavioral patterns, two pinned,
+//     scroll-driven canvas animations (src/components/landing/lab/*) → Meet your customers → What Crawler analyzes
 //   → Sample report → Use cases → Honest by design + free plan → FAQ → final URL box.
 // Every number is a real plan fact (src/lib/plans.ts) or clearly labelled demo data (the made-up
 // MealMate example in src/lib/example.ts). No invented testimonials, users or accuracy claims.
@@ -10,7 +11,7 @@ import HeroForm from "@/components/landing/home/HeroForm";
 import { PERSONAS } from "@/components/landing/home/sections";
 import SimConsole from "@/components/landing/v14/SimConsole";
 import ReportPreview from "@/components/landing/v14/ReportPreview";
-import SimField from "@/components/landing/v14/SimField";
+import LabSequence, { type LabStage } from "@/components/landing/lab/LabSequence";
 import ScrubBand from "@/components/landing/v14/ScrubBand";
 import Manifesto from "@/components/landing/motion/Manifesto";
 import Reveal from "@/components/Reveal";
@@ -25,11 +26,28 @@ export const metadata = {
   alternates: { canonical: "/" },
 };
 
+// The four stages of each lab animation (founder's copy; 01.1 says "up to 1,000 per test" because
+// a single Crawler test runs 100 to 1,000 simulated customers, not thousands).
+const SIMULATION_STAGES: LabStage[] = [
+  { code: "01.1", title: "Population generation", text: "Up to 1,000 unique customer profiles per test, each with distinct behaviors, preferences, and purchasing motivations." },
+  { code: "01.2", title: "Behavioral variation", text: "Every simulated customer has different motivations, price sensitivity, expectations, and decision-making patterns." },
+  { code: "01.3", title: "Experience simulation", text: "Customers navigate the experience, evaluate information, encounter friction, and make decisions." },
+  { code: "01.4", title: "Decision modeling", text: "Observe where customers convert, where they hesitate, and what causes them to abandon the experience." },
+];
+const PATTERN_STAGES: LabStage[] = [
+  { code: "03.1", title: "Signal detection", text: "Individual customer actions reveal signals about expectations, intent, and friction." },
+  { code: "03.2", title: "Pattern recognition", text: "Repeated behaviors reveal common objections, purchasing motivations, and points of hesitation." },
+  { code: "03.3", title: "Customer segmentation", text: "Identify which customer types respond positively, which need more information, and which are unlikely to convert." },
+  { code: "03.4", title: "Actionable insights", text: "Turn simulated behavior into specific opportunities to improve your website and increase conversion." },
+];
+
 const lowestPaid = Math.min(...PLANS.filter((p) => p.priceUsd > 0).map((p) => p.priceUsd));
 
 export default function Home() {
   const demo = homeDemo();
   const s = demo.sample;
+  // shares of the demo crowd (would buy / maybe / left), used only to size the animation's groups
+  const mix = { buy: s.buy / s.total, maybe: s.maybe / s.total, no: s.no / s.total };
 
   return (
     <div className="v14 bleed-full">
@@ -82,22 +100,40 @@ export default function Home() {
       {/* ================= THE BLOCKERS, sliding past as you scroll (klad-style scrubbed band) ================= */}
       <ScrubBand />
 
-      {/* ================= STATEMENT, on a washed-black band (night18): words light up as you scroll ================= */}
-      <section className="night18 home-wide" aria-label="What Crawler is">
-        <Manifesto
-          bare
-          className="statement14 max-w-5xl"
-          text="*A focus group that never sleeps.* Crawler sends simulated customers through your launch before real ones arrive, so the first people to hit the price, the signup or the cart are ones who can tell you why they left."
-        />
-      </section>
-
-      {/* ================= HOW IT WORKS ================= */}
-      <section id="how" className="home-wide scroll-mt-24 py-20 sm:py-28" aria-labelledby="how-title">
-        <Head eyebrow="How a simulation works" id="how-title" title="From a link to a list of fixes." sub="No setup, no tracking code, no real visitors needed. Scroll to watch Crawler run a simulation, step by step." />
-        {/* the animated "how a simulation works" field (demo data), see SimField.tsx */}
-        <div className="mt-14">
-          <SimField crowd={demo.crowd} host={demo.sample.host} topFix={demo.sample.fixes[0]?.title} winBack={demo.sample.fixes[0]?.winBack} />
+      {/* ================= THE LAB (dark): the statement, then two scroll-driven animations =================
+          01 Customer simulation + 03 Behavioral patterns (founder's brief). Each one pins while you
+          scroll through its four stages; illustration with demo data, labelled on screen. */}
+      <section className="night18 lab" aria-label="How a simulation works">
+        <div className="home-wide">
+          <Manifesto
+            bare
+            className="statement14 max-w-5xl"
+            text="*A focus group that never sleeps.* Crawler sends simulated customers through your launch before real ones arrive, so the first people to hit the price, the signup or the cart are ones who can tell you why they left."
+          />
         </div>
+        <LabSequence
+          id="how"
+          index="01"
+          name="Customer simulation"
+          heading="Watch a simulation run."
+          hint="Scroll to run the simulation"
+          note="Illustration. Group sizes follow Crawler's demo run, not real customers."
+          scene="simulation"
+          stages={SIMULATION_STAGES}
+          mix={mix}
+        />
+        <div className="lab-bridge" aria-hidden />
+        <LabSequence
+          id="patterns"
+          index="03"
+          name="Behavioral patterns"
+          heading="From many decisions, clear patterns."
+          hint="Scroll to find the patterns"
+          note="Illustration with demo data. The insights shown are examples."
+          scene="patterns"
+          stages={PATTERN_STAGES}
+          mix={mix}
+        />
       </section>
 
       {/* ================= MEET YOUR CUSTOMERS ================= */}
