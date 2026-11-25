@@ -2763,3 +2763,53 @@ html[data-scrolled] .nav-pill {
 html[data-calm] .btn:hover, html[data-calm] .btn:active, html[data-calm] .plan-card:hover, html[data-calm] .pack-card:hover, html[data-calm] .plan-rec:hover, html[data-calm] .chip:active { transform: none !important; }
 html[data-calm] .ar .sim-meter i { transform: none; }
 @media print { .plan-card, .price-path li { animation: none; } .ar .sim-meter i { transform: none; } }
+
+/* =================================================================================================
+   v20 "SCRUBBED SCROLL" (2026-11-25, founder: "look at klad.design's scroll animations, how they speed
+   up and slow down: we need to be like that"). klad uses Lenis (lerp 0.1) + GSAP ScrollTrigger
+   "scrub" animations. We do the same by hand: SmoothScroll (lerp-0.1 feel) + ScrollScrub, which gives
+   [data-scrub] elements a lagging --p (0 -> 1) and the scroll speed --v / --va. These rules turn
+   them into motion. Without JS, or for reduced motion / Calmer motion, everything sits still.
+   ================================================================================================= */
+/* hero headline: the two lines drift apart as you scroll away */
+.scrub-l, .scrub-r { will-change: translate; }
+.scrub-l { translate: calc(var(--p, 0) * -8vw) 0; }
+.scrub-r { translate: calc(var(--p, 0) * 8vw) 0; }
+/* product windows rise and settle into place as they come up */
+.scrub-rise { transform-origin: 50% 0%; scale: calc(0.93 + var(--p, 1) * 0.07); translate: 0 calc((1 - var(--p, 1)) * 56px); }
+
+/* the giant sliding band of blockers */
+.scrub-band { position: relative; overflow: hidden; padding-block: clamp(2.5rem, 7vw, 6rem); user-select: none; }
+.scrub-row { position: relative; white-space: nowrap; line-height: 1.02; }
+.scrub-row + .scrub-row { margin-top: 0.1em; }
+.scrub-main, .scrub-echo { width: max-content; will-change: translate; }
+.scrub-echo { position: absolute; left: 0; top: 0; pointer-events: none; }
+.scrub-line { display: inline-flex; align-items: center; }
+.scrub-word { display: inline-flex; align-items: center; gap: 0.32em; padding-right: 0.32em; font-size: clamp(2.8rem, 8.5vw, 8.5rem); font-weight: 700; letter-spacing: -0.055em; }
+.scrub-word i { display: inline-block; height: 0.22em; width: 0.22em; border-radius: 999px; background: #078f3b; }
+.scrub-row.is-l { color: var(--fg); }
+.scrub-row.is-r { color: #c3ccc6; }
+/* row 1 slides left, row 2 slides right, both by most of a line over the pass */
+.scrub-row.is-l .scrub-main { translate: calc(var(--p, 0.5) * -36%) 0; }
+.scrub-row.is-r .scrub-main { translate: calc((var(--p, 0.5) - 1) * 36%) 0; }
+/* echoes: faint copies trailing behind, only while you scroll fast */
+.scrub-row.is-l .scrub-echo.e1 { translate: calc(var(--p, 0.5) * -36%) calc(var(--v, 0) * -0.3em); opacity: calc(var(--va, 0) * 0.55); }
+.scrub-row.is-l .scrub-echo.e2 { translate: calc(var(--p, 0.5) * -36%) calc(var(--v, 0) * -0.6em); opacity: calc(var(--va, 0) * 0.25); }
+.scrub-row.is-r .scrub-echo.e1 { translate: calc((var(--p, 0.5) - 1) * 36%) calc(var(--v, 0) * -0.3em); opacity: calc(var(--va, 0) * 0.55); }
+.scrub-row.is-r .scrub-echo.e2 { translate: calc((var(--p, 0.5) - 1) * 36%) calc(var(--v, 0) * -0.6em); opacity: calc(var(--va, 0) * 0.25); }
+.scrub-echo .scrub-word i { background: currentColor; }
+
+/* the statement on the black band lights up word by word (Manifesto), first sentence in green */
+.night18 .statement14 [data-w] { transition: none; }
+
+/* still for reduced motion / Calmer motion / no JS-driven movement */
+@media (prefers-reduced-motion: reduce) {
+  .scrub-l, .scrub-r, .scrub-rise { translate: none; scale: none; }
+  .scrub-row.is-l .scrub-main { translate: -18% 0; }
+  .scrub-row.is-r .scrub-main { translate: -18% 0; }
+  .scrub-echo { display: none; }
+}
+html[data-calm] .scrub-l, html[data-calm] .scrub-r, html[data-calm] .scrub-rise { translate: none; scale: none; }
+html[data-calm] .scrub-row .scrub-main { translate: -18% 0; }
+html[data-calm] .scrub-echo { display: none; }
+@media print { .scrub-band { display: none; } .scrub-l, .scrub-r, .scrub-rise { translate: none; scale: none; } }

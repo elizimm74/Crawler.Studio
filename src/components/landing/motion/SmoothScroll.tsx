@@ -12,13 +12,10 @@
 //   - It never locks or "snaps" the page: stop scrolling and it stops.
 import { useEffect } from "react";
 
-// How fast the page catches up with the wheel (a smooth deceleration). Lower = slower and softer.
-const EASE = 5;
-// Pages that ask for it (the home page: <div data-soft-scroll>) glide a little softer, and each wheel
-// notch moves a bit less, so you can watch the animations (soft, but never sluggish).
-const SOFT_EASE = 3.6;
-const SOFT_STEP = 0.9;
-const isSoft = () => document.querySelector("[data-soft-scroll]") !== null;
+// How fast the page catches up with the wheel: the same feel as Lenis (lenis.dev) with lerp 0.1,
+// the setting klad.design uses: each frame at 60fps closes 10% of the gap, i.e. 6 per second.
+// The same everywhere (the home page used to be softer; matched to the reference the founder picked).
+const EASE = 6;
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
@@ -62,8 +59,8 @@ export default function SmoothScroll() {
     const tick = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
-      current += (target - current) * (1 - Math.exp(-dt * (isSoft() ? SOFT_EASE : EASE))); // frame-rate independent easing
-      if (Math.abs(target - current) < 0.4) {
+      current += (target - current) * (1 - Math.exp(-dt * EASE)); // frame-rate independent easing
+      if (Math.round(current) === Math.round(target)) { // done once it's on the same pixel (like Lenis)
         current = target;
         moving = false;
       }
@@ -86,7 +83,7 @@ export default function SmoothScroll() {
       e.preventDefault();
       if (!moving) target = current = window.scrollY;
       const unit = e.deltaMode === 1 ? 32 : e.deltaMode === 2 ? window.innerHeight : 1;
-      target = clamp(target + e.deltaY * unit * (isSoft() ? SOFT_STEP : 1), 0, maxScroll());
+      target = clamp(target + e.deltaY * unit, 0, maxScroll());
       go();
     };
     // Something else scrolled the page (keyboard, scrollbar, find-in-page): follow it.

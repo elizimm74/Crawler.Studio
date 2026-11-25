@@ -1,10 +1,11 @@
 "use client";
 // A big statement whose words light up one by one as you scroll through it.
-// *word* = a blue accent word. Words start pale and end solid; no animation of its own,
-// it is pure scroll position, so it stops when you stop.
+// *word* = an accent word. Words start pale and end solid. The lighting follows the scroll with a
+// short lag (like klad.design's scrubbed text): it eases along and settles when you stop.
+// `bare`: use only your own className (no default heading style), e.g. for the home statement.
 import { useEffect, useMemo, useRef } from "react";
 
-export default function Manifesto({ text, className = "" }: { text: string; className?: string }) {
+export default function Manifesto({ text, className = "", bare = false }: { text: string; className?: string; bare?: boolean }) {
   const box = useRef<HTMLParagraphElement>(null);
   const words = useMemo(() => {
     let emph = false;
@@ -25,18 +26,33 @@ export default function Manifesto({ text, className = "" }: { text: string; clas
       return;
     }
     let raf = 0;
-    const update = () => {
-      raf = 0;
+    let shown = -1; // the lighting we show, chasing the scroll position
+    let last = 0;
+    const target = () => {
       const vh = window.innerHeight;
       const r = el.getBoundingClientRect();
-      const p = Math.min(1, Math.max(0, (vh * 0.85 - r.top) / (vh * 0.45 + r.height))); // 0 as it enters, 1 as it leaves the middle
+      return Math.min(1, Math.max(0, (vh * 0.85 - r.top) / (vh * 0.45 + r.height))); // 0 as it enters, 1 as it leaves the middle
+    };
+    const paint = (p: number) => {
       const t = p * (spans.length + 4);
       spans.forEach((s, i) => (s.style.opacity = String(0.16 + 0.84 * Math.min(1, Math.max(0, t - i)))));
     };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
+    const update = (now: number) => {
+      const goal = target();
+      const dt = Math.min(0.05, Math.max(0.001, (now - last) / 1000));
+      last = now;
+      const calm = Boolean(document.documentElement.dataset.calm);
+      shown = shown < 0 || calm ? goal : shown + (goal - shown) * (1 - Math.exp(-5 * dt));
+      paint(shown);
+      raf = Math.abs(goal - shown) > 0.0005 ? requestAnimationFrame(update) : 0;
     };
-    update();
+    const onScroll = () => {
+      if (raf) return;
+      last = performance.now();
+      raf = requestAnimationFrame(update);
+    };
+    shown = target();
+    paint(shown);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
@@ -47,7 +63,7 @@ export default function Manifesto({ text, className = "" }: { text: string; clas
   }, [words]);
 
   return (
-    <p ref={box} className={`t-chunk mx-auto max-w-5xl text-balance ${className}`}>
+    <p ref={box} className={bare ? className : `t-chunk mx-auto max-w-5xl text-balance ${className}`}>
       {words.map((w, i) => (
         <span key={i} data-w className={w.emph ? "text-accent" : ""} style={{ opacity: 1 }}>
           {w.w}{" "}

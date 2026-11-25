@@ -2,6 +2,7 @@
 import NavScroll from "@/components/NavScroll";
 import NavLink from "@/components/NavLink";
 import PressFeedback from "@/components/PressFeedback";
+import ScrollScrub from "@/components/landing/motion/ScrollScrub";
 import SmoothScroll from "@/components/landing/motion/SmoothScroll";
 import AutoReveal from "@/components/AutoReveal";
 import CalmToggle from "@/components/CalmToggle";
@@ -67,6 +68,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <SmoothScroll />
         <AutoReveal />
         <PressFeedback />
+        <ScrollScrub />
         <header className="site-header sticky top-3 z-40 px-3 sm:top-4 sm:px-4">
           <div className="nav-pill mx-auto flex h-14 max-w-[64rem] items-center justify-between gap-4 pl-5 pr-2">
             <Logo />

@@ -11,6 +11,8 @@ import { PERSONAS } from "@/components/landing/home/sections";
 import SimConsole from "@/components/landing/v14/SimConsole";
 import ReportPreview from "@/components/landing/v14/ReportPreview";
 import SimField from "@/components/landing/v14/SimField";
+import ScrubBand from "@/components/landing/v14/ScrubBand";
+import Manifesto from "@/components/landing/motion/Manifesto";
 import Reveal from "@/components/Reveal";
 import Faq from "@/components/landing/Faq";
 import { homeDemo } from "@/lib/homeDemo";
@@ -30,11 +32,12 @@ export default function Home() {
   const s = demo.sample;
 
   return (
-    <div className="v14 bleed-full" data-soft-scroll>
+    <div className="v14 bleed-full">
       {/* ================= HERO ================= */}
       <section className="hero14 home-wide pb-16 pt-12 sm:pt-20" aria-labelledby="hero-title">
-        <h1 id="hero-title" className="h14 rise d1 max-w-6xl">
-          Meet your customers <span className="hl14 sm:block">before they meet your website.</span>
+        {/* the two lines drift apart as you scroll away (ScrollScrub "leave" -> --p) */}
+        <h1 id="hero-title" className="h14 rise d1 max-w-6xl" data-scrub="leave" data-lag="0.8">
+          <span className="scrub-l inline-block">Meet your customers</span> <span className="hl14 scrub-r inline-block sm:block">before they meet your website.</span>
         </h1>
         <div className="rise d2 mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div className="max-w-2xl">
@@ -59,7 +62,8 @@ export default function Home() {
             </span>
           </Link>
         </div>
-        <div className="rise d4 relative mt-16 text-left">
+        {/* the product window rises and settles as it comes up (ScrollScrub "enter") */}
+        <div className="rise d4 scrub-rise relative mt-16 text-left" data-scrub="enter" data-lag="0.7">
           <div className="stage14" aria-hidden />
           <SimConsole
             host={s.host}
@@ -75,13 +79,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= STATEMENT (two-tone, like Linear's), on a washed-black band (night18) ================= */}
+      {/* ================= THE BLOCKERS, sliding past as you scroll (klad-style scrubbed band) ================= */}
+      <ScrubBand />
+
+      {/* ================= STATEMENT, on a washed-black band (night18): words light up as you scroll ================= */}
       <section className="night18 home-wide" aria-label="What Crawler is">
-        <Reveal>
-          <p className="statement14 max-w-5xl">
-            A focus group that never sleeps. <span className="text-faint">Crawler sends simulated customers through your launch before real ones arrive, so the first people to hit the price, the signup or the cart are ones who can tell you why they left.</span>
-          </p>
-        </Reveal>
+        <Manifesto
+          bare
+          className="statement14 max-w-5xl"
+          text="*A focus group that never sleeps.* Crawler sends simulated customers through your launch before real ones arrive, so the first people to hit the price, the signup or the cart are ones who can tell you why they left."
+        />
       </section>
 
       {/* ================= HOW IT WORKS ================= */}
@@ -171,7 +178,7 @@ export default function Home() {
           title="A report you'd actually pay for."
           sub="Who would buy, what stopped everyone else, where they left, and fixes ranked by how many customers each could win back."
         />
-        <div className="mt-14">
+        <div className="scrub-rise mt-14" data-scrub="enter" data-lag="0.7">
           <ReportPreview data={s} funnel={demo.funnel} />
         </div>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
