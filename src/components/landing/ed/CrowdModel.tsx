@@ -77,7 +77,7 @@ export default function CrowdModel({ points }: { points: CrowdPoint[] }) {
 
   const count = (g: string) => points.filter((p) => (mode === "decision" ? p.v : p.mindset) === g).length;
   const label = (g: string) => (g === "buy" ? "Would buy" : g === "maybe" ? "Maybe" : g === "no" ? "Wouldn't" : g);
-  const fill = (p: CrowdPoint) => (p.v === "buy" ? "#22d36b" : p.v === "maybe" ? "#8f8e87" : "rgb(23 34 27 / 0.22)");
+  const fill = (p: CrowdPoint) => (p.v === "buy" ? "#3e4a6e" : p.v === "maybe" ? "#8f8e87" : "#6b6a64");
 
   return (
     <div ref={ref} className="dpanel overflow-hidden p-5 sm:p-7">
@@ -112,13 +112,13 @@ export default function CrowdModel({ points }: { points: CrowdPoint[] }) {
       </svg>
       <div className="mt-2 flex flex-wrap gap-4 text-xs text-faint">
         <span className="flex items-center gap-2">
-          <i className="h-2 w-2 rounded-full bg-[#22d36b]" /> would buy
+          <i className="h-2 w-2 rounded-full bg-[#3e4a6e]" /> would buy
         </span>
         <span className="flex items-center gap-2">
           <i className="h-2 w-2 rounded-full bg-[#8f8e87]" /> maybe
         </span>
         <span className="flex items-center gap-2">
-          <i className="h-2 w-2 rounded-full bg-[rgb(12_32_20_/_0.08)]" /> wouldn&apos;t
+          <i className="h-2 w-2 rounded-full bg-[#6b6a64]" /> wouldn&apos;t
         </span>
       </div>
     </div>

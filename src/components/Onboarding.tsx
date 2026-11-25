@@ -160,7 +160,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
                 }}
                 className={`ob-tile group flex min-h-24 items-start gap-4 rounded-2xl border border-line bg-[#f2f1ec] p-5 text-left transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lg ${t.kind === "video" ? "sm:col-span-2" : ""}`}
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0b0b0a] text-white transition-colors group-hover:bg-[#22d36b] group-hover:text-[#0b0b0a]" aria-hidden>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0b0b0a] text-white transition-colors group-hover:bg-[#3e4a6e] group-hover:text-white" aria-hidden>
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d={t.icon} />
                   </svg>

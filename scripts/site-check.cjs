@@ -110,9 +110,9 @@ const record = (r) => {
       record({ type: "flow", check: name, ok: false, detail: e.message.split("\n")[0].slice(0, 200) });
     }
   };
-  await flow("hero: 'Get started' opens the onboarding at 'What do you want to test?'", async () => {
+  await flow("hero: 'No website?' opens the onboarding at 'What do you want to test?'", async () => {
     await p.goto(BASE + "/", { waitUntil: "networkidle" });
-    await p.getByRole("link", { name: /Get started/ }).first().click();
+    await p.getByRole("link", { name: /No website\? Test an app/ }).first().click();
     await p.waitForURL(/\/onboarding$/, { timeout: 8000 });
     await p.getByRole("heading", { name: /What do you want to test/ }).waitFor();
     for (const t of ["Website", "Online store", "Mobile app", "Game", "Video or ad"]) await p.getByRole("button", { name: new RegExp("^" + t) }).first().waitFor();
@@ -151,14 +151,20 @@ const record = (r) => {
     await p.getByRole("button", { name: /^Mobile app/ }).first().click();
     await p.getByRole("heading", { name: /Testing a mobile app/ }).waitFor();
   });
-  await flow("home: the wordmark screen, the two animations and the sample report are there", async () => {
+  await flow("home: hero URL box, the 5 steps, both animations and the interactive sample report", async () => {
     await p.goto(BASE + "/", { waitUntil: "networkidle" });
     await p.locator(".wordmark21").first().waitFor({ timeout: 5000 });
-    await p.locator("#how .lab-track").waitFor({ timeout: 3000 });
+    await p.locator("#hero-url").waitFor({ timeout: 3000 });
+    await p.locator("#simulation .lab-track").waitFor({ timeout: 3000 });
     await p.locator("#patterns .lab-track").waitFor({ timeout: 3000 });
-    await p.getByText("Ranked fixes", { exact: true }).first().waitFor({ timeout: 3000 });
+    const steps = await p.locator(".step23").allInnerTexts();
+    if (steps.join(",") !== "01,02,03,04,05") throw new Error(`steps = ${steps}`);
+    await p.getByText(/illustrative data/i).first().waitFor({ timeout: 3000 });
+    await p.getByRole("tab", { name: "Recommendations", exact: true }).click();
     await p.getByText("Show the price on the homepage").first().waitFor({ timeout: 3000 });
-    await p.getByText(/Simulated results · demo data/).first().waitFor({ timeout: 3000 });
+    await p.getByRole("tab", { name: "Personas", exact: true }).click();
+    await p.getByRole("button", { name: "Would buy" }).first().click();
+    await p.getByText("Illustrative", { exact: true }).first().waitFor({ timeout: 3000 });
   });
   await flow("home: the full-report link and final URL box are there", async () => {
     await p.locator('a[href="/example"]').first().waitFor();

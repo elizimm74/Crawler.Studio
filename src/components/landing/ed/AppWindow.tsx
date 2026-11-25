@@ -2,10 +2,8 @@
 // pill tabs, the main area and a "Properties" panel. Used on the home page to show what you'll see.
 // Everything inside is either a real Crawler concept or clearly example content.
 import Mark from "@/components/Mark";
-import Nature from "@/components/Nature";
 
-// each backdrop is a real nature photo (see Nature.tsx)
-const NATURE = { sky: "ridge", dusk: "valley", moss: "peak" } as const;
+// The backdrop is a charcoal-to-stone gradient with grain (globals.css v23 .scene-*); no photos.
 
 export default function AppWindow({
   crumb,
@@ -28,7 +26,6 @@ export default function AppWindow({
 }) {
   return (
     <div className={`scene scene-${scene} ${bleed === "left" ? "scene-left" : ""}`} aria-hidden>
-      <Nature kind={NATURE[scene]} />
       <div className="win flex min-h-[28rem] text-left">
         {/* sidebar */}
         <div className="win-side hidden w-52 shrink-0 flex-col p-3 md:flex">
