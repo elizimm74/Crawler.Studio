@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 import Waitlist from "@/components/landing/Waitlist";
 import Reveal from "@/components/Reveal";
 import SampleReport from "@/components/landing/early/SampleReport";
-import { AnalyzeVisual, HeroSimulation, LineIcon, OptimizeVisual, ScienceField, SimulateVisual, VISUAL_CSS } from "@/components/landing/early/Visuals";
+import { AnalyzeVisual, LineIcon, OptimizeVisual, ScienceField, SimulateVisual, VISUAL_CSS } from "@/components/landing/early/Visuals";
 import { FACTS } from "@/components/landing/Science";
 
 export const metadata: Metadata = {
@@ -64,7 +64,7 @@ const FAQ = [
 
 export default function EarlyAccessPage() {
   return (
-    <div className="ea relative overflow-hidden bg-[#efefec] text-[#0b0b0c]">
+    <div className="ea bleed-full relative -mt-12 overflow-hidden bg-white text-[#0b0b0c] sm:-mt-16">
       <style>{`
         html { scroll-behavior: smooth; }
         body:has(.ea) a[href="/pricing"] { display: none !important; }
@@ -80,68 +80,67 @@ export default function EarlyAccessPage() {
         ${VISUAL_CSS}
       `}</style>
 
-      {/* ============ 1. HERO ============ */}
-      <section className="grain relative">
-        <svg aria-hidden="true" viewBox="0 0 1000 700" className="pointer-events-none absolute -right-24 top-0 h-full w-[60%] opacity-[.1]" fill="none" stroke="#0b0b0c" strokeWidth="1.2" strokeLinecap="round">
-          <path d="M120 40 C 260 240, 300 420, 210 680" />
-          <path d="M190 30 C 330 230, 370 430, 280 690" />
-          <path d="M260 40 C 400 240, 440 420, 350 680" />
-        </svg>
-        <div className="relative mx-auto grid max-w-[88rem] items-center gap-14 px-6 pt-16 pb-20 md:grid-cols-[1.15fr_0.85fr] md:px-10 md:pt-24 md:pb-28">
-          <div>
-            <Reveal>
-              <p className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.22em] text-black/60">
-                <span className="inline-block h-px w-8 bg-black" aria-hidden="true" />
-                Crawler / Early access
-              </p>
-            </Reveal>
-            <Reveal delay={80}>
-              <h1 className="mt-8 text-[clamp(2.4rem,4.4vw,4.4rem)] font-semibold leading-[0.98] tracking-[-0.035em]">
-                Meet your customers <span className="text-black/40">before they meet your website.</span>
-              </h1>
-            </Reveal>
-            <Reveal delay={160}>
-              <p className="mt-8 text-xl font-medium tracking-tight md:text-2xl">
-                Would your customers actually buy? Ask up to <span className="rounded-md bg-black px-2 py-0.5 text-white">30,000</span> simulated customers a month first.
-              </p>
-              <p className="mt-6 max-w-[36rem] text-lg leading-relaxed text-black/65">
-                Crawler sends AI-simulated customers through your website, products, pricing and ads. Each one decides whether to buy, and tells you exactly why not, before you spend money launching.
-              </p>
-            </Reveal>
-            <Reveal delay={240}>
-              <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
-                <a href="#join" className="group inline-flex h-14 items-center justify-center gap-3 whitespace-nowrap rounded-full bg-black px-8 text-sm font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#222]">
-                  Get early access
-                  <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
-                </a>
-                <a href="#report" className="inline-flex h-14 items-center justify-center whitespace-nowrap rounded-full border border-black/20 px-8 text-sm font-semibold uppercase tracking-[0.12em] transition hover:border-black">
-                  See a sample report
-                </a>
-              </div>
-              <p className="mt-5 text-sm text-black/55">Free to join. No credit card.</p>
-            </Reveal>
+      {/* ============ 1. HERO (same build as the main home page) ============ */}
+      <section className="home-wide grid min-h-[calc(100svh-4rem)] items-center gap-12 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20" aria-labelledby="hero-title">
+        <div className="rise">
+          <p className="text-[15px] text-faint">
+            Crawler early access. <span className="text-accent">Launching soon.</span>
+          </p>
+          <h1 id="hero-title" className="t-display mt-6">
+            Meet your customers <span className="serif">before</span> they meet your website.
+            <span className="block text-faint">Ask up to 30,000 of them first.</span>
+          </h1>
+          <p className="t-lead mt-8 max-w-lg">
+            AI-simulated customers try your website, products, pricing and ads, and tell you exactly why they wouldn&apos;t buy, and what to fix before launch. Up to 30,000 of them a month.
+          </p>
+          <div className="mt-8 max-w-xl">
+            <Waitlist compact />
           </div>
+          <p className="mt-4 text-sm text-faint">
+            Free to join · No credit card · Launch updates by email ·{" "}
+            <a href="#report" className="underline underline-offset-4">See a sample report</a>
+          </p>
+        </div>
 
-          <Reveal delay={200} className="relative">
-            <div className="mx-auto max-w-[32rem]">
-              <HeroSimulation />
-            </div>
-            {/* one simulated customer, floating over the crowd */}
-            <div className="float relative mx-auto -mt-10 w-[15.5rem] md:absolute md:-bottom-10 md:-left-20 md:mt-0 rounded-2xl border border-black/10 bg-white/90 p-4 shadow-[0_30px_60px_-30px_rgba(0,0,0,.4)] backdrop-blur md:-left-6 md:bottom-6">
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-black/50">Simulated customer</p>
-                <p className="text-[10px] text-black/40">example</p>
+        {/* a simulated customer's spec sheet over a painted tile (example) */}
+        <div className="rise d2 relative mx-auto w-full max-w-[26rem]" aria-label="An example simulated customer">
+          <span className="tag absolute left-4 top-0 z-20 -translate-y-1/2 bg-[#02aa3d] text-[#052e16]">Simulated customer</span>
+          <div className="scene scene-dusk aspect-[4/5] w-[78%] !p-0" aria-hidden>
+            <div className="absolute inset-x-6 bottom-6 text-[11px] text-white/80">example · demo data</div>
+          </div>
+          <div className="absolute right-0 top-[-1.5rem] h-28 w-28" aria-hidden>
+            <div className="scene scene-moss h-full w-full !rounded-2xl !p-0">
+              <div className="relative z-10 grid h-full grid-cols-5 gap-1.5 p-3">
+                {Array.from({ length: 25 }, (_, i) => (
+                  <span key={i} className={`aspect-square rounded-full ${i % 4 === 0 ? "bg-white" : "bg-white/30"}`} />
+                ))}
               </div>
-              <p className="mt-2 font-semibold">Dana, 45 · nurse</p>
-              <dl className="mt-2 grid gap-1 text-xs text-black/65">
-                <div className="flex justify-between"><dt>Came from</dt><dd>TikTok</dd></div>
-                <div className="flex justify-between"><dt>Budget</dt><dd>Tight</dd></div>
-                <div className="flex justify-between"><dt>Patience</dt><dd>About 10 sec</dd></div>
-                <div className="flex justify-between"><dt>Dealbreaker</dt><dd>Hidden price</dd></div>
-              </dl>
-              <p className="mt-3 rounded-lg bg-[#e6e6e2] px-3 py-2 text-xs font-medium">Wouldn&apos;t buy: &ldquo;If they hide the price, it&apos;s expensive.&rdquo;</p>
             </div>
-          </Reveal>
+          </div>
+          <span className="glass-chip float-a absolute -left-6 top-10 z-20 hidden sm:inline-flex">
+            <i className="h-2 w-2 rounded-full bg-[#02aa3d]" /> Up to 30,000 customers a month
+          </span>
+          <span className="glass-chip float-b absolute -right-4 top-[46%] z-20 hidden sm:inline-flex">
+            Biggest blocker · price 26%
+          </span>
+          <span className="glass-chip float-c absolute -bottom-16 right-2 z-20 hidden sm:inline-flex">
+            Fix #1 · +90 could win back
+          </span>
+          <dl className="spec glass-spec absolute -bottom-10 left-[-1rem] z-10 w-[72%] sm:left-[-2.5rem]">
+            <p className="mb-1 inline-block rounded-full bg-[#dedede] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#3a3a3a]">45, nurse</p>
+            {[
+              ["Came from", "a TikTok video"],
+              ["Budget", "Tight"],
+              ["Patience", "about 10 seconds"],
+              ["Dealbreaker", "a hidden price"],
+              ["Decision", "Wouldn't buy"],
+            ].map(([k, v]) => (
+              <div key={k} className="spec-row">
+                <dt>{k}</dt>
+                <dd className="text-[#0a0a0a]">{v}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 

@@ -34,12 +34,11 @@ Do these on your own computer, once. Ask a parent or guardian for the steps mark
    MAIL_FROM="Crawler <hello@crawler.studio>"
    MAIL_ADDRESS="Your company or name, PO Box 123, City, State ZIP"
    LAUNCH_URL=https://crawler.studio
-   WAITLIST_SITE=https://elizimm74.github.io/Study
    SUPABASE_SECRET_KEY=...            (the same one the worker uses)
    NEXT_PUBLIC_SUPABASE_URL=https://txoimqedwfsuxoqiguop.supabase.co
    ```
-   `WAITLIST_SITE` is where the unsubscribe page lives. Keep GitHub Pages turned on, or the
-   unsubscribe link in every email breaks.
+   The unsubscribe link in every email goes to `https://crawler.studio/unsubscribe` (built into the
+   site). Don't set `WAITLIST_SITE` unless you want the old GitHub Pages unsubscribe page instead.
 6. **Check the list is there:** `npm run waitlist:send` (dry run, sends nothing). It should print the
    number of people waiting.
 7. **Send one test to yourself:** `npm run waitlist:send -- --test you@yourmail.com`. Open it on a phone.

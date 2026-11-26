@@ -6,6 +6,7 @@
 // Every number is a real plan fact (src/lib/plans.ts), a sourced research fact (Science.tsx), or
 // clearly labelled demo data (the made-up MealMate example). No photos, no borrowed art.
 import Link from "next/link";
+import EarlyAccessPage from "./landing/page";
 import HeroForm from "@/components/landing/home/HeroForm";
 import AppWindow, { Props } from "@/components/landing/ed/AppWindow";
 import Explorer, { type ExplorerGroups } from "@/components/landing/ed/Explorer";
@@ -37,6 +38,10 @@ const AUDIENCE_ITEMS = [
 ];
 
 export default function Home() {
+  // Pre-launch switch: set WAITLIST_MODE=1 in Vercel to show the early-access waitlist here.
+  // Remove it (and redeploy) on launch day to bring this home page back. /landing always works.
+  if (process.env.WAITLIST_MODE === "1") return <EarlyAccessPage />;
+
   const demo = homeDemo();
   const groups: ExplorerGroups = {
     Research: FACTS.map((f) => ({ title: f.finding, source: f.source, who: f.who, body: "A published finding Crawler builds into how simulated customers behave. It shapes patience, what they look for and what makes them quit. Full list and limits on the science page." })),

@@ -47,7 +47,7 @@ function writeStored(value: { code: string }) {
   }
 }
 
-export default function Waitlist() {
+export default function Waitlist({ compact = false }: { compact?: boolean }) {
   const [stage, setStage] = useState<Stage>("form");
   const [message, setMessage] = useState("");
   const [code, setCode] = useState<string | null>(null);
@@ -174,6 +174,29 @@ export default function Waitlist() {
   }
 
   const busy = stage === "busy";
+
+  // Hero version: just the email and the button. The other fields are optional anyway.
+  if (compact) {
+    return (
+      <form onSubmit={submit} noValidate className="grid gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <label className="sr-only" htmlFor="hero-email">Email address</label>
+          <input id="hero-email" name="email" type="email" required autoComplete="email" placeholder="you@yourbusiness.com" className="field h-14 flex-1 text-base" />
+          <input name="company" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
+          <button type="submit" disabled={busy} className="btn btn-primary h-14 whitespace-nowrap px-6 text-base">
+            {busy ? "Adding you…" : "Get early access"}
+            {!busy && <span aria-hidden="true">→</span>}
+          </button>
+        </div>
+        {message && (
+          <p role="alert" className="text-sm text-red-700">
+            {message}
+          </p>
+        )}
+      </form>
+    );
+  }
+
   return (
     <form onSubmit={submit} noValidate className="grid gap-5">
       <div className="grid gap-5 sm:grid-cols-2">

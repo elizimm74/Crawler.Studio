@@ -25,21 +25,22 @@ const SUPABASE_URL = env("NEXT_PUBLIC_SUPABASE_URL").replace(/\/$/, "");
 const SECRET = env("SUPABASE_SECRET_KEY");
 const SITE = (env("WAITLIST_SITE") || "https://elizimm74.github.io/Study").replace(/\/$/, ""); // where unsubscribe.html lives
 const LAUNCH_URL = env("LAUNCH_URL") || "https://crawler.studio"; // where the "Try Crawler" button goes
+const UNSUB_BASE = (env("UNSUBSCRIBE_URL") || (env("WAITLIST_SITE") ? `${SITE}/unsubscribe.html` : `${LAUNCH_URL.replace(/\/$/, "")}/unsubscribe`)); // the unsubscribe page (on crawler.studio by default)
 const FROM = env("MAIL_FROM");
 const ADDRESS = env("MAIL_ADDRESS");
 const RESEND = env("RESEND_API_KEY");
 
-const SUBJECT = "Crawler is live: test your product on 100 simulated customers";
+const SUBJECT = "Crawler is live: meet your customers before they meet your website";
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
 // The email. Edit the words here. Keep it honest: simulated customers, buying intent, not real purchases.
 function message(person) {
   const first = (person.name || "there").split(/\s+/)[0];
-  const unsub = `${SITE}/unsubscribe.html?t=${person.token}`;
+  const unsub = `${UNSUB_BASE}?t=${person.token}`;
   const text =
     `Hi ${first},\n\n` +
     `You asked us to tell you when Crawler launched. It's live.\n\n` +
-    `Crawler sends 100 simulated customers to your website, app, game, store or ad. They tell you what stopped them and what to fix first, in about a minute.\n\n` +
+    `Crawler sends simulated customers (up to 30,000 a month) to your website, app, game, store or ad. They tell you what stopped them and what to fix first, in a few minutes.\n\n` +
     `Try it: ${LAUNCH_URL}\n\n` +
     `A reminder of what it is: the customers are simulated, so you get buying intent and reasons, not real purchases. It's a fast first read before you launch.\n\n` +
     `Thanks for being early.\n\n` +
@@ -48,7 +49,7 @@ function message(person) {
     `<div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;color:#111;line-height:1.6">` +
     `<p>Hi ${esc(first)},</p>` +
     `<p>You asked us to tell you when Crawler launched. <strong>It's live.</strong></p>` +
-    `<p>Crawler sends 100 simulated customers to your website, app, game, store or ad. They tell you what stopped them and what to fix first, in about a minute.</p>` +
+    `<p>Crawler sends simulated customers (up to 30,000 a month) to your website, app, game, store or ad. They tell you what stopped them and what to fix first, in a few minutes.</p>` +
     `<p><a href="${esc(LAUNCH_URL)}" style="display:inline-block;background:#1d4ed8;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:600">Try Crawler</a></p>` +
     `<p style="color:#555;font-size:14px">A reminder of what it is: the customers are simulated, so you get buying intent and reasons, not real purchases. It's a fast first read before you launch.</p>` +
     `<p>Thanks for being early.</p>` +
