@@ -1,4 +1,11 @@
 "use client";
+// v24 (2026-11-26, founder: "change the colour of the dashboard and make it more useful"):
+//   colours  off-white workspace, CHARCOAL rail with white text, a WASHED-DENIM greeting banner,
+//            white cards (globals.css "v24 DASHBOARD")
+//   useful   "Do this next" (ONE recommended action worked out from your real tests: nextStep()),
+//            "Running now" (tests still in progress), quick-start tiles for every kind of test,
+//            a launch checklist that ticks itself from what you've actually done, and a Crawlers
+//            forecast ("about N more 100-customer tests").
 // The dashboard (v7, 2026-11-23, founder: "looks like AI slop, make it professional like Fastlane;
 // no site menu at the top"). A calm LIGHT workspace: white panels with hairline borders, small
 // uppercase mono labels, mono numbers in quiet stat tiles, one blue accent. The site header and
@@ -118,6 +125,34 @@ function Thumb({ a, size = "h-11 w-11" }: { a: Analysis; size?: string }) {
   );
 }
 
+// ONE recommended action, worked out from the person's real tests and plan (never invented).
+type Step = { title: string; body: string; href: string; cta: string };
+function nextStep(d: DashboardData, latest: Analysis | undefined, running: Analysis[]): Step {
+  if (running.length) return { title: "Your test is running", body: `${running[0].label} is being tested right now. Open it to watch the simulated customers come in.`, href: `/run/${running[0].id}`, cta: "Watch it run" };
+  if (!latest) return { title: "Run your first test", body: "Paste a link, or add app screenshots or a video. Simulated customers tell you who would buy and why the rest leave.", href: "/onboarding", cta: "Start free test" };
+  const fix = d.fixes.find((f) => f.testId === latest.id) ?? d.fixes[0];
+  const site = latest.kind === "website" || latest.kind === "store";
+  const retested = d.analyses.filter((a) => a.label === latest.label && a.kind === latest.kind).length > 1;
+  if (fix && !retested)
+    return {
+      title: `Ship fix #1: ${fix.title}`,
+      body: `It could win back about ${fix.wins} simulated customer${fix.wins === 1 ? "" : "s"}. Make the change, then re-test the same crowd to see who changes their mind.`,
+      href: site ? `/app?url=${encodeURIComponent(latest.url)}&retest=${latest.id}${latest.kind === "store" ? "&type=store" : ""}` : `/run/${latest.id}#fixes`,
+      cta: site ? "Re-test after the fix" : "Open the fixes",
+    };
+  if (!d.analyses.some((a) => a.kind === "video")) return { title: "Test the ad that sends people here", body: "Your page is only half the story. See when viewers would swipe away from your TikTok, Reel or ad, and whether they'd tap through.", href: "/onboarding?kind=video", cta: "Test a video or ad" };
+  return { title: "Try a different crowd", body: "Same product, different people. Test it on another customer mind to see who it really works for.", href: "/onboarding", cta: "New test" };
+}
+
+// Quick-start tiles: every kind of test, one tap away.
+const QUICK: { href: string; label: string; icon: string }[] = [
+  { href: "/onboarding?kind=website", label: "Website", icon: "overview" },
+  { href: "/onboarding?kind=store", label: "Online store", icon: "cart" },
+  { href: "/onboarding?kind=app", label: "Mobile app", icon: "phone" },
+  { href: "/onboarding?kind=game", label: "Game", icon: "bolt" },
+  { href: "/onboarding?kind=video", label: "Video or ad", icon: "play" },
+];
+
 function ViewAll({ onClick, children = "View all" }: { onClick: () => void; children?: React.ReactNode }) {
   return (
     <button type="button" onClick={onClick} className="text-xs text-faint transition-colors hover:text-fg">
@@ -199,6 +234,19 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
     : `Your first test is free. ${plan.customers} simulated customers try your app, game, site or store.`;
 
   const rev = useRevenue(latest, data.fixes);
+  const running = data.analyses.filter((a) => a.status !== "done" && a.status !== "error");
+  const step = nextStep(data, latest, running);
+  // the launch checklist ticks itself from what has really happened
+  const checklist: [string, boolean][] = [
+    ["Run your first test", data.analyses.length > 0],
+    ["Read a finished report", done.length > 0],
+    ["Re-test after a fix", done.some((a) => done.filter((b) => b.label === a.label && b.kind === a.kind).length > 1)],
+    ["Test a second kind (app, store or ad)", new Set(data.analyses.map((a) => a.kind)).size > 1],
+    ["Save a customer mind", data.minds.length > 0],
+  ];
+  const ticked = checklist.filter(([, ok]) => ok).length;
+  // how far the Crawlers left go, in plain words
+  const left = plan.unlimited ? null : plan.monthly ? plan.monthly.left + (plan.packs ?? 0) : plan.packs ? plan.packs : null;
   const idx = Math.max(0, VIEWS.findIndex(([id]) => id === view));
   const initial = (data.name || "?").charAt(0).toUpperCase();
 
@@ -337,8 +385,8 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
         </aside>
 
         {/* ================= main ================= */}
-        {/* dash-wash: a black header that washes down into the white workspace (globals.css, v18) */}
-        <div className="dash-wash min-w-0 space-y-6 px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pt-8 [&>*]:mx-auto [&>*]:max-w-[1180px]">
+        {/* the main column (v24: calm off-white workspace; the old black "dash-wash" header is gone) */}
+        <div className="dash-main min-w-0 space-y-6 px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pt-8 [&>*]:mx-auto [&>*]:max-w-[1180px]">
           {/* top bar: search + the ONE main button */}
           <div className="flex items-center gap-3">
             <label className="fl-search flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl px-4">
@@ -402,6 +450,61 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                   </div>
                 )}
               </div>
+
+              {/* Do this next + quick start */}
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+                <section aria-label="Do this next" className="fl-panel dash-next flex flex-col justify-between gap-5 p-5 sm:p-6">
+                  <div>
+                    <p className="fl-label">Do this next</p>
+                    <h2 className="mt-3 text-xl font-semibold leading-snug tracking-tight sm:text-2xl">{step.title}</h2>
+                    <p className="mt-2 max-w-xl text-sm text-muted">{step.body}</p>
+                  </div>
+                  <div>
+                    <Link href={step.href} className="btn btn-primary h-11 px-5 text-sm">
+                      {step.cta} <span aria-hidden>→</span>
+                    </Link>
+                  </div>
+                </section>
+                <section aria-label="Start a test" className="fl-panel p-5 sm:p-6">
+                  <p className="fl-label">Start a test</p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {QUICK.map((q) => (
+                      <Link key={q.href} href={q.href} className={`dash-quickstart ${q.label === "Video or ad" ? "col-span-2" : ""}`}>
+                        <Icon name={q.icon} className="h-4 w-4" /> {q.label}
+                      </Link>
+                    ))}
+                  </div>
+                  {left !== null && (
+                    <p className="mt-4 text-xs text-faint">
+                      {left.toLocaleString("en-US")} Crawlers left · about {Math.floor(left / 100)} more 100-customer test{Math.floor(left / 100) === 1 ? "" : "s"}
+                    </p>
+                  )}
+                </section>
+              </div>
+
+              {/* tests still running */}
+              {running.length > 0 && (
+                <section aria-label="Running now" className="fl-panel p-4 sm:p-5">
+                  <div className="flex items-center gap-2">
+                    <span className="dash-live" aria-hidden />
+                    <p className="fl-label">Running now</p>
+                  </div>
+                  <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                    {running.slice(0, 4).map((a) => (
+                      <li key={a.id}>
+                        <Link href={`/run/${a.id}`} className="flex items-center gap-3 rounded-xl border border-line p-2.5 transition-colors hover:border-line-strong">
+                          <Thumb a={a} size="h-9 w-9" />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm">{a.label}</span>
+                            <span className="block text-xs text-faint">started {ago(a.created_at)}</span>
+                          </span>
+                          <span className="text-xs font-medium">Open →</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
 
               {latest && (
                 <Panel label="Latest result" flush>
@@ -527,6 +630,27 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                   )}
                 </Panel>
               </div>
+
+              {/* launch checklist (ticks itself; hidden once everything is done) */}
+              {ticked < checklist.length && (
+                <Panel label="Launch checklist">
+                  <Title action={<span className="text-xs tabular-nums text-faint">{ticked}/{checklist.length} done</span>}>Launch checklist</Title>
+                  <div className="mt-3">
+                    <Bar pct={(ticked / checklist.length) * 100} />
+                  </div>
+                  <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+                    {checklist.map(([label, ok]) => (
+                      <li key={label} className={`dash-check ${ok ? "is-done" : ""}`}>
+                        <span className="dash-check-box" aria-hidden>
+                          {ok ? "✓" : ""}
+                        </span>
+                        <span className="text-sm">{label}</span>
+                        <span className="sr-only">{ok ? "(done)" : "(not yet)"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </Panel>
+              )}
 
               {/* invite: one quiet line (the full card lives on the Fixes view) */}
               {!plan.unlimited && plan.plan === "free" && (

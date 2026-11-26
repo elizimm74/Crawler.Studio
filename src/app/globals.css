@@ -3269,3 +3269,60 @@ html[data-calm] .rl-body, html[data-calm] .rl-bar i { animation: none; }
 .spot23-face { width: 100%; height: 100%; border-radius: 999px; object-fit: cover; object-position: 50% 38%; border: 4px solid #ffffff; }
 .spot23-icon { position: absolute; right: -0.6rem; bottom: -0.4rem; width: 2.9rem; height: 2.9rem; border-radius: 14px; background: #ffffff; border: 3px solid #f2f1ec; }
 @media (max-width: 639px) { .spot23 .btn { width: 100%; } }
+
+/* =================================================================================================
+   v24 DASHBOARD (2026-11-26, founder: "change the colour of the dashboard and make it more useful").
+   Off-white workspace (no stone texture here), white cards, a CHARCOAL rail with white text, a
+   WASHED-DENIM greeting banner with a faint twill, denim for the one main button and highlights.
+   ================================================================================================= */
+html:has(.dash-app), body:has(.dash-app) { background: #ecebe6 !important; }
+.dash-app {
+  background: #ecebe6 !important;
+  --bg: #ecebe6; --surface: #ffffff; --fg: #121211; --fg-muted: #4a4944; --fg-faint: #6a6963;
+  --line: rgb(0 0 0 / 0.08); --line-strong: rgb(0 0 0 / 0.16);
+}
+.dash-app .fl-panel, .dash-app .fl-tile { background: #ffffff !important; border-color: rgb(0 0 0 / 0.07) !important; box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 30px -22px rgb(0 0 0 / 0.25) !important; }
+.dash-app .fl-tile { background: #f6f5f1 !important; box-shadow: none !important; }
+.dash-app .fl-search { background: #ffffff !important; }
+
+/* the rail: charcoal, white text */
+.dash-app .fl-rail {
+  background: #141413 !important; border-right: 0 !important; color: #f4f4f1;
+  --fg: #f4f4f1; --fg-muted: #b9b8b1; --fg-faint: #8d8c86; --line: rgb(255 255 255 / 0.1); --line-strong: rgb(255 255 255 / 0.18);
+}
+.dash-app .fl-rail .fl-label { color: #8d8c86; }
+.dash-app .fl-rail .fl-panel { background: #1f1f1d !important; border-color: rgb(255 255 255 / 0.08) !important; box-shadow: none !important; color: #f4f4f1; }
+.dash-app .fl-rail .dash-pill { background: rgb(141 154 196 / 0.18) !important; border: 1px solid rgb(141 154 196 / 0.32) !important; }
+.dash-app .fl-rail .dash-quick { color: #b9b8b1; }
+.dash-app .fl-rail .dash-quick:hover { color: #ffffff; background: rgb(255 255 255 / 0.06); }
+.dash-app .fl-rail .dash-active { background: rgb(141 154 196 / 0.2) !important; color: #ffffff !important; border-color: transparent !important; }
+.dash-app .fl-rail kbd { color: #8d8c86; }
+.dash-app .fl-rail .btn-text { color: #f4f4f1 !important; }
+@media (max-width: 1023px) { .dash-app .fl-rail { background: #141413 !important; border-bottom: 0 !important; padding-bottom: 0.5rem; } }
+
+/* the greeting banner: washed denim */
+.dash-app .dash-banner {
+  background:
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 4px),
+    radial-gradient(70% 140% at 100% 0%, rgb(141 154 196 / 0.45), transparent 60%),
+    linear-gradient(160deg, #2c3653 0%, #3e4a6e 55%, #56638c 100%) !important;
+  border: 0 !important; color: #ffffff;
+  --fg: #ffffff; --fg-muted: #d7dcec; --fg-faint: #b4bcd6;
+}
+.dash-app .dash-banner .dash-hello, .dash-app .dash-banner .fl-label { color: #c9d0e6 !important; }
+.dash-app .dash-banner .btn-primary { background: #ffffff !important; color: #2c3653 !important; border-color: #ffffff !important; }
+.dash-app .dash-banner .btn-secondary { background: rgb(255 255 255 / 0.1) !important; color: #ffffff !important; border-color: rgb(255 255 255 / 0.25) !important; }
+
+/* new overview pieces */
+.dash-app .dash-next { border-left: 4px solid #3e4a6e !important; }
+.dash-quickstart { display: flex; min-height: 44px; align-items: center; gap: 0.6rem; border-radius: 12px; border: 1px solid rgb(0 0 0 / 0.08); background: #f6f5f1; padding: 0 0.9rem; font-size: 14px; font-weight: 500; color: #121211; transition: border-color 0.2s, background-color 0.2s, transform 0.2s; }
+.dash-quickstart:hover { border-color: #3e4a6e; background: #ffffff; }
+@media (hover: hover) { .dash-quickstart:hover { transform: translateY(-1px); } }
+.dash-live { width: 8px; height: 8px; border-radius: 99px; background: #3e4a6e; box-shadow: 0 0 0 0 rgb(62 74 110 / 0.5); animation: dash-live 1.6s ease-out infinite; }
+@keyframes dash-live { 0% { box-shadow: 0 0 0 0 rgb(62 74 110 / 0.55); } 100% { box-shadow: 0 0 0 8px rgb(62 74 110 / 0); } }
+.dash-check { display: flex; align-items: center; gap: 0.6rem; border-radius: 12px; background: #f6f5f1; padding: 0.7rem 0.8rem; color: #4a4944; }
+.dash-check.is-done { color: #121211; }
+.dash-check-box { display: flex; height: 1.3rem; width: 1.3rem; flex: none; align-items: center; justify-content: center; border-radius: 6px; border: 1.5px solid rgb(0 0 0 / 0.2); font-size: 12px; font-weight: 700; }
+.dash-check.is-done .dash-check-box { background: #3e4a6e; border-color: #3e4a6e; color: #ffffff; }
+@media (prefers-reduced-motion: reduce) { .dash-live { animation: none; } }
+html[data-calm] .dash-live { animation: none; }
