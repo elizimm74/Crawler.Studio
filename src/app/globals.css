@@ -2981,7 +2981,7 @@ html[data-calm] .scrub-echo { display: none; }
       rgb(255 255 255 / 0.86) calc(100% - var(--wash) * 0.2),
       #ffffff 100%),
     var(--stone, none) 0 0 / 720px 720px repeat scroll,
-    #8b8a82;
+    #a9a7a0;
 }
 .lab .text-accent, .lab .hl14 { color: #ffffff !important; }
 .lab ::selection { background: rgb(0 0 0 / 0.35); color: #000; }
@@ -3016,9 +3016,9 @@ html[data-calm] .scrub-echo { display: none; }
    - Main button = black pill with white text; secondary = white pill with black text.
    ================================================================================================= */
 :root {
-  --stone: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'720'%20height%3D'720'%3E%3Cfilter%20id%3D'f'%20x%3D'0'%20y%3D'0'%20width%3D'100%25'%20height%3D'100%25'%20color-interpolation-filters%3D'sRGB'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.0125'%20numOctaves%3D'7'%20seed%3D'7'%20stitchTiles%3D'stitch'%20result%3D'c'%2F%3E%3CfeComponentTransfer%20in%3D'c'%20result%3D'cc'%3E%3CfeFuncR%20type%3D'table'%20tableValues%3D'0%200.14%200.4%200.68%200.86%200.95%201'%2F%3E%3C%2FfeComponentTransfer%3E%3CfeColorMatrix%20in%3D'cc'%20type%3D'matrix'%20values%3D'0.13%200%200%200%200.44%20%200.135%200%200%200%200.431%20%200.145%200%200%200%200.396%20%200%200%200%200%201'%20result%3D'g'%2F%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.5%200.045'%20numOctaves%3D'2'%20seed%3D'5'%20stitchTiles%3D'stitch'%20result%3D's'%2F%3E%3CfeColorMatrix%20in%3D's'%20type%3D'matrix'%20values%3D'1%200%200%200%200%20%201%200%200%200%200%20%201%200%200%200%200%20%200%200%200%200%201'%20result%3D'gs'%2F%3E%3CfeComposite%20in%3D'g'%20in2%3D'gs'%20operator%3D'arithmetic'%20k1%3D'0'%20k2%3D'1'%20k3%3D'0.07'%20k4%3D'-0.035'%20result%3D'g2'%2F%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'1.1'%20numOctaves%3D'2'%20seed%3D'3'%20stitchTiles%3D'stitch'%20result%3D'n'%2F%3E%3CfeColorMatrix%20in%3D'n'%20type%3D'matrix'%20values%3D'1%200%200%200%200%20%201%200%200%200%200%20%201%200%200%200%200%20%200%200%200%200%201'%20result%3D'gn'%2F%3E%3CfeComposite%20in%3D'g2'%20in2%3D'gn'%20operator%3D'arithmetic'%20k1%3D'0'%20k2%3D'1'%20k3%3D'0.1'%20k4%3D'-0.05'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20filter%3D'url(%23f)'%2F%3E%3C%2Fsvg%3E");
-  --stone-bg: #8b8a82;
-  --bg: #8b8a82;
+  --stone: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'720'%20height%3D'720'%3E%3Cfilter%20id%3D'f'%20x%3D'0'%20y%3D'0'%20width%3D'100%25'%20height%3D'100%25'%20color-interpolation-filters%3D'sRGB'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.006'%20numOctaves%3D'4'%20seed%3D'4'%20stitchTiles%3D'stitch'%20result%3D'c'%2F%3E%3CfeColorMatrix%20in%3D'c'%20type%3D'matrix'%20values%3D'0.18%200%200%200%200.585%20%200.18%200%200%200%200.577%20%200.18%200%200%200%200.55%20%200%200%200%200%201'%20result%3D'g'%2F%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.85'%20numOctaves%3D'3'%20seed%3D'9'%20stitchTiles%3D'stitch'%20result%3D'n'%2F%3E%3CfeColorMatrix%20in%3D'n'%20type%3D'matrix'%20values%3D'1%200%200%200%200%20%201%200%200%200%200%20%201%200%200%200%200%20%200%200%200%200%201'%20result%3D'gn'%2F%3E%3CfeComposite%20in%3D'g'%20in2%3D'gn'%20operator%3D'arithmetic'%20k1%3D'0'%20k2%3D'1'%20k3%3D'0.2'%20k4%3D'-0.1'%20result%3D'g2'%2F%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.32'%20numOctaves%3D'2'%20seed%3D'21'%20stitchTiles%3D'stitch'%20result%3D'p'%2F%3E%3CfeColorMatrix%20in%3D'p'%20type%3D'matrix'%20values%3D'0%200%200%200%200%20%200%200%200%200%200%20%200%200%200%200%200%20%20-2.4%200%200%200%201.17'%20result%3D'pa'%2F%3E%3CfeComponentTransfer%20in%3D'pa'%20result%3D'pores'%3E%3CfeFuncA%20type%3D'discrete'%20tableValues%3D'0%200%200%200%200%200%200%200.35%200.55'%2F%3E%3C%2FfeComponentTransfer%3E%3CfeComposite%20in%3D'pores'%20in2%3D'g2'%20operator%3D'over'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20filter%3D'url(%23f)'%2F%3E%3C%2Fsvg%3E");
+  --stone-bg: #a9a7a0;
+  --bg: #a9a7a0;
   --subtle: rgb(255 255 255 / 0.22);
   --raised: rgb(255 255 255 / 0.3);
   --bg-subtle: rgb(255 255 255 / 0.22);
@@ -3326,3 +3326,13 @@ html:has(.dash-app), body:has(.dash-app) { background: #ecebe6 !important; }
 .dash-check.is-done .dash-check-box { background: #3e4a6e; border-color: #3e4a6e; color: #ffffff; }
 @media (prefers-reduced-motion: reduce) { .dash-live { animation: none; } }
 html[data-calm] .dash-live { animation: none; }
+
+/* =================================================================================================
+   v25 CONCRETE (2026-11-26, founder: "make the background from the washed gray to concrete").
+   The page texture (--stone, generated in src/components/landing/lab/stone.ts) is now a lighter
+   poured-concrete surface: average ~#a9a7a0, soft mottling, sand grain, tiny dark pores, no cracks.
+   White text that sat on the darker gray is now dark DENIM so it stays readable (#2c3653 on
+   #a9a7a0 = ~5:1). Text inside black sections and on denim fills is unchanged.
+   ================================================================================================= */
+.hero21-h span { color: #2c3653; }
+.lab .text-accent, .lab .hl14 { color: #2c3653 !important; }
