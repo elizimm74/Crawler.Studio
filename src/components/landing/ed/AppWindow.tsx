@@ -30,8 +30,8 @@ export default function AppWindow({
         {/* sidebar */}
         <div className="win-side hidden w-52 shrink-0 flex-col p-3 md:flex">
           <div className="flex items-center gap-2 px-2 py-1.5 text-[13px] font-medium">
-            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-accent text-white">
-              <Mark size={12} className="text-white" />
+            <span className="flex h-5 w-5 items-center justify-center">
+              <Mark size={16} />
             </span>
             Crawler
           </div>

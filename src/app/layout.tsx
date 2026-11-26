@@ -177,9 +177,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 function Logo({ small }: { small?: boolean }) {
   return (
     <Link href="/" className={`inline-flex min-h-11 items-center gap-2 font-medium tracking-tight text-fg ${small ? "text-sm" : "text-[17px]"}`}>
-      {/* the claw-C mark on a blue tile + the wordmark: Crawler's brand lockup */}
+      {/* the scratch mark (white, black border) + the wordmark: Crawler's brand lockup */}
       <span className={`logo-tile ${small ? "is-small" : ""}`} aria-hidden>
-        <Mark size={small ? 13 : 17} className="text-white" />
+        <Mark size={small ? 26 : 36} />
       </span>
       <span className="logo-word">{APP_NAME.toLowerCase()}</span>
     </Link>

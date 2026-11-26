@@ -3336,3 +3336,17 @@ html[data-calm] .dash-live { animation: none; }
    ================================================================================================= */
 .hero21-h span { color: #2c3653; }
 .lab .text-accent, .lab .hl14 { color: #2c3653 !important; }
+
+/* =================================================================================================
+   v26 SCRATCH LOGO (2026-11-26, founder: "set the scratch as the main logo and icon and add a black
+   border"). The mark (src/components/Mark.tsx) is the three claw scratches, white with a black
+   border, so it needs no coloured tile behind it any more.
+   ================================================================================================= */
+.logo-tile { background: transparent !important; box-shadow: none !important; height: 34px; width: 34px; border-radius: 0; }
+.logo-tile.is-small { height: 26px; width: 26px; }
+.logo-tile svg { filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.18)); }
+/* bug fix: an older, more specific rule made the selected rail item BLACK text on the dark rail */
+.dash-app .fl-rail nav[aria-label="Dashboard"] button[aria-current="page"],
+.dash-app .fl-rail .dash-active { color: #ffffff !important; }
+/* bigger logo in the header so the scratches + border read clearly */
+.logo-tile { height: 38px; width: 38px; }

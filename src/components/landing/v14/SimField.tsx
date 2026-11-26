@@ -385,7 +385,7 @@ export default function SimField({ crowd, host = "yoursite.com", topFix, winBack
             {/* what Crawler is doing right now (demo) */}
             <div className="field14-chip" aria-hidden>
               <span className="logo-tile is-small">
-                <Mark size={13} className="text-white" />
+                <Mark size={20} />
               </span>
               <span className="font-medium text-fg">crawler</span>
               <span className="text-faint">·</span>

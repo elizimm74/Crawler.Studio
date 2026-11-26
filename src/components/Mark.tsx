@@ -1,4 +1,19 @@
-// The Crawler logo (v3, 2026-11-19, founder's pick "A1"): a letter C made of three wavy claw
+// The Crawler logo (v4, 2026-11-26, founder: "set the scratch as the main logo and icon and add a
+// black border"): the THREE CLAW SCRATCHES from the hero decoration (src/components/Claws.tsx),
+// tilted 16deg, filled white with a thick BLACK BORDER so they read on the concrete page AND on
+// black. The border is drawn with paint-order="stroke": the stroke sits behind the fill, so only
+// its outer half shows and the scratches keep their shape.
+// The old claw-C (v3) paths are kept below as LOGO_PATHS for the moving banner divider.
+export const SCRATCH_PATHS = [
+  "M28 6 C 50 60, 58 140, 40 214 C 86 142, 80 58, 28 6 Z",
+  "M80 0 C 102 60, 110 146, 92 224 C 136 148, 130 56, 80 0 Z",
+  "M132 14 C 150 66, 156 140, 140 206 C 180 140, 176 64, 132 14 Z",
+];
+export const SCRATCH_TRANSFORM = "rotate(16 92 115)";
+// a square box around the tilted scratches (measured in a browser) + room for the border
+export const SCRATCH_VIEWBOX = "-33.6 -18.3 280 280";
+
+// The OLD Crawler logo (v3, 2026-11-19, founder's pick "A1"): a letter C made of three wavy claw
 // scratches. Each scratch is thick in the middle, sharp at both ends, with a small wiggle, and
 // they're staggered so it reads as claws, not a crescent. The paths were generated once by the
 // claw() function in public/brand/logo-options/claw-c.html (option A1) and pasted here.
@@ -13,11 +28,21 @@ export const LOGO_TRANSFORM = "rotate(-18 60 60)";
 /** @deprecated old name, kept so older imports keep working */
 export const LOGO_SCRATCHES = LOGO_PATHS;
 
-export default function Mark({ size = 24, className = "" }: { size?: number; className?: string }) {
+export default function Mark({
+  size = 24,
+  className = "",
+  fill = "#ffffff",
+  border = "#0b0b0a",
+}: {
+  size?: number;
+  className?: string;
+  fill?: string;
+  border?: string;
+}) {
   return (
-    <svg width={size} height={size} viewBox="0 0 120 120" className={className} fill="currentColor" aria-hidden>
-      <g transform={LOGO_TRANSFORM}>
-        {LOGO_PATHS.map((d) => (
+    <svg width={size} height={size} viewBox={SCRATCH_VIEWBOX} className={className} aria-hidden>
+      <g transform={SCRATCH_TRANSFORM} fill={fill} stroke={border} strokeWidth={30} strokeLinejoin="round" paintOrder="stroke">
+        {SCRATCH_PATHS.map((d) => (
           <path key={d} d={d} />
         ))}
       </g>

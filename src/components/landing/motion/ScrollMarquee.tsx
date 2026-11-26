@@ -3,7 +3,7 @@
 // and it turns around. Alternating words are outlined and solid. Stops when off screen.
 // pace = how fast it drifts when you're not scrolling (pixels per second, default 70).
 // size "md" = a smaller band (used at the top and bottom of the home screen); reverse = drifts the other way.
-import { LOGO_PATHS, LOGO_TRANSFORM } from "../../Mark";
+import Mark from "../../Mark";
 import { useEffect, useRef } from "react";
 
 const COPIES = 3;
@@ -62,13 +62,7 @@ export default function ScrollMarquee({ items, label, size = "lg", reverse = fal
           items.map((word, i) => (
             <span key={`${c}-${i}`} className="flex items-center">
               <span className={`marquee-word ${i % 2 ? "is-solid" : ""}`}>{word}</span>
-              <svg className={`shrink-0 text-accent ${size === "md" ? "mx-[2vw] h-[4vw] w-[4vw]" : "mx-[3vw] h-[6vw] w-[6vw]"}`} viewBox="0 0 120 120" fill="currentColor">
-                <g transform={LOGO_TRANSFORM}>
-                  {LOGO_PATHS.map((d) => (
-                    <path key={d} d={d} />
-                  ))}
-                </g>
-              </svg>
+              <Mark className={`shrink-0 ${size === "md" ? "mx-[2vw] h-[4vw] w-[4vw]" : "mx-[3vw] h-[6vw] w-[6vw]"}`} />
             </span>
           )),
         )}
