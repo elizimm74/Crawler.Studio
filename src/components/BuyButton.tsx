@@ -1,23 +1,23 @@
 "use client";
 // A pricing-page buy button: asks our server for a Stripe Checkout page, then goes there.
-//   planId + interval -> a monthly or annual subscription
-//   packId            -> a one-time Crawler pack
+//   planId -> a monthly subscription
+//   packId -> pay for one analysis (one-time)
 // Card details are typed on Stripe's page, never on Crawler's. If you already have a plan, the
 // server sends you to "Manage billing" instead (no double subscriptions). Any launch discount is
 // decided by the server and shows up on Stripe's page.
 import { useState } from "react";
-import type { Interval, PackId, PaidPlanId } from "@/lib/plans";
+import type { PackId, PaidPlanId } from "@/lib/plans";
 
-type Props = { label: string; primary?: boolean; planId?: PaidPlanId; interval?: Interval; packId?: PackId; className?: string };
+type Props = { label: string; primary?: boolean; planId?: PaidPlanId; packId?: PackId; className?: string };
 
-export default function BuyButton({ planId, interval = "month", packId, label, primary, className = "" }: Props) {
+export default function BuyButton({ planId, packId, label, primary, className = "" }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function buy() {
     setBusy(true);
     setError(null);
     try {
-      const body = packId ? { packId } : { planId, interval };
+      const body = packId ? { packId } : { planId };
       const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || "Something went wrong.");

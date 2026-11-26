@@ -40,7 +40,7 @@ export function StarterNote({ plan }: { plan: PlanInfo | null }) {
   );
 }
 
-// Can this account choose a test size? Paid plans, Crawler packs (not for Ad Analysis) and admins can.
+// Can this account choose a test size? Paid plans, pay-per-analysis Crawlers (not for Ad Analysis) and admins can.
 // Free trials can't: the server sets their size (25 starter / 100 after invites).
 export function canPickSize(plan: PlanInfo | null, video = false): boolean {
   return Boolean(plan && (plan.monthly || plan.unlimited || (!video && (plan.packs ?? 0) > 0)));
@@ -56,7 +56,7 @@ export function SizePicker({ plan, value, onChange, video = false }: { plan: Pla
     ? "Admin: no monthly limit."
     : [
         plan.monthly ? `${n(plan.monthly.left)} of ${n(plan.monthly.allowance)} Crawlers left this month.` : "",
-        packs > 0 ? `${n(packs)} pack Crawlers${plan.monthly ? " on top" : " left"}.` : "",
+        packs > 0 ? `${n(packs)} paid Crawlers${plan.monthly ? " on top" : " left"} (pay per analysis).` : "",
         "Bigger crowds take longer (1,000 is a few minutes).",
       ]
         .filter(Boolean)
@@ -77,7 +77,7 @@ export function SizePicker({ plan, value, onChange, video = false }: { plan: Pla
         <p className="mt-4 text-sm">
           You&apos;ve used this month&apos;s Crawlers.{" "}
           <Link href="/pricing" className="underline underline-offset-2">
-            Upgrade or buy a pack
+            Upgrade or pay for one analysis
           </Link>{" "}
           , or wait until your plan renews.
         </p>
@@ -101,7 +101,7 @@ export function AdsGate({ plan }: { plan: PlanInfo | null }) {
       <p className="t-h3">Ad Analysis unlocks on Growth</p>
       <p className="mt-2 text-sm text-muted">
         Simulated viewers watch your ad or creator video frame by frame and tell you where they&apos;d swipe away. It comes
-        with Growth ($49/month) and up. The free trial, Starter and Crawler packs cover websites, stores and apps.
+        with Growth ($49/month) and up. The free trial, Starter and pay per analysis cover websites, stores and apps.
       </p>
       <Link href="/pricing" className="btn btn-primary mt-4 h-11 px-5">
         See plans

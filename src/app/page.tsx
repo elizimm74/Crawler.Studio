@@ -640,10 +640,10 @@ export default function Home() {
         </ul>
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-sm">
           <p className="text-faint">
-            {ENTERPRISE.name}: custom volume for teams. One-time Crawler packs available too.
+            {ENTERPRISE.name}: custom volume for teams. Or pay per analysis, from $5 a test.
           </p>
           <Link href="/pricing" className="btn btn-secondary h-11 px-5 text-sm">
-            Compare plans and packs
+            Compare plans
           </Link>
         </div>
       </section>

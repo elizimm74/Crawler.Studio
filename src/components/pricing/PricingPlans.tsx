@@ -1,59 +1,33 @@
 "use client";
-// THE FIVE PLANS in one section, with a Monthly / Annual toggle above them and a clear upgrade path:
+// THE FIVE PLANS in one section (MONTHLY only: annual billing was removed 2026-11-26), with a clear upgrade path:
 // Free trial -> Starter (your website) -> Growth (+ your ads) -> Pro (your whole funnel) -> Agency (every client).
 // Every number comes from src/lib/plans.ts. Features that aren't built yet carry a "Soon" tag, so
 // nobody pays for something that doesn't exist yet.
 // The buttons: free -> start a test; paid -> Stripe Checkout (BuyButton), or for people who already
 // pay: switch plan / manage billing. Without Stripe keys, paid buttons say "Coming soon".
-import { useState } from "react";
 import Link from "next/link";
 import BuyButton from "@/components/BuyButton";
 import SwitchPlanButton from "@/components/SwitchPlanButton";
 import ManageBilling from "@/components/ManageBilling";
-import {
-  ANNUAL_MONTHS_PAID,
-  PLANS,
-  PROMO_MONTHS,
-  annualMonthlyUsd,
-  discounted,
-  per100Label,
-  yearlyUsd,
-  type Interval,
-  type PaidPlanId,
-} from "@/lib/plans";
+import { PLANS, PROMO_MONTHS, discounted, per100Label, type PaidPlanId } from "@/lib/plans";
 
 type Props = {
   signedIn: boolean; // signed in, or accounts are switched off (local dev)
   payments: boolean; // Stripe keys are set
   current: string | null; // their live plan id, if they pay
-  currentYearly: boolean;
   offerPercent: number; // the launch discount THIS visitor would get on a monthly plan (0 = none)
 };
 
 const n = (x: number) => x.toLocaleString("en-US");
 const PATH = ["Try it", "Your website", "+ Your ads", "Your whole funnel", "Every client"];
 
-export default function PricingPlans({ signedIn, payments, current, currentYearly, offerPercent }: Props) {
-  const [interval, setBilling] = useState<Interval>("month");
-  const yearly = interval === "year";
+export default function PricingPlans({ signedIn, payments, current, offerPercent }: Props) {
   const currentPlan = PLANS.find((p) => p.id === current && p.priceUsd > 0);
 
   return (
     <div>
-      {/* Monthly / Annual */}
-      <div className="flex justify-center">
-        <div className="bill-toggle" role="group" aria-label="Billing period">
-          <button type="button" aria-pressed={!yearly} onClick={() => setBilling("month")}>
-            Monthly
-          </button>
-          <button type="button" aria-pressed={yearly} onClick={() => setBilling("year")}>
-            Annual <span className="bill-save">{12 - ANNUAL_MONTHS_PAID} months free</span>
-          </button>
-        </div>
-      </div>
-
       {/* the upgrade path, lined up with the cards (big screens) */}
-      <ol className="price-path mt-10 hidden xl:grid" aria-label="Upgrade path">
+      <ol className="price-path mt-2 hidden xl:grid" aria-label="Upgrade path">
         {PATH.map((step, k) => (
           <li key={step} className={k === 2 ? "is-hot" : ""}>
             <i aria-hidden />
@@ -66,7 +40,7 @@ export default function PricingPlans({ signedIn, payments, current, currentYearl
         {PLANS.map((p) => {
           const free = p.priceUsd === 0;
           const hot = p.id === "growth";
-          const monthly = yearly ? annualMonthlyUsd(p) : p.priceUsd;
+          const monthly = p.priceUsd;
           const isCurrent = current === p.id;
           return (
             <section key={p.id} className={`plan-card relative flex flex-col rounded-3xl border p-6 ${hot ? "plan-rec" : "border-line"}`} aria-labelledby={`plan-${p.id}`}>
@@ -83,8 +57,8 @@ export default function PricingPlans({ signedIn, payments, current, currentYearl
                 <span className="text-4xl font-bold tracking-tight">{free ? "$0" : `$${Number.isInteger(monthly) ? monthly : monthly.toFixed(2)}`}</span>
                 <span className="text-sm text-muted">{free ? "one time" : "/ month"}</span>
               </p>
-              <p className="mt-1 min-h-4 text-xs text-faint">{free ? "No card needed" : yearly ? `$${n(yearlyUsd(p))} billed yearly` : "Billed monthly"}</p>
-              {!free && !yearly && offerPercent > 0 && (
+              <p className="mt-1 min-h-4 text-xs text-faint">{free ? "No card needed" : "Billed monthly, cancel any time"}</p>
+              {!free && offerPercent > 0 && (
                 <p className="promo-line mt-2">
                   ${discounted(p.priceUsd, offerPercent)}/mo for {PROMO_MONTHS} months
                 </p>
@@ -93,7 +67,7 @@ export default function PricingPlans({ signedIn, payments, current, currentYearl
               {/* the allowance, big and clear */}
               <p className="allow-line mt-4">
                 <b>{n(p.customers)} Crawlers</b> {free ? "once" : "/ month"}
-                <span>{free ? "1 Crawler = 1 simulated customer" : yearly ? `$${((monthly / p.customers) * 100).toFixed(2)} per 100 Crawlers` : per100Label(p)}</span>
+                <span>{free ? "1 Crawler = 1 simulated customer" : per100Label(p)}</span>
               </p>
 
               {/* the button */}
@@ -114,14 +88,13 @@ export default function PricingPlans({ signedIn, payments, current, currentYearl
                   <SwitchPlanButton
                     planId={p.id}
                     planName={p.name}
-                    price={currentYearly ? yearlyUsd(p) : p.priceUsd}
-                    yearly={currentYearly}
+                    price={p.priceUsd}
                     upgrade={p.priceUsd > currentPlan.priceUsd}
                   />
                 ) : current ? (
                   <ManageBilling className="btn btn-secondary w-full rounded-full" label="Manage billing" />
                 ) : signedIn ? (
-                  <BuyButton planId={p.id as PaidPlanId} interval={interval} label={hot ? "Get Growth" : `Choose ${p.name}`} primary={hot} />
+                  <BuyButton planId={p.id as PaidPlanId} label={hot ? "Get Growth" : `Choose ${p.name}`} primary={hot} />
                 ) : (
                   <Link href="/signup?next=/pricing" className={`btn w-full rounded-full ${hot ? "btn-primary" : "btn-secondary"}`}>
                     {hot ? "Get Growth" : `Choose ${p.name}`}
@@ -157,7 +130,7 @@ export default function PricingPlans({ signedIn, payments, current, currentYearl
         <a href="#custom" className="underline-offset-4 hover:text-fg hover:underline">
           Need more Crawlers?
         </a>{" "}
-        Enterprise volumes and one-time packs are below.
+        Enterprise volumes and pay per analysis are below.
       </p>
     </div>
   );

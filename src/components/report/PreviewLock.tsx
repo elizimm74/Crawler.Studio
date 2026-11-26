@@ -1,5 +1,5 @@
 // THE LOCKED PART of a free-trial report: what's waiting, and how to unlock it.
-// The free trial shows the score and the top reasons; paying (any plan or a Crawler pack) unlocks the
+// The free trial shows the score and the top reasons; paying (any plan, or paying for one analysis) unlocks the
 // full report of this same test straight away. The blurred cards are plain grey shapes, not real
 // content (the real fixes never reach the browser until they pay).
 import Link from "next/link";
@@ -51,7 +51,7 @@ export default function PreviewLock({ fixes, customers, kind = "website" }: { fi
             Unlock the full report
           </Link>
           <p className="text-sm text-muted">
-            Starter is ${starter.priceUsd}/month, or buy {smallest.crawlers} Crawlers once for ${smallest.priceUsd}.
+            Starter is ${starter.priceUsd}/month, or pay ${smallest.priceUsd} for one {smallest.crawlers}-customer analysis.
           </p>
         </div>
       </div>

@@ -4,8 +4,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// `price` = what they'll pay per billing period (per month, or per year if their plan is annual).
-export default function SwitchPlanButton({ planId, planName, price, upgrade, yearly = false }: { planId: string; planName: string; price: number; upgrade: boolean; yearly?: boolean }) {
+// `price` = what they'll pay per month (all plans are monthly; annual billing was removed).
+export default function SwitchPlanButton({ planId, planName, price, upgrade }: { planId: string; planName: string; price: number; upgrade: boolean }) {
   const router = useRouter();
   const [step, setStep] = useState<"idle" | "confirm" | "busy" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +26,7 @@ export default function SwitchPlanButton({ planId, planName, price, upgrade, yea
   }
 
   if (step === "done") return <p className="mt-8 rounded-lg border border-line-strong p-3 text-sm">Switched to {planName}. Your new allowance shows up in a few seconds.</p>;
-  const per = yearly ? "year" : "month";
+  const per = "month";
   const bill = upgrade
     ? `You'll pay the difference for the rest of this ${per} now, then $${price}/${per}. The bigger allowance starts right away.`
     : `From now on it's $${price}/${per}. The unused part of this ${per} becomes a credit on your next bill, and your allowance drops to ${planName}'s right away.`;

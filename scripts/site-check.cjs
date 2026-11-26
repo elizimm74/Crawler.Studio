@@ -179,21 +179,19 @@ const record = (r) => {
     if (n < 2) throw new Error(`only ${n} demo labels`);
     return `${n} labels`;
   });
-  await flow("pricing: 5 plans, annual toggle, packs, enterprise, same numbers as the code", async () => {
+  await flow("pricing: 5 monthly plans (no annual), pay per analysis, enterprise, same numbers as the code", async () => {
     await p.goto(BASE + "/pricing", { waitUntil: "networkidle" });
-    for (const t of ["25 Crawlers", "1,000 Crawlers", "5,000 Crawlers", "15,000 Crawlers", "40,000 Crawlers", "$1.90 per 100 Crawlers", "Ad Analysis unlocked", "No Ad Analysis", "Most popular", "Need more Crawlers?", "Not ready for a subscription?", "Compare plans", "renew automatically"]) await p.getByText(t, { exact: false }).first().waitFor({ timeout: 3000 });
+    for (const t of ["25 Crawlers", "1,000 Crawlers", "5,000 Crawlers", "15,000 Crawlers", "40,000 Crawlers", "$1.90 per 100 Crawlers", "Ad Analysis unlocked", "No Ad Analysis", "Most popular", "Need more Crawlers?", "Just need one test?", "Pay per analysis", "Compare plans", "renew automatically"]) await p.getByText(t, { exact: false }).first().waitFor({ timeout: 3000 });
     const price = () => p.locator(".plan-card").evaluateAll((cards) => cards.map((c) => c.textContent.match(/\$\s*([\d.]+)\s*(one time|\/ month)/)?.[1]));
     const monthly = (await price()).join(",");
     if (monthly !== "0,19,49,99,199") throw new Error(`monthly prices on cards: ${monthly}`);
-    await p.getByRole("button", { name: /Annual/ }).click();
-    const yearly = (await price()).join(",");
-    if (yearly !== "0,15.83,40.83,82.50,165.83") throw new Error(`annual prices on cards: ${yearly}`);
-    await p.getByText("$490 billed yearly").first().waitFor({ timeout: 3000 });
-    const packs = await p.locator(".pack-card").count();
-    if (packs !== 4) throw new Error(`${packs} pack cards`);
+    if (await p.getByRole("button", { name: /Annual/ }).count()) throw new Error("an Annual toggle is still on the page");
+    if (await p.getByText(/billed yearly|annual/i).count()) throw new Error("the page still mentions annual billing");
+    const per = await p.locator(".pack-card").evaluateAll((cards) => cards.map((c) => c.textContent.match(/([\d,]+) customers\$(\d+)/)?.slice(1).join("=")));
+    if (per.join(",") !== "100=5,250=10,500=18,1,000=29") throw new Error(`pay-per-analysis cards: ${per.join(",")}`);
     await p.getByRole("link", { name: "Need more Crawlers?" }).click();
     await p.locator("#custom-form, #custom").first().waitFor({ timeout: 3000 });
-    return "monthly + annual prices, 4 packs, custom volume";
+    return "monthly prices, no annual, 4 pay-per-analysis sizes, custom volume";
   });
   await flow("sample report: fix tracker saves a status (demo: in this browser)", async () => {
     await p.goto(BASE + "/example", { waitUntil: "networkidle" });

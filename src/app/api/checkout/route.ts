@@ -1,6 +1,6 @@
 // POST /api/checkout -> { url }  (the Stripe Checkout page)
-//   { planId: "starter" | "growth" | "pro" | "agency", interval?: "month" | "year" }  a subscription
-//   { packId: "pack500" | "pack2000" | "pack10000" | "pack25000" }                   a one-time Crawler pack
+//   { planId: "starter" | "growth" | "pro" | "agency" }          a MONTHLY subscription (annual was removed)
+//   { packId: "test100" | "test250" | "test500" | "test1000" }    pay per analysis (one-time)
 // Signed-in only. Prices come from src/lib/plans.ts, never the browser.
 // Launch discount: the SERVER decides (Black Friday window, or a verified waitlist email, via the
 // launch_offer() database function). At most ONE discount, monthly billing only, first 3 months.
@@ -15,17 +15,17 @@ export async function POST(req: Request) {
   if (!stripeEnabled()) return jsonError("Payments aren't switched on yet.", 503);
   const auth = await requireUser();
   if (auth.error) return auth.error;
-  const body = (await req.json().catch(() => ({}))) as { planId?: string; interval?: string; packId?: string };
+  const body = (await req.json().catch(() => ({}))) as { planId?: string; packId?: string };
   const pack = findPack(body.packId);
   const plan = pack ? null : paidPlan(body.planId);
   if (!pack && !plan) return jsonError("Unknown plan.");
-  const interval: Interval = body.interval === "year" ? "year" : "month";
+  const interval: Interval = "month"; // monthly only: annual billing was removed
   try {
     const { user, supabase } = auth;
     const { data: profile } = await supabase.from("profiles").select("stripe_customer_id").eq("id", user.id).maybeSingle();
     const customer = (profile?.stripe_customer_id as string | null) ?? null;
 
-    // Packs: always allowed, even with a subscription (they top up Crawlers).
+    // Pay per analysis: always allowed, even with a subscription (it tops up Crawlers).
     if (pack) {
       const url = await createPackCheckout(pack, { id: user.id, email: user.email, customer }, SITE_URL);
       return NextResponse.json({ url });
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     // The one launch discount this person qualifies for (0 = none).
     let onWaitlist = false;
     let waitlistSize = 0;
-    if (interval === "month") {
+    {
       const { data: offer } = await supabase.rpc("launch_offer");
       const o = (offer ?? {}) as { on_waitlist?: boolean; waitlist_size?: number };
       onWaitlist = Boolean(o.on_waitlist);
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     }
     const discountPercent = launchDiscount({ interval, onWaitlist, waitlistSize });
 
-    const url = await createCheckout(plan!, { id: user.id, email: user.email, customer }, SITE_URL, { interval, discountPercent });
+    const url = await createCheckout(plan!, { id: user.id, email: user.email, customer }, SITE_URL, { discountPercent });
     return NextResponse.json({ url, discountPercent });
   } catch (err) {
     console.error("[checkout]", (err as Error).message);

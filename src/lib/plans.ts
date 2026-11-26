@@ -9,11 +9,12 @@
 //   Pro         $99/mo  15,000 Crawlers a month  (+ priority processing)
 //   Agency      $199/mo 40,000 Crawlers a month  (+ highest priority, expanded history)
 //   Enterprise  custom
-// Plus one-time Crawler packs for people who don't want a subscription (no Ad Analysis).
-// Each test uses as many Crawlers as it simulates (you pick 100, 250, 500 or 1,000). Monthly
-// allowances reset every month (also on annual billing) and don't carry over. Packs don't expire.
-// The numbers MUST match plan_customers(), plan_has_ads(), plan_priority() and pack_crawlers()
-// in supabase/migrations/0023_pricing_v4.sql.
+// Plus PAY PER ANALYSIS (2026-11-26, founder: "get rid of the yearly plans; the only pricing should be
+// the monthly plans and then paying per analysis"): buy ONE test, no subscription (no Ad Analysis).
+// Annual billing is gone. Each test uses as many Crawlers as it simulates (you pick 100, 250, 500 or
+// 1,000). Monthly allowances reset every month and don't carry over. A paid analysis never expires.
+// The numbers MUST match plan_customers(), plan_has_ads(), plan_priority() (migration 0023) and
+// pack_crawlers() / pack_price_cents() (migration 0024).
 
 export type PlanId = "free" | "starter" | "growth" | "pro" | "agency";
 export type PaidPlanId = Exclude<PlanId, "free">;
@@ -149,31 +150,32 @@ export const ENTERPRISE = {
   features: ["Custom Crawler volumes", "Custom analysis requirements", "Dedicated support", "Custom team and agency workflows"],
 };
 
-// ---------- billing: monthly or annual ----------
+// ---------- billing: MONTHLY only ----------
+// Annual billing was removed (2026-11-26). "year" stays in the type only so old (sandbox) annual
+// subscriptions can still be READ from Stripe and the database; nothing sells it any more.
 export type Interval = "month" | "year";
-// Annual billing = 12 months for the price of 10 ("2 months free"). The founder's brief asked for the
-// toggle but no annual price, so this is a DEFAULT: change ANNUAL_MONTHS_PAID to change it.
-export const ANNUAL_MONTHS_PAID = 10;
-export const PERIOD = "month"; // monthly is the default billing period
-export const yearlyUsd = (p: Plan) => p.priceUsd * ANNUAL_MONTHS_PAID;
-// what one month costs on annual billing, e.g. 15.83
-export const annualMonthlyUsd = (p: Plan) => Math.round((yearlyUsd(p) / 12) * 100) / 100;
+export const PERIOD = "month";
 
-// ---------- one-time Crawler packs (no subscription) ----------
-// Website, store and app tests only: packs never unlock Ad Analysis. They don't expire.
-export type PackId = "pack500" | "pack2000" | "pack10000" | "pack25000";
+// ---------- pay per analysis (no subscription) ----------
+// Buy ONE analysis of a chosen size. Under the hood it adds that many Crawlers to your balance
+// (the database's "pack" machinery: used after any monthly Crawlers, refunded if a test fails,
+// never expires). Website, store and app tests only: Ad Analysis needs Growth or higher.
+// Priced above the monthly plans on purpose (Starter = $1.90 per 100), so regular testers save
+// with a plan. These prices are a DEFAULT: edit here AND in pack_price_cents() (migration 0024).
+export type PackId = "test100" | "test250" | "test500" | "test1000";
 export type Pack = { id: PackId; crawlers: number; priceUsd: number };
 export const PACKS: Pack[] = [
-  { id: "pack500", crawlers: 500, priceUsd: 9 },
-  { id: "pack2000", crawlers: 2000, priceUsd: 29 },
-  { id: "pack10000", crawlers: 10000, priceUsd: 99 },
-  { id: "pack25000", crawlers: 25000, priceUsd: 199 },
+  { id: "test100", crawlers: 100, priceUsd: 5 },
+  { id: "test250", crawlers: 250, priceUsd: 10 },
+  { id: "test500", crawlers: 500, priceUsd: 18 },
+  { id: "test1000", crawlers: 1000, priceUsd: 29 },
 ];
+export const PAY_PER_ANALYSIS = PACKS; // the clearer name; PACKS is kept for older imports
 export const findPack = (id: unknown): Pack | null => PACKS.find((p) => p.id === id) ?? null;
 
 // ---------- launch discounts (one at a time, never stacked) ----------
-// 30% off the first 3 MONTHS of a MONTHLY plan. Annual billing already has its own discount, and
-// packs are one-time, so neither gets these. If someone qualifies twice, they get the bigger one.
+// Up to 30% off the first 3 MONTHS of a monthly plan. Pay-per-analysis purchases are one-time, so
+// they don't get these. If someone qualifies twice, they get the bigger one.
 export const PROMO_MONTHS = 3;
 // Black Friday to Cyber Monday 2026 (US Eastern time). Edit the dates for next year.
 export const BLACK_FRIDAY = { percent: 30, start: "2026-11-27T05:00:00Z", end: "2026-12-02T05:00:00Z" };
@@ -214,7 +216,7 @@ export const allowanceLabel = (p: Plan) => (p.priceUsd === 0 ? `${n(p.customers)
 export const per100Label = (p: Plan) => (p.priceUsd === 0 ? "free" : `$${((p.priceUsd / p.customers) * 100).toFixed(2)} per 100 Crawlers`);
 export const planName = (id: string) => {
   const pack = findPack(id);
-  if (pack) return `${n(pack.crawlers)} Crawler pack`;
-  return PLANS.find((p) => p.id === id)?.name ?? (id === "scale" ? "Scale" : id === "launch" ? "Launch" : id === "studio" ? "Studio" : id === "pack" ? "Crawler packs" : "Free");
+  if (pack) return `${n(pack.crawlers)}-customer analysis`;
+  return PLANS.find((p) => p.id === id)?.name ?? (id === "scale" ? "Scale" : id === "launch" ? "Launch" : id === "studio" ? "Studio" : id === "pack" ? "Pay per analysis" : "Free");
 };
 export const paidPlans = () => PLANS.filter((p) => p.priceUsd > 0);

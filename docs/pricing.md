@@ -11,7 +11,7 @@
 | Agency | $199/mo | 40,000 / month | yes | highest priority, expanded history (100 tests on the dashboard) |
 | Enterprise | custom | custom | yes | "Need more Crawlers?" form -> /admin/insights + Slack |
 
-One-time **Crawler packs** (no subscription, never expire, no Ad Analysis): 500 $9 · 2,000 $29 · 10,000 $99 · 25,000 $199.
+**Pay per analysis** (2026-11-26, replaces the one-time Crawler packs; no subscription, never expires, no Ad Analysis): one test with 100 simulated customers $5 · 250 $10 · 500 $18 · 1,000 $29 (`PACKS` in plans.ts + `pack_price_cents()` in migration 0024). **Annual billing was removed**: plans are monthly only.
 
 Where it lives:
 - Prices and rules: `src/lib/plans.ts` (the ONE place in code).
@@ -21,17 +21,17 @@ Where it lives:
 
 ## How a test is paid for (the database decides, never the browser)
 1. Admin: unlimited.
-2. A live monthly/annual plan: this month's Crawlers first, then pack Crawlers on top.
+2. A live monthly plan: this month's Crawlers first, then pay-per-analysis Crawlers on top.
 3. Packs only: pack Crawlers (not for Ad Analysis).
 4. Nothing paid: the free trial (25 Crawlers, once; +1 full test for 3 verified invites, unchanged).
 
-A failed test gives its pack Crawlers back and never counts against the month. Annual plans still reset every month (same day of the month as the start). The trial's Crawlers never count against a later plan.
+A failed test gives its pack Crawlers back and never counts against the month. The trial's Crawlers never count against a later plan.
 
 ## Decisions I made (change them any time)
-- **Annual price** = 10 months' price for 12 ("2 months free"): `ANNUAL_MONTHS_PAID` in plans.ts. Your brief asked for the toggle but gave no annual price.
+- **Annual billing**: removed 2026-11-26 (founder). Old sandbox annual subscriptions are still read correctly; switching plan moves them to monthly.
 - **Black Friday**: 30% off the first 3 months of a MONTHLY plan, Nov 27 (00:00 US Eastern) to Dec 1 2026 (`BLACK_FRIDAY` in plans.ts).
 - **Waitlist discount** "up to 30% depending on signups": everyone on the waitlist (same, verified email) gets 10%, rising to 20% at 100 waitlist sign-ups and 30% at 250 (`WAITLIST_TIERS`). Pick your own numbers.
-- **No stacking**: the bigger of the two wins; a launch coupon replaces Stripe promo codes; annual billing and packs get no launch discount.
+- **No stacking**: the bigger of the two wins; a launch coupon replaces Stripe promo codes; pay per analysis gets no launch discount.
 - **Features that don't exist yet** are on the page with a "Soon" tag instead of being sold as if they work: ad-to-landing-page analysis, product/pricing comparisons, advanced ad analysis, multiple ad variations, detailed segmentation, competitor comparisons, advanced exports, multiple brands, team workspaces, client-ready reports, bulk analysis, advanced audience customization. Pro and Agency today = more Crawlers + real priority processing (+ Agency's longer history).
 - **Invites** (3 verified friends -> 1 extra full test) still work; they're no longer on the pricing card.
 - Free trial reports: a **preview** (score, summary, top 3 reasons). Paying anything (plan or pack) unlocks the full report of that same test. It's a soft lock: the data is the user's own.
@@ -49,8 +49,7 @@ Careful: app tests run 3 crowds and send screenshots, and video tests send frame
 ## Stripe to-do (you, in the Stripe dashboard)
 1. Webhook endpoint -> add the event **`checkout.session.completed`** (packs). Keep `customer.subscription.*` and `invoice.paid`.
 2. Nothing else: prices are created by the code at checkout, and the launch coupons (`crawler-launch-10-3m`, `-20-3m`, `-30-3m`) are created automatically the first time someone qualifies.
-3. Test in sandbox: a monthly plan, an annual plan, a pack (Crawlers appear on the dashboard), and an upgrade.
+3. Test in sandbox: a monthly plan, a pay-per-analysis purchase (its Crawlers appear on the dashboard), and an upgrade.
 
 ## Known gaps
-- The founder Slack digest counts annual plans' MRR at the monthly price (it should be yearly / 12).
 - Agency's "expanded history" is the dashboard list (100 instead of 20 tests); the My tests page already shows everything.

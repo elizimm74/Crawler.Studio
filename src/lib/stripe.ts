@@ -1,6 +1,6 @@
 // Stripe, without the Stripe package: a few calls to Stripe's API with plain fetch.
-//   1. createCheckout(): a Stripe Checkout page that starts a MONTHLY or ANNUAL subscription, or
-//      createPackCheckout(): a ONE-TIME payment for a Crawler pack. Prices come from
+//   1. createCheckout(): a Stripe Checkout page that starts a MONTHLY subscription, or
+//      createPackCheckout(): a ONE-TIME payment for one analysis (pay per analysis). Prices come from
 //      src/lib/plans.ts on the server, never from the browser. A launch discount (Black Friday or
 //      waitlist) is decided on the server too, and only one is ever applied.
 //   2. createPortal(): Stripe's "Manage billing" page (change card, see invoices, cancel).
@@ -12,7 +12,7 @@
 // Keys live only in environment variables (.env.local / Vercel): STRIPE_SECRET_KEY,
 // STRIPE_WEBHOOK_SECRET. They never go to the browser and never into git.
 import { createHmac, timingSafeEqual } from "crypto";
-import { PLANS, PROMO_MONTHS, yearlyUsd, type Interval, type Pack, type PaidPlanId, type Plan } from "./plans";
+import { PLANS, PROMO_MONTHS, type Interval, type Pack, type PaidPlanId, type Plan } from "./plans";
 
 export const stripeEnabled = () => Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);
 
@@ -26,16 +26,16 @@ const UUID = /^[0-9a-f-]{36}$/;
 
 // The form Stripe expects (bracket names for nested fields). Pure, so the bench can check it.
 // `customer`: the person's existing Stripe customer id, so all their invoices stay in one place.
-// `interval`: monthly or annual billing. `coupon`: a launch-discount coupon id (see ensureCoupon).
+// Always MONTHLY (annual billing was removed 2026-11-26). `coupon`: a launch-discount coupon id (see ensureCoupon).
 const crawlers = (x: number) => x.toLocaleString("en-US");
 export const planProductName = (plan: Plan) => `Crawler ${plan.name} (${crawlers(plan.customers)} Crawlers a month)`;
 export function checkoutForm(
   plan: PaidPlan,
   user: { id: string; email?: string | null; customer?: string | null },
   siteUrl: string,
-  opts: { interval?: Interval; coupon?: string | null } = {},
+  opts: { coupon?: string | null } = {},
 ): URLSearchParams {
-  const interval: Interval = opts.interval === "year" ? "year" : "month";
+  const interval: Interval = "month";
   const f = new URLSearchParams();
   f.set("mode", "subscription");
   f.set("success_url", `${siteUrl}/dashboard?paid=${plan.id}`);
@@ -45,19 +45,19 @@ export function checkoutForm(
   else if (user.email && !user.email.endsWith("privaterelay.appleid.com")) f.set("customer_email", user.email);
   f.set("line_items[0][quantity]", "1");
   f.set("line_items[0][price_data][currency]", "usd");
-  const cents = Math.round((interval === "year" ? yearlyUsd(plan) : plan.priceUsd) * 100);
+  const cents = Math.round(plan.priceUsd * 100);
   f.set("line_items[0][price_data][unit_amount]", String(cents));
   f.set("line_items[0][price_data][recurring][interval]", interval);
   f.set("line_items[0][price_data][product_data][name]", planProductName(plan));
   // Shown under the plan name on Stripe's checkout page.
   f.set(
     "line_items[0][price_data][product_data][description]",
-    `1 Crawler = 1 simulated customer. Test your website${plan.ads ? " and your ads" : ""} before launch. ${crawlers(plan.customers)} Crawlers reset every month${interval === "year" ? ", billed once a year" : ""}.`,
+    `1 Crawler = 1 simulated customer. Test your website${plan.ads ? " and your ads" : ""} before launch. ${crawlers(plan.customers)} Crawlers reset every month.`,
   );
   // Shown above the Subscribe button (honest renewal note).
   f.set(
     "custom_text[submit][message]",
-    `Crawler renews ${interval === "year" ? "every year" : "every month"} until you cancel. Cancel any time from Manage billing on your dashboard. Simulated customers show buying intent, not real purchases.`,
+    `Crawler renews every month until you cancel. Cancel any time from Manage billing on your dashboard. Simulated customers show buying intent, not real purchases.`,
   );
   // The webhook reads WHO and WHICH PLAN from the subscription's metadata (set here, by our server).
   f.set("metadata[user_id]", user.id);
@@ -74,8 +74,9 @@ export function checkoutForm(
   return f;
 }
 
-// A ONE-TIME payment for a Crawler pack (no subscription). The webhook adds the Crawlers.
-export const packProductName = (pack: Pack) => `Crawler pack: ${crawlers(pack.crawlers)} Crawlers`;
+// A ONE-TIME payment for ONE analysis (pay per analysis, no subscription). The webhook adds that
+// many Crawlers to the balance, and the next test uses them.
+export const packProductName = (pack: Pack) => `Crawler analysis: up to ${crawlers(pack.crawlers)} simulated customers`;
 export function packCheckoutForm(pack: Pack, user: { id: string; email?: string | null; customer?: string | null }, siteUrl: string): URLSearchParams {
   const f = new URLSearchParams();
   f.set("mode", "payment");
@@ -93,7 +94,7 @@ export function packCheckoutForm(pack: Pack, user: { id: string; email?: string 
   f.set("line_items[0][price_data][product_data][name]", packProductName(pack));
   f.set(
     "line_items[0][price_data][product_data][description]",
-    "One-time purchase. 1 Crawler = 1 simulated customer. For website, store and app tests. Doesn't include Ad Analysis. Never expires.",
+    "One analysis, paid once. 1 Crawler = 1 simulated customer. For website, store and app tests (Ad Analysis needs a Growth plan). Doesn't expire, and a test that fails on our side gives the Crawlers back.",
   );
   f.set("custom_text[submit][message]", "One-time payment, nothing renews. Simulated customers show buying intent, not real purchases.");
   f.set("metadata[kind]", "pack");
@@ -137,10 +138,10 @@ export async function createCheckout(
   plan: PaidPlan,
   user: { id: string; email?: string | null; customer?: string | null },
   siteUrl: string,
-  opts: { interval?: Interval; discountPercent?: number } = {},
+  opts: { discountPercent?: number } = {},
 ): Promise<string> {
   const coupon = opts.discountPercent && opts.discountPercent > 0 ? await ensureCoupon(opts.discountPercent) : null;
-  const data = await stripe<{ url?: string }>("checkout/sessions", checkoutForm(plan, user, siteUrl, { interval: opts.interval, coupon }));
+  const data = await stripe<{ url?: string }>("checkout/sessions", checkoutForm(plan, user, siteUrl, { coupon }));
   if (!data.url) throw new Error("Stripe gave no checkout URL");
   return data.url;
 }
@@ -308,14 +309,15 @@ export function readPackCheckout(event: unknown, packs: Pack[]): PackPaid | null
 // Upgrades charge the difference for the rest of the month NOW (and fail if the card fails, so nobody
 // gets a bigger plan without paying). Downgrades take effect now and the unused part becomes a credit
 // on the next invoice. The webhook then saves the new plan (customer.subscription.updated).
-// Switching keeps the same billing period (monthly stays monthly, annual stays annual).
-export function switchForm(plan: PaidPlan, from: PaidPlan, userId: string, itemId: string, productId: string, interval: Interval = "month"): URLSearchParams {
+// Switching always lands on MONTHLY billing (annual was removed; an old annual sandbox plan becomes monthly).
+export function switchForm(plan: PaidPlan, from: PaidPlan, userId: string, itemId: string, productId: string): URLSearchParams {
+  const interval: Interval = "month";
   const up = plan.priceUsd > from.priceUsd;
   const f = new URLSearchParams();
   f.set("items[0][id]", itemId);
   f.set("items[0][price_data][currency]", "usd");
   f.set("items[0][price_data][product]", productId);
-  f.set("items[0][price_data][unit_amount]", String(Math.round((interval === "year" ? yearlyUsd(plan) : plan.priceUsd) * 100)));
+  f.set("items[0][price_data][unit_amount]", String(Math.round(plan.priceUsd * 100)));
   f.set("items[0][price_data][recurring][interval]", interval);
   f.set("metadata[user_id]", userId);
   f.set("metadata[plan_id]", plan.id);
@@ -337,7 +339,6 @@ export async function switchPlan(subId: string, plan: PaidPlan, userId: string):
   if (from.id === plan.id) return;
   const item = sub.items?.data?.[0]?.id;
   if (!item) throw new Error("subscription has no item");
-  const interval: Interval = (sub.items?.data?.[0]?.price?.recurring?.interval ?? sub.metadata?.interval) === "year" ? "year" : "month";
   // a product named after the NEW plan, so invoices say what they're paying for
   const product = await stripe<{ id: string }>(
     "products",
@@ -345,5 +346,5 @@ export async function switchPlan(subId: string, plan: PaidPlan, userId: string):
     "POST",
     `product-${subId}-${plan.id}`,
   );
-  await stripe(`subscriptions/${encodeURIComponent(subId)}`, switchForm(plan, from, userId, item, product.id, interval), "POST", `switch-${subId}-${plan.id}-${Math.floor(Date.now() / 60_000)}`);
+  await stripe(`subscriptions/${encodeURIComponent(subId)}`, switchForm(plan, from, userId, item, product.id), "POST", `switch-${subId}-${plan.id}-${Math.floor(Date.now() / 60_000)}`);
 }
