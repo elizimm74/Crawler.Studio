@@ -157,8 +157,8 @@ test("final pricing: free 25 once, $19 = 1,000, $49 = 5,000, $99 = 15,000, $199 
   test("pay per analysis: 100 $9, 250 $19, 500 $29, 1,000 $49; no annual pricing left; old pack ids unknown", () =>
     eq([P.PACKS.map((x) => [x.id, x.crawlers, x.priceUsd]), P.findPack("test250")?.crawlers, P.findPack("pack2000"), P.findPack("nope"), typeof P.yearlyUsd, typeof P.ANNUAL_MONTHS_PAID, P.planName("test500")],
       [[["test100", 100, 9], ["test250", 250, 19], ["test500", 500, 29], ["test1000", 1000, 49]], 250, null, null, "undefined", "undefined", "500-customer analysis"], "pay per analysis"));
-  test("launch discount: Black Friday 30%, waitlist tiers 10/20/30, never stacked, never on annual", () => {
-    const bf = new Date("2026-11-28T12:00:00Z"), before = new Date("2026-11-20T12:00:00Z"), after = new Date("2026-12-03T12:00:00Z");
+  test("launch discount: launch week (Dec 5-12) 30%, waitlist tiers 10/20/30, never stacked", () => {
+    const bf = new Date("2026-12-08T12:00:00Z"), before = new Date("2026-12-04T12:00:00Z"), after = new Date("2026-12-14T12:00:00Z");
     return eq([
       P.launchDiscount({ interval: "month", onWaitlist: false, waitlistSize: 0, now: bf }),
       P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 500, now: bf }),

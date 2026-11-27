@@ -179,8 +179,11 @@ export const findPack = (id: unknown): Pack | null => PACKS.find((p) => p.id ===
 // Up to 30% off the first 3 MONTHS of a monthly plan. Pay-per-analysis purchases are one-time, so
 // they don't get these. If someone qualifies twice, they get the bigger one.
 export const PROMO_MONTHS = 3;
-// Black Friday to Cyber Monday 2026 (US Eastern time). Edit the dates for next year.
-export const BLACK_FRIDAY = { percent: 30, start: "2026-11-27T05:00:00Z", end: "2026-12-02T05:00:00Z" };
+// The timed LAUNCH OFFER (2026-11-27: Black Friday ended before the Dec 5 launch, so the same 30% moved
+// to launch week: Dec 5 00:00 to Dec 12 23:59 US Eastern). Edit `name` + dates for the next promo.
+export const LAUNCH_OFFER = { name: "Launch week", percent: 30, start: "2026-12-05T05:00:00Z", end: "2026-12-13T05:00:00Z" };
+/** @deprecated old name (it was Black Friday); same object */
+export const BLACK_FRIDAY = LAUNCH_OFFER;
 // Early waitlist members (same, verified email) get a discount that grows with the waitlist:
 // the more people sign up, the bigger everyone's launch discount, up to 30%.
 // The THRESHOLDS are a DEFAULT (the brief said "up to 30%, depending on signups"): edit freely.

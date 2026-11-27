@@ -1,7 +1,7 @@
 // /pricing: Crawler's FINAL pricing (founder, 2026-11-25). Everything here reads src/lib/plans.ts.
 //   1. The five plans in one section (Free trial -> Starter -> Growth -> Pro -> Agency), with a
 //      clear upgrade path. MONTHLY only (annual billing removed 2026-11-26). Growth is emphasised.
-//   2. A launch-offer note (Black Friday window, or a waitlist discount), worked out on the server.
+//   2. A launch-offer note (the launch-week window, or a waitlist discount), worked out on the server.
 //   3. Enterprise + "Need more Crawlers?" (a request form).
 //   4. Pay per analysis: buy one test at a time, no subscription.
 //   5. A feature comparison table, then the honest fine print (auto-renewal, resets, discounts).
@@ -87,7 +87,7 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
         <div className="offer-note mx-auto mt-8 max-w-2xl">
           {bf ? (
             <p>
-              <strong>Black Friday:</strong> {BLACK_FRIDAY.percent}% off your first {PROMO_MONTHS} months on any monthly plan, until {bfEnds}.
+              <strong>{BLACK_FRIDAY.name}:</strong> {BLACK_FRIDAY.percent}% off your first {PROMO_MONTHS} months on any monthly plan, until {bfEnds}.
             </p>
           ) : onWaitlist ? (
             <p>
@@ -219,6 +219,11 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
           Launch discounts take {BLACK_FRIDAY.percent}% or less off the first {PROMO_MONTHS} monthly payments, one per customer, and never stack.
         </p>
       </div>
+      <p className="mx-auto mt-3 max-w-3xl text-center text-sm text-muted">
+        Read the full <Link href="/terms" className="underline underline-offset-2">Terms</Link>,{" "}
+        <Link href="/refunds" className="underline underline-offset-2">Refund Policy</Link> and{" "}
+        <Link href="/privacy" className="underline underline-offset-2">Privacy Policy</Link>.
+      </p>
       <p className="t-label mt-6 text-center">every test: simulated customers · buying intent, not real purchases · secure checkout by Stripe</p>
 
       {/* how Crawler compares with panels and A/B tests, on a washed-black band */}

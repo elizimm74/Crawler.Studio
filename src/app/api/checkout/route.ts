@@ -2,7 +2,7 @@
 //   { planId: "starter" | "growth" | "pro" | "agency" }          a MONTHLY subscription (annual was removed)
 //   { packId: "test100" | "test250" | "test500" | "test1000" }    pay per analysis (one-time)
 // Signed-in only. Prices come from src/lib/plans.ts, never the browser.
-// Launch discount: the SERVER decides (Black Friday window, or a verified waitlist email, via the
+// Launch discount: the SERVER decides (the launch-week window, or a verified waitlist email, via the
 // launch_offer() database function). At most ONE discount, monthly billing only, first 3 months.
 // Someone who already has a live plan is sent to "Manage billing" instead of a second subscription.
 import { NextResponse } from "next/server";

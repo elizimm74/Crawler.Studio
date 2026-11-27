@@ -29,7 +29,7 @@ A failed test gives its pack Crawlers back and never counts against the month. T
 
 ## Decisions I made (change them any time)
 - **Annual billing**: removed 2026-11-26 (founder). Old sandbox annual subscriptions are still read correctly; switching plan moves them to monthly.
-- **Black Friday**: 30% off the first 3 months of a MONTHLY plan, Nov 27 (00:00 US Eastern) to Dec 1 2026 (`BLACK_FRIDAY` in plans.ts).
+- **Launch week** (was Black Friday; moved 2026-11-27 because Black Friday ended before the Dec 5 launch): 30% off the first 3 months of a MONTHLY plan, Dec 5 (00:00 US Eastern) to Dec 12 (23:59). `LAUNCH_OFFER` in plans.ts.
 - **Waitlist discount** "up to 30% depending on signups": everyone on the waitlist (same, verified email) gets 10%, rising to 20% at 100 waitlist sign-ups and 30% at 250 (`WAITLIST_TIERS`). Pick your own numbers.
 - **No stacking**: the bigger of the two wins; a launch coupon replaces Stripe promo codes; pay per analysis gets no launch discount.
 - **Features that don't exist yet** are on the page with a "Soon" tag instead of being sold as if they work: ad-to-landing-page analysis, product/pricing comparisons, advanced ad analysis, multiple ad variations, detailed segmentation, competitor comparisons, advanced exports, multiple brands, team workspaces, client-ready reports, bulk analysis, advanced audience customization. Pro and Agency today = more Crawlers + real priority processing (+ Agency's longer history).

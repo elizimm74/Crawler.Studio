@@ -161,6 +161,11 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
           </button>
         )}
       </form>
+      <p className="text-xs text-muted">
+        By continuing you agree to Crawler&apos;s{" "}
+        <Link href="/terms" className="underline underline-offset-2 hover:text-fg">Terms</Link> and{" "}
+        <Link href="/privacy" className="underline underline-offset-2 hover:text-fg">Privacy Policy</Link>. Under 18? Ask a parent or guardian first.
+      </p>
       <p className="text-sm text-muted">
         {mode === "signup" ? (
           <>

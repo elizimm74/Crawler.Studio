@@ -3350,3 +3350,14 @@ html[data-calm] .dash-live { animation: none; }
 .dash-app .fl-rail .dash-active { color: #ffffff !important; }
 /* bigger logo in the header so the scratches + border read clearly */
 .logo-tile { height: 38px; width: 38px; }
+
+/* =================================================================================================
+   LEGAL PAGES (2026-11-27): /terms, /privacy, /refunds (src/components/LegalPage.tsx). A readable
+   white sheet: links underlined, lists with bullets, a simple bordered table.
+   ================================================================================================= */
+.legal .legal-body a, .legal .legal-summary a { text-decoration: underline; text-underline-offset: 2px; }
+.legal .legal-body ul { list-style: disc; padding-left: 1.25rem; display: grid; gap: 0.4rem; }
+.legal .legal-summary { background: rgb(0 0 0 / 0.03); }
+.legal-table th, .legal-table td { border-bottom: 1px solid var(--line); padding: 0.6rem 0.75rem 0.6rem 0; vertical-align: top; }
+.legal-table thead th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-muted); }
+.legal-table tbody th { font-weight: 600; white-space: nowrap; }

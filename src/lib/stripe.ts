@@ -1,7 +1,7 @@
 // Stripe, without the Stripe package: a few calls to Stripe's API with plain fetch.
 //   1. createCheckout(): a Stripe Checkout page that starts a MONTHLY subscription, or
 //      createPackCheckout(): a ONE-TIME payment for one analysis (pay per analysis). Prices come from
-//      src/lib/plans.ts on the server, never from the browser. A launch discount (Black Friday or
+//      src/lib/plans.ts on the server, never from the browser. A launch discount (launch week or
 //      waitlist) is decided on the server too, and only one is ever applied.
 //   2. createPortal(): Stripe's "Manage billing" page (change card, see invoices, cancel).
 //   3. verifyStripeSignature(): proves a webhook really came from Stripe (HMAC-SHA256 with the
@@ -57,7 +57,7 @@ export function checkoutForm(
   // Shown above the Subscribe button (honest renewal note).
   f.set(
     "custom_text[submit][message]",
-    `Crawler renews every month until you cancel. Cancel any time from Manage billing on your dashboard. Simulated customers show buying intent, not real purchases.`,
+    `Crawler renews every month until you cancel. Cancel any time from Manage billing on your dashboard. Simulated customers show buying intent, not real purchases. By subscribing you agree to the [Terms](${siteUrl}/terms) and [Refund Policy](${siteUrl}/refunds).`,
   );
   // The webhook reads WHO and WHICH PLAN from the subscription's metadata (set here, by our server).
   f.set("metadata[user_id]", user.id);
@@ -96,7 +96,10 @@ export function packCheckoutForm(pack: Pack, user: { id: string; email?: string 
     "line_items[0][price_data][product_data][description]",
     "One analysis, paid once. 1 Crawler = 1 simulated customer. For website, store and app tests (Ad Analysis needs a Growth plan). Doesn't expire, and a test that fails on our side gives the Crawlers back.",
   );
-  f.set("custom_text[submit][message]", "One-time payment, nothing renews. Simulated customers show buying intent, not real purchases.");
+  f.set(
+    "custom_text[submit][message]",
+    `One-time payment, nothing renews. Simulated customers show buying intent, not real purchases. By paying you agree to the [Terms](${siteUrl}/terms) and [Refund Policy](${siteUrl}/refunds).`,
+  );
   f.set("metadata[kind]", "pack");
   f.set("metadata[pack_id]", pack.id);
   f.set("metadata[user_id]", user.id);
