@@ -3344,7 +3344,7 @@ html[data-calm] .dash-live { animation: none; }
    ================================================================================================= */
 .logo-tile { background: transparent !important; box-shadow: none !important; height: 34px; width: 34px; border-radius: 0; }
 .logo-tile.is-small { height: 26px; width: 26px; }
-.logo-tile svg { filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.18)); }
+.logo-tile svg { filter: none; }
 /* bug fix: an older, more specific rule made the selected rail item BLACK text on the dark rail */
 .dash-app .fl-rail nav[aria-label="Dashboard"] button[aria-current="page"],
 .dash-app .fl-rail .dash-active { color: #ffffff !important; }

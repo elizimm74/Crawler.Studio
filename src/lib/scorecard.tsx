@@ -50,17 +50,12 @@ async function options() {
 }
 const HEAVY = "Geist, sans-serif"; // used on the big words only
 
-// The logo (same as src/components/Mark.tsx): three claw scratches, white with a black border.
-// Drawn twice (black outline underneath, white fill on top) instead of paint-order, which the
-// image renderer may not support.
+// The logo (same as src/components/Mark.tsx): three solid claw scratches, here in white on black.
 function Claws({ color }: { color: string }) {
   const paths = ["M28 6 C 50 60, 58 140, 40 214 C 86 142, 80 58, 28 6 Z", "M80 0 C 102 60, 110 146, 92 224 C 136 148, 130 56, 80 0 Z", "M132 14 C 150 66, 156 140, 140 206 C 180 140, 176 64, 132 14 Z"];
   return (
-    <svg width="96" height="96" viewBox="-33.6 -18.3 280 280">
-      <g transform="rotate(16 92 115)" fill="#0b0b0a" stroke="#0b0b0a" strokeWidth="30" strokeLinejoin="round">
-        {paths.map((d) => <path key={"o" + d} d={d} />)}
-      </g>
-      <g transform="rotate(16 92 115)" fill={color}>
+    <svg width="96" height="96" viewBox="-40.6 -25.3 294 294">
+      <g transform="rotate(16 92 115)" fill={color} stroke={color} strokeWidth="30" strokeLinejoin="round">
         {paths.map((d) => <path key={d} d={d} />)}
       </g>
     </svg>

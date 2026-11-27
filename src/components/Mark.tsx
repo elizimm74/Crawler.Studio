@@ -11,7 +11,7 @@ export const SCRATCH_PATHS = [
 ];
 export const SCRATCH_TRANSFORM = "rotate(16 92 115)";
 // a square box around the tilted scratches (measured in a browser) + room for the border
-export const SCRATCH_VIEWBOX = "-33.6 -18.3 280 280";
+export const SCRATCH_VIEWBOX = "-40.6 -25.3 294 294";
 
 // The OLD Crawler logo (v3, 2026-11-19, founder's pick "A1"): a letter C made of three wavy claw
 // scratches. Each scratch is thick in the middle, sharp at both ends, with a small wiggle, and
@@ -28,20 +28,22 @@ export const LOGO_TRANSFORM = "rotate(-18 60 60)";
 /** @deprecated old name, kept so older imports keep working */
 export const LOGO_SCRATCHES = LOGO_PATHS;
 
+// LOGO v5 (2026-11-27, founder: "fill in the logo"): the three scratches are now SOLID, one colour,
+// no outline. Near-black on light backgrounds (default); pass fill="#ffffff" on dark ones.
+// (The stroke in the same colour just keeps the shapes as bold as the outlined version was.)
+export const LOGO_INK = "#0b0b0a";
 export default function Mark({
   size = 24,
   className = "",
-  fill = "#ffffff",
-  border = "#0b0b0a",
+  fill = LOGO_INK,
 }: {
   size?: number;
   className?: string;
   fill?: string;
-  border?: string;
 }) {
   return (
     <svg width={size} height={size} viewBox={SCRATCH_VIEWBOX} className={className} aria-hidden>
-      <g transform={SCRATCH_TRANSFORM} fill={fill} stroke={border} strokeWidth={30} strokeLinejoin="round" paintOrder="stroke">
+      <g transform={SCRATCH_TRANSFORM} fill={fill} stroke={fill} strokeWidth={30} strokeLinejoin="round">
         {SCRATCH_PATHS.map((d) => (
           <path key={d} d={d} />
         ))}

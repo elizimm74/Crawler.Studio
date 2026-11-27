@@ -1,9 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-33.6 -18.3 280 280">
-  <!-- browser-tab icon = the logo (src/components/Mark.tsx): three white claw scratches with a thick
-       black border, no background, so it reads on light AND dark browser tabs -->
-  <g transform="rotate(16 92 115)" fill="#ffffff" stroke="#0b0b0a" stroke-width="22" stroke-linejoin="round" paint-order="stroke">
-    <path d="M28 6 C 50 60, 58 140, 40 214 C 86 142, 80 58, 28 6 Z"/>
-    <path d="M80 0 C 102 60, 110 146, 92 224 C 136 148, 130 56, 80 0 Z"/>
-    <path d="M132 14 C 150 66, 156 140, 140 206 C 180 140, 176 64, 132 14 Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50.6 -35.3 314 314">
+  <!-- browser-tab icon = the logo (src/components/Mark.tsx): three SOLID near-black claw scratches.
+       A thin white keyline drawn underneath keeps it visible on dark browser tabs too. -->
+  <g transform="rotate(16 92 115)" stroke-linejoin="round">
+    <g fill="#ffffff" stroke="#ffffff" stroke-width="52">
+      <path d="M28 6 C 50 60, 58 140, 40 214 C 86 142, 80 58, 28 6 Z"/>
+      <path d="M80 0 C 102 60, 110 146, 92 224 C 136 148, 130 56, 80 0 Z"/>
+      <path d="M132 14 C 150 66, 156 140, 140 206 C 180 140, 176 64, 132 14 Z"/>
+    </g>
+    <g fill="#0b0b0a" stroke="#0b0b0a" stroke-width="30">
+      <path d="M28 6 C 50 60, 58 140, 40 214 C 86 142, 80 58, 28 6 Z"/>
+      <path d="M80 0 C 102 60, 110 146, 92 224 C 136 148, 130 56, 80 0 Z"/>
+      <path d="M132 14 C 150 66, 156 140, 140 206 C 180 140, 176 64, 132 14 Z"/>
+    </g>
   </g>
 </svg>
