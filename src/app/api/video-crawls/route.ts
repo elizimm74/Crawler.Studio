@@ -4,6 +4,7 @@
 // times, length, platform and rate limit, then queues an "analyze" job; a worker reads the frames.
 import { NextResponse } from "next/server";
 import { requireUser, jsonError } from "@/lib/supabase/api";
+import { analyzeError } from "@/lib/planErrors";
 
 export async function POST(req: Request) {
   const auth = await requireUser();
@@ -15,6 +16,6 @@ export async function POST(req: Request) {
     p_frames: body.frames,
     p_meta: { times: body.times, duration: body.duration, platform: body.platform },
   });
-  if (error) return jsonError(error.message, 429);
+  if (error) return analyzeError(error.message); // plan limits are checked by the database
   return NextResponse.json({ crawlId: data as string });
 }

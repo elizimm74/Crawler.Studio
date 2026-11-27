@@ -4,7 +4,8 @@
 // SENDS for a trial test whose owner hasn't paid yet. Kept: the score, the summary, the top 3 reasons
 // people said no. Removed: ranked fixes, rewritten copy, every customer's answers, the quotes,
 // "what would change their mind", the product-test journey and online reviews.
-// (It's a soft lock: it's the person's own test. It decides what the report page shows.)
+// The REAL lock is in the database since migration 0025: report_preview() in SQL does this same
+// trimming and test_report() returns it for a locked trial. KEEP THE TWO IN SYNC.
 
 type Obj = Record<string, unknown>;
 const obj = (x: unknown): Obj => (x && typeof x === "object" && !Array.isArray(x) ? (x as Obj) : {});

@@ -4,6 +4,7 @@
 // the names + rate limit and queues an "analyze" job; a worker reads them.
 import { NextResponse } from "next/server";
 import { requireUser, jsonError } from "@/lib/supabase/api";
+import { analyzeError } from "@/lib/planErrors";
 
 export async function POST(req: Request) {
   const auth = await requireUser();
@@ -15,6 +16,6 @@ export async function POST(req: Request) {
     p_screens: body.screens,
     p_screens_b: Array.isArray(body.screensB) ? body.screensB : [],
   });
-  if (error) return jsonError(error.message, 429);
+  if (error) return analyzeError(error.message); // plan limits are checked by the database
   return NextResponse.json({ crawlId: data as string });
 }

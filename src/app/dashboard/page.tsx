@@ -28,11 +28,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
   const [testsRes, mindsRes, planRes, trendsRes] = await Promise.all([
     // Only the small parts of each test the dashboard needs (not the whole saved report).
-    supabase
-      .from("tests")
-      .select("id, url, goal, status, score, total, created_at, crawl_id, tier, kind:data->>kind, ptype:data->profile->>productType, objections:data->stats->objections, fixes:data->advice->fixes")
-      .order("created_at", { ascending: false })
-      .limit(HISTORY_EXPANDED),
+    // my_tests() lives in the database (migration 0025) and hides a locked free trial's fixes there.
+    supabase.rpc("my_tests", { p_limit: HISTORY_EXPANDED }),
     supabase.from("saved_audiences").select("id, name, audience, updated_at").order("updated_at", { ascending: false }),
     supabase.rpc("my_plan"),
     supabase.rpc("crawler_trends"),

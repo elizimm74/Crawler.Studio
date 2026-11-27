@@ -154,9 +154,9 @@ test("final pricing: free 25 once, $19 = 1,000, $49 = 5,000, $99 = 15,000, $199 
   eq(PLANS.map((p) => [p.id, p.priceUsd, p.customers, p.ads, p.priority]), [["free", 0, 25, false, 0], ["starter", 19, 1000, false, 0], ["growth", 49, 5000, true, 0], ["pro", 99, 15000, true, 1], ["agency", 199, 40000, true, 2]], "plans"));
 {
   const P = require(path.join(lib, "plans.js"));
-  test("pay per analysis: 100 $5, 250 $10, 500 $18, 1,000 $29; no annual pricing left; old pack ids unknown", () =>
+  test("pay per analysis: 100 $9, 250 $19, 500 $29, 1,000 $49; no annual pricing left; old pack ids unknown", () =>
     eq([P.PACKS.map((x) => [x.id, x.crawlers, x.priceUsd]), P.findPack("test250")?.crawlers, P.findPack("pack2000"), P.findPack("nope"), typeof P.yearlyUsd, typeof P.ANNUAL_MONTHS_PAID, P.planName("test500")],
-      [[["test100", 100, 5], ["test250", 250, 10], ["test500", 500, 18], ["test1000", 1000, 29]], 250, null, null, "undefined", "undefined", "500-customer analysis"], "pay per analysis"));
+      [[["test100", 100, 9], ["test250", 250, 19], ["test500", 500, 29], ["test1000", 1000, 49]], 250, null, null, "undefined", "undefined", "500-customer analysis"], "pay per analysis"));
   test("launch discount: Black Friday 30%, waitlist tiers 10/20/30, never stacked, never on annual", () => {
     const bf = new Date("2026-11-28T12:00:00Z"), before = new Date("2026-11-20T12:00:00Z"), after = new Date("2026-12-03T12:00:00Z");
     return eq([
@@ -211,9 +211,9 @@ test("checkout: MONTHLY subscription only (an old 'year' request is ignored); pr
   test("pay-per-analysis checkout: one-time payment, server price, item + user in metadata", () => {
     const f = S.packCheckoutForm(P.findPack("test1000"), { id: UID, email: "a@b.co" }, "https://crawler.test");
     return eq([f.get("mode"), f.get("line_items[0][price_data][unit_amount]"), f.get("metadata[kind]"), f.get("metadata[pack_id]"), f.get("metadata[user_id]"), f.get("customer_creation"), f.get("line_items[0][price_data][recurring][interval]")],
-      ["payment", "2900", "pack", "test1000", UID, "always", null], "pack");
+      ["payment", "4900", "pack", "test1000", UID, "always", null], "pack");
   });
-  const packEv = (o = {}, type = "checkout.session.completed") => ({ type, data: { object: { id: "cs_test_abcdefgh123", mode: "payment", payment_status: "paid", amount_total: 2900, currency: "usd", customer: "cus_123", metadata: { kind: "pack", pack_id: "test1000", user_id: UID }, ...o } } });
+  const packEv = (o = {}, type = "checkout.session.completed") => ({ type, data: { object: { id: "cs_test_abcdefgh123", mode: "payment", payment_status: "paid", amount_total: 4900, currency: "usd", customer: "cus_123", metadata: { kind: "pack", pack_id: "test1000", user_id: UID }, ...o } } });
   test("pack webhook: only paid one-time sessions with our metadata and a fair amount add Crawlers", () => {
     const ok = S.readPackCheckout(packEv(), P.PACKS);
     const bad = [
@@ -224,7 +224,7 @@ test("checkout: MONTHLY subscription only (an old 'year' request is ignored); pr
       S.readPackCheckout(packEv({ metadata: { kind: "pack", pack_id: "test1000", user_id: "nope" } }), P.PACKS),
       S.readPackCheckout(packEv({}, "invoice.paid"), P.PACKS),
     ];
-    return ok && ok.pack === "test1000" && ok.amountCents === 2900 && ok.customer === "cus_123" && bad.every((x) => x === null) ? null : JSON.stringify({ ok, bad });
+    return ok && ok.pack === "test1000" && ok.amountCents === 4900 && ok.customer === "cus_123" && bad.every((x) => x === null) ? null : JSON.stringify({ ok, bad });
   });
   test("subscription events still READ an old annual plan correctly (none are sold now)", () => {
     const y = S.readSubscription({ type: "customer.subscription.updated", created: NOW, data: { object: { id: "sub_test_abc123", customer: "cus_test_abc123", status: "active", metadata: { user_id: UID, plan_id: "pro" }, items: { data: [{ current_period_start: NOW, current_period_end: NOW + 86400 * 365, price: { recurring: { interval: "year" } } }] } } } });

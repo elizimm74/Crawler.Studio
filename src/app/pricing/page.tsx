@@ -29,7 +29,7 @@ import { Compare } from "@/components/landing/Sections";
 
 export const metadata = {
   title: "Pricing",
-  description: "Crawler pricing: a free trial with 25 Crawlers, then monthly plans from $19 for 1,000 Crawlers, or pay per analysis from $5. Ad Analysis from $49.",
+  description: "Crawler pricing: a free trial with 25 Crawlers, then monthly plans from $19 for 1,000 Crawlers, or pay per analysis from $9. Ad Analysis from $49.",
   alternates: { canonical: "/pricing" },
 };
 

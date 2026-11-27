@@ -1,13 +1,13 @@
 // GET /api/tests/:id
 //  - waiting/running: { status, stage, progress, journey, filesPrefix }  (for the live view)
 //  - done/error:      the full report (Run) + filesPrefix
-//    A FREE-TRIAL test whose owner hasn't paid yet gets the preview version (src/lib/preview.ts);
-//    the moment they pay (any plan or pack), the same request returns the full report.
+//    A FREE-TRIAL test whose owner hasn't paid yet gets the preview version. Since migration 0025
+//    the DATABASE decides that (test_report()): users can't read the saved report column at all,
+//    so the full report can't be fetched around the website. The moment they pay, it's the full one.
 // Row Level Security: you only ever get your own tests.
 import { NextResponse } from "next/server";
 import { requireUser, jsonError } from "@/lib/supabase/api";
 import { stripCosts } from "@/lib/stripCosts";
-import { toPreview } from "@/lib/preview";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireUser();
@@ -15,7 +15,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params;
   const { data: row } = await auth.supabase
     .from("tests")
-    .select("status, stage, progress, error, tier, data")
+    .select("status, stage, progress, error, tier")
     .eq("id", id)
     .maybeSingle();
   if (!row) return jsonError("Test not found.", 404);
@@ -31,13 +31,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       filesPrefix,
     });
   }
-  const run = stripCosts(row.data) as Record<string, unknown> | null; // costs are private
+  const { data: report } = await auth.supabase.rpc("test_report", { p_id: id }); // full, or the trial preview
+  const run = stripCosts(report) as Record<string, unknown> | null; // costs are private
   if (row.status === "error" && (!run || !("stats" in run))) {
     return NextResponse.json({ status: "error", error: row.error ?? "The test failed.", filesPrefix });
-  }
-  if (row.tier === "trial" && run && "stats" in run) {
-    const { data: me } = await auth.supabase.rpc("my_plan");
-    if (!(me as { paid?: boolean } | null)?.paid) return NextResponse.json({ ...toPreview(run), filesPrefix });
   }
   return NextResponse.json({ ...run, filesPrefix });
 }

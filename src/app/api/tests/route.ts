@@ -96,8 +96,9 @@ export async function POST(req: Request) {
   // A re-test: same audience + same seed as the test it repeats, so the SAME customers come back.
   let retest: { seed: number; compareTo: string } | null = null;
   if (body.retestOf) {
-    const { data: prev } = await auth.supabase.from("tests").select("id, status, total, data").eq("id", body.retestOf).maybeSingle();
-    const prevRun = prev?.data as { seed?: number; audience?: Audience; kind?: string } | null;
+    const { data: prev } = await auth.supabase.from("tests").select("id, status, total").eq("id", body.retestOf).maybeSingle();
+    const { data: prevReport } = prev ? await auth.supabase.rpc("test_report", { p_id: prev.id }) : { data: null };
+    const prevRun = prevReport as { seed?: number; audience?: Audience; kind?: string } | null;
     if (!prev || prev.status !== "done" || !prevRun?.audience || typeof prevRun.seed !== "number" || prevRun.kind === "app" || prevRun.kind === "video") {
       return jsonError("That earlier test can't be repeated. Start a normal test instead.");
     }

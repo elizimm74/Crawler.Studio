@@ -45,6 +45,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   // 1) Save the question. The database checks the owner, the length and the free limit.
   const { data: remaining, error } = await auth.supabase.rpc("ask_test", { p_test_id: id, p_content: content });
   if (error) {
+    if (error.message.includes("REPORT_LOCKED")) {
+      return NextResponse.json({ error: "Unlock the full report to ask about this test.", limitReached: true }, { status: 402 });
+    }
     if (error.message.includes("CHAT_LIMIT")) {
       return NextResponse.json(
         { error: "You've used your 2 free questions for this test. More questions come with paid plans (coming soon).", limitReached: true },
@@ -56,8 +59,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   try {
     // 2) Load the saved test (RLS: only yours) and, for websites, what the crawler read.
-    const { data: test } = await auth.supabase.from("tests").select("data, crawl_id").eq("id", id).single();
-    const run = test?.data as Record<string, unknown> | null;
+    const { data: test } = await auth.supabase.from("tests").select("crawl_id").eq("id", id).single();
+    const { data: report } = await auth.supabase.rpc("test_report", { p_id: id });
+    const run = report as Record<string, unknown> | null;
     if (!run) throw new Error("This test has no saved results.");
     let pages: { step: string; url: string; text: string }[] = [];
     if (run.kind !== "app" && test?.crawl_id) {

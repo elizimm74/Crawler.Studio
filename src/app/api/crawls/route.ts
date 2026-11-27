@@ -3,6 +3,7 @@
 // GET /api/crawls/:id until it's done.
 import { NextResponse } from "next/server";
 import { requireUser, jsonError } from "@/lib/supabase/api";
+import { analyzeError } from "@/lib/planErrors";
 import { normalizeUrl } from "@/lib/normalizeUrl";
 
 export async function POST(req: Request) {
@@ -15,6 +16,6 @@ export async function POST(req: Request) {
   // start_analyze checks the rate limit and creates the crawl + job together.
   const kind = body.kind === "store" ? "store" : "website"; // a store crawl goes product page -> cart
   const { data, error } = await auth.supabase.rpc("start_analyze", { p_url: url, p_kind: kind });
-  if (error) return jsonError(error.message, 429);
+  if (error) return analyzeError(error.message); // plan limits are checked by the database
   return NextResponse.json({ crawlId: data as string });
 }

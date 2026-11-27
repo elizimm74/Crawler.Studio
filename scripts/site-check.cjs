@@ -188,7 +188,7 @@ const record = (r) => {
     if (await p.getByRole("button", { name: /Annual/ }).count()) throw new Error("an Annual toggle is still on the page");
     if (await p.getByText(/billed yearly|annual/i).count()) throw new Error("the page still mentions annual billing");
     const per = await p.locator(".pack-card").evaluateAll((cards) => cards.map((c) => c.textContent.match(/([\d,]+) customers\$(\d+)/)?.slice(1).join("=")));
-    if (per.join(",") !== "100=5,250=10,500=18,1,000=29") throw new Error(`pay-per-analysis cards: ${per.join(",")}`);
+    if (per.join(",") !== "100=9,250=19,500=29,1,000=49") throw new Error(`pay-per-analysis cards: ${per.join(",")}`);
     await p.getByRole("link", { name: "Need more Crawlers?" }).click();
     await p.locator("#custom-form, #custom").first().waitFor({ timeout: 3000 });
     return "monthly prices, no annual, 4 pay-per-analysis sizes, custom volume";

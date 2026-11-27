@@ -11,7 +11,7 @@
 | Agency | $199/mo | 40,000 / month | yes | highest priority, expanded history (100 tests on the dashboard) |
 | Enterprise | custom | custom | yes | "Need more Crawlers?" form -> /admin/insights + Slack |
 
-**Pay per analysis** (2026-11-26, replaces the one-time Crawler packs; no subscription, never expires, no Ad Analysis): one test with 100 simulated customers $5 · 250 $10 · 500 $18 · 1,000 $29 (`PACKS` in plans.ts + `pack_price_cents()` in migration 0024). **Annual billing was removed**: plans are monthly only.
+**Pay per analysis** (2026-11-26, replaces the one-time Crawler packs; no subscription, never expires, no Ad Analysis): one test with 100 simulated customers $9 · 250 $19 · 500 $29 · 1,000 $49 (raised 2026-11-27; `PACKS` in plans.ts + `pack_price_cents()` in migration 0025). **Annual billing was removed**: plans are monthly only.
 
 Where it lives:
 - Prices and rules: `src/lib/plans.ts` (the ONE place in code).

@@ -160,15 +160,17 @@ export const PERIOD = "month";
 // Buy ONE analysis of a chosen size. Under the hood it adds that many Crawlers to your balance
 // (the database's "pack" machinery: used after any monthly Crawlers, refunded if a test fails,
 // never expires). Website, store and app tests only: Ad Analysis needs Growth or higher.
-// Priced above the monthly plans on purpose (Starter = $1.90 per 100), so regular testers save
-// with a plan. These prices are a DEFAULT: edit here AND in pack_price_cents() (migration 0024).
+// Raised 2026-11-27 (founder: "raise the one-time simulations"): well above the monthly plans on
+// purpose (1,000 customers once = $49 = a whole month of Growth; Starter gives 1,000 every month for
+// $19), so anyone who tests more than once is better off on a plan.
+// Edit here AND in pack_price_cents() (newest: migration 0025).
 export type PackId = "test100" | "test250" | "test500" | "test1000";
 export type Pack = { id: PackId; crawlers: number; priceUsd: number };
 export const PACKS: Pack[] = [
-  { id: "test100", crawlers: 100, priceUsd: 5 },
-  { id: "test250", crawlers: 250, priceUsd: 10 },
-  { id: "test500", crawlers: 500, priceUsd: 18 },
-  { id: "test1000", crawlers: 1000, priceUsd: 29 },
+  { id: "test100", crawlers: 100, priceUsd: 9 },
+  { id: "test250", crawlers: 250, priceUsd: 19 },
+  { id: "test500", crawlers: 500, priceUsd: 29 },
+  { id: "test1000", crawlers: 1000, priceUsd: 49 },
 ];
 export const PAY_PER_ANALYSIS = PACKS; // the clearer name; PACKS is kept for older imports
 export const findPack = (id: unknown): Pack | null => PACKS.find((p) => p.id === id) ?? null;

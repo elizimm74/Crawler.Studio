@@ -16,10 +16,8 @@ export default async function MyTests() {
     );
   }
   const supabase = await supabaseServer();
-  const { data, error } = await supabase
-    .from("tests")
-    .select("id, url, goal, status, score, total, created_at, ptype:data->profile->>productType")
-    .order("created_at", { ascending: false });
+  // my_tests(): your tests, newest first (the saved reports themselves aren't readable directly)
+  const { data, error } = await supabase.rpc("my_tests", { p_limit: 100 });
   const tests = (data ?? []) as Row[];
 
   return (
