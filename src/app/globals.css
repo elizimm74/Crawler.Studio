@@ -3529,3 +3529,69 @@ table tr { border-color: #000000 !important; }
 .fl-search input, .gsearch input { border: 0 !important; outline: none; background: transparent !important; }
 .fl-search:focus-within { outline: 3px solid #000000; outline-offset: 2px; }
 .dash-app .btn-primary { box-shadow: none !important; }
+
+/* =================================================================================================
+   v28 "WHITE GLASS" (2026-11-27, founder: "get rid of the borders and make them glass, it looks like a
+   doodled design"). Keeps v27's white page + bold black type, but REPLACES its thick 2px black lines:
+   - Surfaces are frosted glass: translucent white, 22px blur, a hairline (black 7%), a soft white top
+     highlight and a soft long shadow. No outlines drawn in black.
+   - So the glass has something to frost, the page gets two very faint, colourless grey glows (fixed).
+   - Main button stays solid black; secondary buttons, chips, fields and the nav pill are glass too.
+   ================================================================================================= */
+:root { --glass-bg: rgb(255 255 255 / 0.62); --glass-line: rgb(0 0 0 / 0.07); --glass-shadow: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 1px 2px rgb(0 0 0 / 0.04), 0 18px 40px -22px rgb(0 0 0 / 0.22); --line: rgb(0 0 0 / 0.08); --line-strong: rgb(0 0 0 / 0.14); }
+.card, .card-raised, .paper, .glass, .nav-pill, .tile14, .bento14-cell, .plan-card, .pack-card, .fl-panel, .fl-tile, .rp, .honest14,
+.night18, .lab, .band-dark, .dash-app, .dash-app .card, .dash-app .gpanel, .dash-app .fl-rail, .dash-app .dash-banner, .report { --line: rgb(0 0 0 / 0.08); --line-strong: rgb(0 0 0 / 0.14); }
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(55vw 45vw at 8% 0%, rgb(0 0 0 / 0.045), transparent 70%),
+    radial-gradient(50vw 40vw at 100% 35%, rgb(0 0 0 / 0.035), transparent 70%),
+    radial-gradient(45vw 40vw at 30% 100%, rgb(0 0 0 / 0.03), transparent 70%);
+}
+
+/* glass surfaces (override v27's 2px black outlines) */
+.card, .card-raised, .paper, .glass, .tile14, .bento14-cell, .plan-card, .pack-card, .fl-panel, .fl-tile, .rp, .honest14, .gpanel,
+.dpanel, .spec, .win, .price27-free, .dash-app .card, .dash-app .fl-panel, .dash-app .fl-tile, .dash-app .fl-search,
+.launch-pill, .offer-note, .note, .glass-chip, .glass-spec, .rnav, .report .rnav, .winpill, .dash-quickstart, .dash-check, .dash-app .dash-banner {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-line) !important;
+  box-shadow: var(--glass-shadow) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.4) !important;
+  backdrop-filter: blur(22px) saturate(1.4) !important;
+}
+.nav-pill, html[data-scrolled] .nav-pill { background: rgb(255 255 255 / 0.7) !important; border: 1px solid var(--glass-line) !important; box-shadow: var(--glass-shadow) !important; -webkit-backdrop-filter: blur(22px) saturate(1.4) !important; backdrop-filter: blur(22px) saturate(1.4) !important; }
+.dash-app .fl-rail { background: rgb(255 255 255 / 0.55) !important; border-right: 1px solid var(--glass-line) !important; -webkit-backdrop-filter: blur(22px) !important; backdrop-filter: blur(22px) !important; }
+@media (max-width: 1023px) { .dash-app .fl-rail { border-bottom: 1px solid var(--glass-line) !important; } }
+.dash-app .dash-next { border-left: 1px solid var(--glass-line) !important; }
+.sticky-run { background: rgb(255 255 255 / 0.75) !important; border-top: 1px solid var(--glass-line) !important; -webkit-backdrop-filter: blur(22px) !important; backdrop-filter: blur(22px) !important; }
+.border-line, .border-line-strong, .divide-line > * + * { border-color: rgb(0 0 0 / 0.08) !important; }
+hr, .rule { border-color: rgb(0 0 0 / 0.08) !important; background: rgb(0 0 0 / 0.08) !important; }
+table tr { border-color: rgb(0 0 0 / 0.07) !important; }
+
+/* controls: glass, no outline */
+.field, input, select, textarea {
+  background: rgb(255 255 255 / 0.7) !important; border: 1px solid rgb(0 0 0 / 0.09) !important;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04) inset !important;
+}
+.fl-search input, .gsearch input { border: 0 !important; box-shadow: none !important; background: transparent !important; }
+.field:focus, input:focus, select:focus, textarea:focus { border-color: rgb(0 0 0 / 0.3) !important; outline: none; box-shadow: 0 0 0 4px rgb(0 0 0 / 0.06) !important; }
+.btn { border-width: 1px !important; }
+.btn-primary, .night18 .btn-primary, .dash-wash .btn-primary, .dash-app .dash-banner .btn-primary {
+  background: #000000 !important; color: #ffffff !important; border: 1px solid #000000 !important;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.18) inset, 0 10px 24px -12px rgb(0 0 0 / 0.5) !important;
+}
+.btn-secondary, .night18 .btn-secondary, .dash-app .dash-banner .btn-secondary {
+  background: rgb(255 255 255 / 0.6) !important; color: #000000 !important; border: 1px solid rgb(0 0 0 / 0.08) !important;
+  box-shadow: var(--glass-shadow) !important; -webkit-backdrop-filter: blur(16px) !important; backdrop-filter: blur(16px) !important;
+}
+.btn-secondary:hover { background: rgb(255 255 255 / 0.9) !important; }
+.chip, .pill, .launch-pill, .pill-no, .pill-maybe, .prio {
+  border: 1px solid rgb(0 0 0 / 0.08) !important; background: rgb(255 255 255 / 0.6) !important;
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.pill-maybe { background: rgb(0 0 0 / 0.08) !important; }
+.chip[aria-pressed="true"], .seg [aria-pressed="true"], .seg [aria-selected="true"], .pill-buy { background: #000000 !important; color: #ffffff !important; border-color: #000000 !important; }
+.nav-link[aria-current="page"], .rnav a[aria-current="true"], .dash-app .fl-rail .dash-active, .dash-app nav[aria-label="Dashboard"] button[aria-current] { background: #000000 !important; color: #ffffff !important; }
+:focus-visible, .night18 :focus-visible { outline: 2px solid #000000 !important; outline-offset: 3px; }
+.nav-pill .btn-secondary, .nav-pill .nav-link, .nav-link { border-color: transparent !important; background: transparent !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.nav-pill .nav-link:hover, .nav-pill .btn-secondary:hover { background: rgb(0 0 0 / 0.05) !important; }
