@@ -314,7 +314,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                     <div className="mt-3">
                       <Bar pct={(plan.monthly.used / Math.max(1, plan.monthly.allowance)) * 100} />
                     </div>
-                    {(plan.packs ?? 0) > 0 && <p className="mt-2 text-xs text-faint">+ {(plan.packs ?? 0).toLocaleString("en-US")} paid Crawlers (pay per analysis)</p>}
+                    {(plan.packs ?? 0) > 0 && <p className="mt-2 text-xs text-faint">+ {(plan.packs ?? 0).toLocaleString("en-US")} extra Crawlers (never expire)</p>}
                   </>
                 ) : (plan.packs ?? 0) > 0 && !plan.unlimited ? (
                   <div className="flex items-baseline justify-between text-sm">

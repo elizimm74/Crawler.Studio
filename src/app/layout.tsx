@@ -100,15 +100,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   <NavLink href="/example" className="hidden md:inline-flex">
                     Sample report
                   </NavLink>
-                  <NavLink href="/science" className="hidden md:inline-flex">
-                    Science
-                  </NavLink>
                   <NavLink href="/pricing" className="hidden sm:inline-flex">
                     Pricing
                   </NavLink>
-                  <NavLink href="/signin">Sign in</NavLink>
-                  <Link href="/signup" className="btn btn-primary ml-1 h-10 px-5 text-sm">
-                    Start free
+                  <NavLink href="/signin" className="hidden sm:inline-flex">
+                    Sign in
+                  </NavLink>
+                  {/* the ONE call to action: jump to the URL box on the home page */}
+                  <Link href="/#hero-url" className="btn btn-primary ml-1 h-10 px-4 text-sm sm:px-5">
+                    Run simulation
                   </Link>
                 </>
               ) : (
@@ -116,14 +116,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   <NavLink href="/example" className="hidden md:inline-flex">
                     Sample report
                   </NavLink>
-                  <NavLink href="/science" className="hidden md:inline-flex">
-                    Science
-                  </NavLink>
                   <NavLink href="/pricing" className="hidden sm:inline-flex">
                     Pricing
                   </NavLink>
-                  <Link href="/onboarding" className="btn btn-primary ml-1 h-10 px-5 text-sm">
-                    Start free
+                  <Link href="/#hero-url" className="btn btn-primary ml-1 h-10 px-4 text-sm sm:px-5">
+                    Run simulation
                   </Link>
                 </>
               )}

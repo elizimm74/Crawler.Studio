@@ -2,10 +2,12 @@
 // The hero's URL box. It never drops the address: it goes to /onboarding?url=..., which checks the
 // site (real, public, reachable), previews it and guesses the category before anything runs.
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Arrow } from "@/components/landing/UrlForm";
 
-export default function HeroForm({ cta = "Test My Website Free", id = "hero-url" }: { cta?: string; id?: string }) {
+// `sample`: also show "See a sample report" right next to the button (the site's strongest trust asset).
+export default function HeroForm({ cta = "Run simulation", id = "hero-url", sample = false }: { cta?: string; id?: string; sample?: boolean }) {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [problem, setProblem] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function HeroForm({ cta = "Test My Website Free", id = "hero-url"
 
   return (
     <form onSubmit={submit} noValidate className="w-full">
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className={`flex flex-col gap-2 ${sample ? "lg:flex-row" : "sm:flex-row"}`}>
         <label htmlFor={id} className="sr-only">
           Your website address
         </label>
@@ -48,6 +50,11 @@ export default function HeroForm({ cta = "Test My Website Free", id = "hero-url"
           {busy ? "Opening…" : cta}
           {!busy && <Arrow />}
         </button>
+        {sample && (
+          <Link href="/example" className="btn btn-secondary h-14 px-6 text-base">
+            See a sample report
+          </Link>
+        )}
       </div>
       {problem && (
         <p id={`${id}-error`} role="alert" className="mt-2 text-sm text-fg">

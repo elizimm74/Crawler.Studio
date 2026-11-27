@@ -28,8 +28,8 @@ export default async function Example({ searchParams }: { searchParams: Promise<
             This is a pretend {app ? "meal-planning app (MealMate, our own drawings)" : "meal-planning site"}. Your report looks like this, with your real screens, prices and customers.
           </p>
         </div>
-        <Link href="/onboarding" className="btn btn-primary h-11 shrink-0 px-5">
-          Test mine free <Arrow />
+        <Link href={app ? "/onboarding?kind=app" : "/#hero-url"} className="btn btn-primary h-11 shrink-0 px-5">
+          Run simulation <Arrow />
         </Link>
       </div>
       <nav className="flex gap-2" aria-label="Example type">
@@ -46,9 +46,9 @@ export default async function Example({ searchParams }: { searchParams: Promise<
       <div className="paper bleed py-16 text-center">
         <div className="page">
           <h2 className="t-h1">Your turn.</h2>
-          <p className="t-lead mx-auto mt-4 max-w-md">Your first test is free. No card.</p>
-          <Link href="/onboarding" className="btn btn-primary mt-8 h-14 px-8 text-base">
-            Test my {app ? "app" : "site"} free <Arrow />
+          <p className="t-lead mx-auto mt-4 max-w-md">Your first simulation is free: 25 customers, no card.</p>
+          <Link href={app ? "/onboarding?kind=app" : "/#hero-url"} className="btn btn-primary mt-8 h-14 px-8 text-base">
+            Run simulation <Arrow />
           </Link>
         </div>
       </div>

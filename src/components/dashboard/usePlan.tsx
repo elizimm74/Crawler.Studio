@@ -56,7 +56,7 @@ export function SizePicker({ plan, value, onChange, video = false }: { plan: Pla
     ? "Admin: no monthly limit."
     : [
         plan.monthly ? `${n(plan.monthly.left)} of ${n(plan.monthly.allowance)} Crawlers left this month.` : "",
-        packs > 0 ? `${n(packs)} paid Crawlers${plan.monthly ? " on top" : " left"} (pay per analysis).` : "",
+        packs > 0 ? `${n(packs)} extra Crawlers${plan.monthly ? " on top" : " left"} (never expire).` : "",
         "Bigger crowds take longer (1,000 is a few minutes).",
       ]
         .filter(Boolean)

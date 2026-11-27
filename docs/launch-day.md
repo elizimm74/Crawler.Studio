@@ -62,8 +62,10 @@ Anything marked **(parent)** needs your parent/guardian (they own the Stripe acc
 
 ## Launch day (Dec 5)
 
-The launch-week offer (30% off the first 3 months of any monthly plan) runs automatically from
-Dec 5 00:00 to Dec 12 23:59 US Eastern. You don't need to switch anything on.
+The launch offer runs automatically from Dec 5 00:00 to Dec 12 23:59 US Eastern: the first 100 people
+who sign up and verify their email get 1,000 free simulated customers (one free 1,000-customer test).
+The home page and pricing page count the spots left. You don't need to switch anything on.
+Check how many were given: Supabase → SQL → `select public.launch_offer_status();`
 
 | Time (ET) | Do this |
 | --- | --- |

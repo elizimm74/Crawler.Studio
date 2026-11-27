@@ -73,8 +73,8 @@ export default function PricingPlans({ signedIn, payments, current, offerPercent
               {/* the button */}
               <div className="plan-cta mt-5">
                 {free ? (
-                  <Link href={signedIn ? "/onboarding" : "/signup"} className="btn btn-secondary w-full rounded-full">
-                    Start free
+                  <Link href={signedIn ? "/onboarding" : "/#hero-url"} className="btn btn-secondary w-full rounded-full">
+                    Run simulation
                   </Link>
                 ) : !payments ? (
                   <span className="btn btn-ghost w-full cursor-default rounded-full text-faint" aria-disabled>

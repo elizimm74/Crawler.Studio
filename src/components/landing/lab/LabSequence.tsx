@@ -10,6 +10,9 @@
 //   - Each time a new stage starts, its note fades up in the top-right corner (fades DOWN when
 //     you're scrolling back), and four tiny ticks fill as you go.
 //   - The drawing loop only runs while the track is on screen.
+// COMPACT mode (home page, 2026-11-27 conversion redesign): no tall track and no pin. The block is
+// one screen-ish high and plays the four stages by itself on a loop (about 16 seconds) while it's on
+// screen, so the page stays short.
 // Reduced motion (system setting) or the footer's "Calmer motion": no pin and no loop; the
 // finished picture is drawn once and the four notes are listed under it (the CSS does the
 // layout from the very first paint, see globals.css "LAB").
@@ -21,6 +24,7 @@ import type { Mix, Scene } from "./kit";
 export type LabStage = { code: string; title: string; text: string };
 
 const SCENES = { simulation: simulationScene, patterns: patternsScene };
+const LOOP = 16; // compact mode: seconds per full run (the last 20% holds the finished picture)
 const START = 0.05; // the first 5% of the track shows the starting state
 const SPAN = 0.87; // the stages play over the next 87%; the rest holds the final picture
 
@@ -44,6 +48,7 @@ export default function LabSequence({
   scene,
   stages,
   mix,
+  compact = false,
 }: {
   id: string;
   index: string;
@@ -54,6 +59,7 @@ export default function LabSequence({
   scene: keyof typeof SCENES;
   stages: LabStage[];
   mix: Mix;
+  compact?: boolean;
 }) {
   const track = useRef<HTMLDivElement>(null);
   const pin = useRef<HTMLDivElement>(null);
@@ -95,6 +101,12 @@ export default function LabSequence({
     let raf = 0;
     let last = 0;
     let running = false;
+    let t0 = 0;
+    // compact mode: where the loop is, from the time since it came into view
+    const loopS = (now: number) => {
+      const phase = (((now - t0) / 1000) % LOOP) / LOOP;
+      return Math.min(4, (phase / 0.8) * 4);
+    };
 
     const target = () => {
       const r = el.getBoundingClientRect();
@@ -131,7 +143,7 @@ export default function LabSequence({
     const tick = (now: number) => {
       const dt = Math.min(0.05, Math.max(0.001, (now - last) / 1000));
       last = now;
-      shown = damp(shown, target(), 7, dt);
+      shown = compact ? loopS(now) : damp(shown, target(), 7, dt);
       paint(shown, now / 1000);
       if (running) raf = requestAnimationFrame(tick);
     };
@@ -139,7 +151,8 @@ export default function LabSequence({
       if (running || still) return;
       running = true;
       last = performance.now();
-      shown = target(); // no catch-up sweep when it comes into view
+      t0 = last;
+      shown = compact ? 0 : target(); // no catch-up sweep when it comes into view
       raf = requestAnimationFrame(tick);
     };
     const stop = () => {
@@ -165,14 +178,14 @@ export default function LabSequence({
       ro.disconnect();
       io.disconnect();
     };
-  }, [scene, buy, maybe, no, stages.length, still]);
+  }, [scene, buy, maybe, no, stages.length, still, compact]);
 
   const now = stage > 0 ? stages[stage - 1] : null;
 
   return (
     <section
       id={id}
-      className={`lab-seq${still ? " is-still" : ""}`}
+      className={`lab-seq${still ? " is-still" : ""}${compact ? " is-compact" : ""}`}
       aria-labelledby={`${id}-title`}
     >
       <div ref={track} className="lab-track">

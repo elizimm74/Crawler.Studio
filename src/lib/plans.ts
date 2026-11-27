@@ -175,38 +175,36 @@ export const PACKS: Pack[] = [
 export const PAY_PER_ANALYSIS = PACKS; // the clearer name; PACKS is kept for older imports
 export const findPack = (id: unknown): Pack | null => PACKS.find((p) => p.id === id) ?? null;
 
-// ---------- launch discounts (one at a time, never stacked) ----------
-// Up to 30% off the first 3 MONTHS of a monthly plan. Pay-per-analysis purchases are one-time, so
-// they don't get these. If someone qualifies twice, they get the bigger one.
-export const PROMO_MONTHS = 3;
-// The timed LAUNCH OFFER (2026-11-27: Black Friday ended before the Dec 5 launch, so the same 30% moved
-// to launch week: Dec 5 00:00 to Dec 12 23:59 US Eastern). Edit `name` + dates for the next promo.
-export const LAUNCH_OFFER = { name: "Launch week", percent: 30, start: "2026-12-05T05:00:00Z", end: "2026-12-13T05:00:00Z" };
-/** @deprecated old name (it was Black Friday); same object */
-export const BLACK_FRIDAY = LAUNCH_OFFER;
-// Early waitlist members (same, verified email) get a discount that grows with the waitlist:
-// the more people sign up, the bigger everyone's launch discount, up to 30%.
+// ---------- launch offer + waitlist discount ----------
+// LAUNCH OFFER (2026-11-27, founder's conversion redesign): "Launch week: first 100 signups get a free
+// 1,000-customer test." Granted BY THE DATABASE when an account's email is verified during the
+// window (migration 0027: grant_launch_offer, launch_offer_config). KEEP THESE NUMBERS IN SYNC.
+// It replaced the timed 30% launch-week discount (one offer, one message).
+export const LAUNCH_OFFER = {
+  name: "Launch week",
+  freeCustomers: 1000,
+  spots: 100,
+  start: "2026-12-05T05:00:00Z", // Dec 5 00:00 US Eastern
+  end: "2026-12-13T05:00:00Z", // Dec 12 23:59 US Eastern
+};
+// Waitlist discounts: up to 30% off the first 3 MONTHS of a monthly plan, for early waitlist members
+// (same, verified email). The discount grows with the waitlist. Pay per analysis doesn't get it.
 // The THRESHOLDS are a DEFAULT (the brief said "up to 30%, depending on signups"): edit freely.
+export const PROMO_MONTHS = 3;
 export const WAITLIST_TIERS = [
   { signups: 0, percent: 10 },
   { signups: 100, percent: 20 },
   { signups: 250, percent: 30 },
 ];
-export function blackFridayActive(now = new Date()): boolean {
-  const t = now.getTime();
-  return t >= Date.parse(BLACK_FRIDAY.start) && t < Date.parse(BLACK_FRIDAY.end);
-}
 export function waitlistPercent(signups: number): number {
   let pct = 0;
   for (const tier of WAITLIST_TIERS) if (signups >= tier.signups) pct = tier.percent;
   return pct;
 }
-// The ONE discount someone gets at checkout (0 = none). Never stacked: the bigger one wins.
+// The ONE discount someone gets at checkout (0 = none): the waitlist discount, monthly plans only.
 export function launchDiscount(opts: { interval: Interval; onWaitlist: boolean; waitlistSize: number; now?: Date }): number {
   if (opts.interval !== "month") return 0;
-  const bf = blackFridayActive(opts.now) ? BLACK_FRIDAY.percent : 0;
-  const wl = opts.onWaitlist ? waitlistPercent(opts.waitlistSize) : 0;
-  return Math.max(bf, wl);
+  return opts.onWaitlist ? waitlistPercent(opts.waitlistSize) : 0;
 }
 // "$13.30": the monthly price after a discount, for the first PROMO_MONTHS months
 export const discounted = (usd: number, percent: number) => (Math.round(usd * (100 - percent)) / 100).toFixed(2);

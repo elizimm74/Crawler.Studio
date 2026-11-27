@@ -4,7 +4,7 @@
 import Link from "next/link";
 import LegalPage from "@/components/LegalPage";
 import { LEGAL } from "@/lib/legal";
-import { PACKS, PLANS, PROMO_MONTHS, STARTER_CUSTOMERS } from "@/lib/plans";
+import { LAUNCH_OFFER, PACKS, PLANS, PROMO_MONTHS, STARTER_CUSTOMERS } from "@/lib/plans";
 
 export const metadata = {
   title: "Terms of Service",
@@ -140,8 +140,13 @@ export default function Terms() {
               </p>
               <p>
                 Prices are in US dollars and may not include taxes that apply where you live. Payments are handled by Stripe. We may change prices for the
-                future; if your plan&apos;s price changes we&apos;ll tell you before your next renewal, and you can cancel before it applies. Launch discounts
+                future; if your plan&apos;s price changes we&apos;ll tell you before your next renewal, and you can cancel before it applies. Waitlist discounts
                 apply to the first {PROMO_MONTHS} monthly payments, one per customer.
+              </p>
+              <p>
+                <strong>Launch offer.</strong> From December 5 to December 12, 2026 (US Eastern time), the first {LAUNCH_OFFER.spots} new accounts with a verified email
+                get {LAUNCH_OFFER.freeCustomers.toLocaleString("en-US")} free Crawlers, enough for one {LAUNCH_OFFER.freeCustomers.toLocaleString("en-US")}-customer test. One per
+                person; it isn&apos;t available to emails that deleted an earlier account, doesn&apos;t include Ad Analysis, has no cash value and doesn&apos;t expire.
               </p>
             </>
           ),

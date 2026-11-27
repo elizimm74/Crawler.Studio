@@ -9,17 +9,9 @@
 import Link from "next/link";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
-import {
-  BLACK_FRIDAY,
-  PACKS,
-  PROMO_MONTHS,
-  STARTER_CUSTOMERS,
-  WAITLIST_TIERS,
-  blackFridayActive,
-  launchDiscount,
-  planName,
-  waitlistPercent,
-} from "@/lib/plans";
+import { LAUNCH_OFFER, PACKS, PROMO_MONTHS, STARTER_CUSTOMERS, WAITLIST_TIERS, launchDiscount, planName, waitlistPercent } from "@/lib/plans";
+import { launchState } from "@/lib/launch";
+import LaunchBanner from "@/components/landing/LaunchBanner";
 import ManageBilling from "@/components/ManageBilling";
 import { stripeEnabled } from "@/lib/stripe";
 import BuyButton from "@/components/BuyButton";
@@ -66,11 +58,10 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
       waitlistSize = Number(data ?? 0);
     }
   }
-  const bf = blackFridayActive();
+  const launch = await launchState();
   // the discount THIS visitor would get on a monthly plan (the server applies the same rule at checkout)
   const offerPercent = launchDiscount({ interval: "month", onWaitlist, waitlistSize });
   const waitlistNow = waitlistPercent(waitlistSize);
-  const bfEnds = new Date(new Date(BLACK_FRIDAY.end).getTime() - 1).toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "America/New_York" });
 
   return (
     <div className="mx-auto max-w-[88rem]">
@@ -82,14 +73,14 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
         <strong className="font-semibold text-fg">Pro and Agency</strong> test your whole marketing.
       </p>
 
-      {/* launch offer: one discount at a time, never stacked */}
-      {(bf || offerPercent > 0 || waitlistNow > 0) && (
-        <div className="offer-note mx-auto mt-8 max-w-2xl">
-          {bf ? (
-            <p>
-              <strong>{BLACK_FRIDAY.name}:</strong> {BLACK_FRIDAY.percent}% off your first {PROMO_MONTHS} months on any monthly plan, until {bfEnds}.
-            </p>
-          ) : onWaitlist ? (
+      {/* the launch offer (a free 1,000-customer test for the first 100 signups), straight from the database */}
+      <div className="mt-8 flex justify-center">
+        <LaunchBanner state={launch} />
+      </div>
+      {/* waitlist discount: one discount per customer, never stacked */}
+      {(offerPercent > 0 || waitlistNow > 0) && (
+        <div className="offer-note mx-auto mt-6 max-w-2xl">
+          {onWaitlist ? (
             <p>
               <strong>Your launch offer:</strong> you&apos;re on the waitlist, so you get {offerPercent}% off your first {PROMO_MONTHS} months on a monthly plan.
               It&apos;s applied automatically at checkout.
@@ -120,7 +111,7 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
       {/* the five plans get the full screen width (the page column is too narrow for five cards) */}
       <div className="bleed-full mt-10">
         <div className="home-wide">
-          <PricingPlans signedIn={signedIn} payments={payments} current={current} offerPercent={bf || onWaitlist ? offerPercent : 0} />
+          <PricingPlans signedIn={signedIn} payments={payments} current={current} offerPercent={onWaitlist ? offerPercent : 0} />
         </div>
       </div>
 
@@ -216,7 +207,9 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
           unlocks its full report.
         </p>
         <p>
-          Launch discounts take {BLACK_FRIDAY.percent}% or less off the first {PROMO_MONTHS} monthly payments, one per customer, and never stack.
+          Waitlist discounts take {WAITLIST_TIERS[WAITLIST_TIERS.length - 1].percent}% or less off the first {PROMO_MONTHS} monthly payments, one per customer, and never stack.
+          The launch-week offer ({LAUNCH_OFFER.freeCustomers.toLocaleString("en-US")} free simulated customers for the first {LAUNCH_OFFER.spots} accounts with a verified email,
+          Dec 5–12) is one per person and doesn&apos;t include Ad Analysis.
         </p>
       </div>
       <p className="mx-auto mt-3 max-w-3xl text-center text-sm text-muted">

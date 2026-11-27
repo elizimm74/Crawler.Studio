@@ -110,9 +110,9 @@ const record = (r) => {
       record({ type: "flow", check: name, ok: false, detail: e.message.split("\n")[0].slice(0, 200) });
     }
   };
-  await flow("hero: 'No website?' opens the onboarding at 'What do you want to test?'", async () => {
+  await flow("hero: 'Testing an app, game or ad instead?' opens the onboarding at 'What do you want to test?'", async () => {
     await p.goto(BASE + "/", { waitUntil: "networkidle" });
-    await p.getByRole("link", { name: /No website\? Test an app/ }).first().click();
+    await p.getByRole("link", { name: /Testing an app, game or ad instead/ }).first().click();
     await p.waitForURL(/\/onboarding$/, { timeout: 8000 });
     await p.getByRole("heading", { name: /What do you want to test/ }).waitFor();
     for (const t of ["Website", "Online store", "Mobile app", "Game", "Video or ad"]) await p.getByRole("button", { name: new RegExp("^" + t) }).first().waitFor();
@@ -151,33 +151,62 @@ const record = (r) => {
     await p.getByRole("button", { name: /^Mobile app/ }).first().click();
     await p.getByRole("heading", { name: /Testing a mobile app/ }).waitFor();
   });
-  await flow("home: hero URL box, the 5 steps, both animations and the interactive sample report", async () => {
+  await flow("home: one goal: URL box + sample report in the hero, compact simulation, 3 steps, sample report, free test first", async () => {
     await p.goto(BASE + "/", { waitUntil: "networkidle" });
     await p.locator(".wordmark21").first().waitFor({ timeout: 5000 });
     await p.locator("#hero-url").waitFor({ timeout: 3000 });
-    await p.locator("#simulation .lab-track").waitFor({ timeout: 3000 });
-    await p.locator("#patterns .lab-track").waitFor({ timeout: 3000 });
-    const steps = await p.locator(".step23").allInnerTexts();
-    if (steps.join(",") !== "01,02,03,04,05") throw new Error(`steps = ${steps}`);
+    const heroLinks = await p.locator(".hero27 form a").allInnerTexts();
+    if (!heroLinks.some((t) => /See a sample report/.test(t))) throw new Error("no sample report button next to the URL box");
+    await p.locator(".hero27 .launch-pill").first().waitFor({ timeout: 3000 });
+    const sim = await p.locator("#simulation").boundingBox();
+    if (!sim || sim.height > 900) throw new Error(`simulation block is ${sim && Math.round(sim.height)}px tall (should be one compact block)`);
+    if (await p.locator("#patterns").count()) throw new Error("the second long animation is still on the page");
+    const steps = await p.locator(".step27").allInnerTexts();
+    if (steps.length !== 3 || steps.some((t) => t.split(/\s+/).length < 20)) throw new Error(`steps = ${steps.length}, words = ${steps.map((t) => t.split(/\s+/).length)}`);
     await p.getByText(/illustrative data/i).first().waitFor({ timeout: 3000 });
     await p.getByRole("tab", { name: "Recommendations", exact: true }).click();
     await p.getByText("Show the price on the homepage").first().waitFor({ timeout: 3000 });
     await p.getByRole("tab", { name: "Personas", exact: true }).click();
     await p.getByRole("button", { name: "Would buy" }).first().click();
-    await p.getByText("Illustrative", { exact: true }).first().waitFor({ timeout: 3000 });
+    await p.locator(".price27-free").getByText("$0").waitFor({ timeout: 3000 });
+    const order = await p.evaluate(() => ["#report", "#pricing"].map((q) => document.querySelector(q)?.getBoundingClientRect().top ?? -1));
+    if (!(order[0] > 0 && order[1] > order[0])) throw new Error(`pricing should come right after the sample report: ${order}`);
+  });
+  await flow("home: one call to action ('Run simulation'); the page is short", async () => {
+    const ctas = await p.locator("main .btn-primary, header .btn-primary").allInnerTexts();
+    const other = ctas.map((t) => t.replace(/[^A-Za-z ]/g, "").trim()).filter((t) => t && !/^Run simulation/.test(t));
+    if (other.length) throw new Error(`other primary buttons: ${other.join(" / ")}`);
+    const screens = await p.evaluate(() => document.documentElement.scrollHeight / innerHeight);
+    if (screens > 14) throw new Error(`page is ${screens.toFixed(1)} screens long`);
+    return `${ctas.length} primary buttons, all "Run simulation"; ${screens.toFixed(1)} screens`;
   });
   await flow("home: the full-report link and final URL box are there", async () => {
     await p.locator('a[href="/example"]').first().waitFor();
     await p.locator("#final-url").waitFor();
   });
-  await flow("home: FAQ answers open", async () => {
-    await p.getByText("What does it cost?").click();
-    await p.getByText(/1 test with 25 simulated customers/).first().waitFor();
+  await flow("home: FAQ shows 4 questions, the rest fold; answers open", async () => {
+    await p.getByText("What do I get for free?").click();
+    await p.getByText(/One test with 25 simulated customers/).first().waitFor();
+    await p.getByText(/More questions/).click();
+    await p.getByText("How long does a test take?").waitFor();
   });
   await flow("home: demo data is labelled", async () => {
-    const n = await p.getByText(/Demo data/i).count();
+    const n = await p.getByText(/demo data|illustrative/i).count();
     if (n < 2) throw new Error(`only ${n} demo labels`);
     return `${n} labels`;
+  });
+  await flow("home (phone): the 'Run simulation' bar appears after the hero and puts the cursor in the URL box", async () => {
+    const ph = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    try {
+      await ph.goto(BASE + "/", { waitUntil: "networkidle" });
+      if (await ph.locator(".sticky-run[data-show]").count()) throw new Error("bar shows before scrolling");
+      await ph.evaluate(() => window.scrollTo(0, 2200));
+      await ph.locator(".sticky-run[data-show]").waitFor({ timeout: 4000 });
+      await ph.locator(".sticky-run button").tap();
+      await ph.waitForFunction(() => document.activeElement?.id === "hero-url", null, { timeout: 4000 });
+    } finally {
+      await ph.close();
+    }
   });
   await flow("pricing: 5 monthly plans (no annual), pay per analysis, enterprise, same numbers as the code", async () => {
     await p.goto(BASE + "/pricing", { waitUntil: "networkidle" });

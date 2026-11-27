@@ -157,19 +157,17 @@ test("final pricing: free 25 once, $19 = 1,000, $49 = 5,000, $99 = 15,000, $199 
   test("pay per analysis: 100 $9, 250 $19, 500 $29, 1,000 $49; no annual pricing left; old pack ids unknown", () =>
     eq([P.PACKS.map((x) => [x.id, x.crawlers, x.priceUsd]), P.findPack("test250")?.crawlers, P.findPack("pack2000"), P.findPack("nope"), typeof P.yearlyUsd, typeof P.ANNUAL_MONTHS_PAID, P.planName("test500")],
       [[["test100", 100, 9], ["test250", 250, 19], ["test500", 500, 29], ["test1000", 1000, 49]], 250, null, null, "undefined", "undefined", "500-customer analysis"], "pay per analysis"));
-  test("launch discount: launch week (Dec 5-12) 30%, waitlist tiers 10/20/30, never stacked", () => {
-    const bf = new Date("2026-12-08T12:00:00Z"), before = new Date("2026-12-04T12:00:00Z"), after = new Date("2026-12-14T12:00:00Z");
-    return eq([
-      P.launchDiscount({ interval: "month", onWaitlist: false, waitlistSize: 0, now: bf }),
-      P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 500, now: bf }),
-      P.launchDiscount({ interval: "year", onWaitlist: true, waitlistSize: 500, now: bf }),
-      P.launchDiscount({ interval: "month", onWaitlist: false, waitlistSize: 500, now: before }),
-      P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 0, now: after }),
-      P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 120, now: after }),
-      P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 250, now: after }),
+  test("discounts: waitlist tiers 10/20/30 on monthly plans only, never on annual; launch offer = 1,000 customers for 100 people", () =>
+    eq([
+      P.launchDiscount({ interval: "month", onWaitlist: false, waitlistSize: 500 }),
+      P.launchDiscount({ interval: "year", onWaitlist: true, waitlistSize: 500 }),
+      P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 0 }),
+      P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 120 }),
+      P.launchDiscount({ interval: "month", onWaitlist: true, waitlistSize: 250 }),
       P.discounted(19, 30), P.discounted(199, 30),
-    ], [30, 30, 0, 0, 10, 20, 30, "13.30", "139.30"], "discount");
-  });
+      P.LAUNCH_OFFER.freeCustomers, P.LAUNCH_OFFER.spots, P.LAUNCH_OFFER.start, P.LAUNCH_OFFER.end,
+    ], [0, 0, 10, 20, 30, "13.30", "139.30", 1000, 100, "2026-12-05T05:00:00Z", "2026-12-13T05:00:00Z"], "offers"));
+
 }
 test("test sizes offered = only what fits in what's left this month", () =>
   eq([sizesFor({ allowance: 1000, used: 700, left: 300, resets: null }, false, TEST_SIZES), sizesFor(null, false, TEST_SIZES), sizesFor(null, true, TEST_SIZES), sizesFor({ allowance: 1000, used: 950, left: 50, resets: null }, false, TEST_SIZES),

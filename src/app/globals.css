@@ -3361,3 +3361,58 @@ html[data-calm] .dash-live { animation: none; }
 .legal-table th, .legal-table td { border-bottom: 1px solid var(--line); padding: 0.6rem 0.75rem 0.6rem 0; vertical-align: top; }
 .legal-table thead th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-muted); }
 .legal-table tbody th { font-weight: 600; white-space: nowrap; }
+
+/* =================================================================================================
+   v27 CONVERSION HOME (2026-11-27, founder: "restructure the page around one goal: getting a visitor
+   to paste a URL and run a free simulation"). src/app/page.tsx. Brand kept (concrete, washed denim,
+   big wordmark, persona card); the page is about a third as long as before.
+   ================================================================================================= */
+/* hero: a bit less air above the fold so the URL box sits higher on laptops */
+.hero27 { padding-block: clamp(1rem, 3vh, 2.25rem) 2.5rem; }
+.hero27 .hero23-mark { font-size: clamp(4.5rem, min(16vw, 20vh), 12rem); }
+
+/* the launch offer pill */
+.launch-pill { display: inline-flex; align-items: flex-start; gap: 0.6rem; max-width: 100%; border-radius: 999px; padding: 0.55rem 1rem; font-size: 0.875rem; line-height: 1.4; background: #f2f1ec; color: #0b0b0a; border: 1px solid rgb(0 0 0 / 0.14); box-shadow: 0 6px 18px -12px rgb(0 0 0 / 0.5); }
+.launch-pill strong { font-weight: 650; }
+.launch-dot { flex: none; margin-top: 0.4rem; height: 0.5rem; width: 0.5rem; border-radius: 999px; background: #3e4a6e; box-shadow: 0 0 0 4px rgb(62 74 110 / 0.18); }
+.launch-left { font-weight: 650; }
+.proof27 { color: var(--fg-muted); }
+
+/* the compact simulation: one rounded dark panel, no fades, no tall scroll */
+.lab.lab27 { padding-block: 0.5rem 1rem !important; background: none !important; }
+.lab.lab27::before { display: none !important; }
+.lab-seq.is-compact { width: min(88rem, calc(100% - 2rem)); margin-inline: auto; }
+.lab-seq.is-compact .lab-track { height: auto; }
+.lab-seq.is-compact .lab-pin { position: relative; height: clamp(440px, 62vh, 560px); border-radius: 28px; }
+.lab-seq.is-compact .lab-hint { display: none; }
+@media (max-width: 639px) { .lab-seq.is-compact { width: calc(100% - 1.5rem); } .lab-seq.is-compact .lab-pin { height: 520px; border-radius: 22px; } }
+
+/* how it works: 3 readable columns on desktop */
+.steps27 { display: grid; gap: 1rem; }
+@media (min-width: 900px) { .steps27 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; } }
+.step27 { border-radius: 20px; padding: 1.5rem 1.5rem 1.75rem; background: rgb(242 241 236 / 0.86); border: 1px solid rgb(0 0 0 / 0.1); box-shadow: 0 10px 30px -22px rgb(0 0 0 / 0.55); }
+.step27-n { display: inline-flex; height: 2.25rem; width: 2.25rem; align-items: center; justify-content: center; border-radius: 999px; background: #3e4a6e; color: #ffffff; font-weight: 650; }
+
+/* pricing: the free test is the big, highlighted default */
+.price27 { display: grid; gap: 1rem; }
+@media (min-width: 900px) { .price27 { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 1.25rem; align-items: stretch; } }
+.price27-free { border-radius: 24px; padding: 1.75rem; background: #f2f1ec; border: 2px solid #3e4a6e; box-shadow: 0 18px 44px -26px rgb(44 54 83 / 0.7); }
+.price27-paid { border-radius: 24px; padding: 0.75rem 1.5rem 1rem; background: rgb(242 241 236 / 0.7); border: 1px solid rgb(0 0 0 / 0.1); }
+.price27-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.75rem; padding: 0.9rem 0; border-bottom: 1px solid rgb(0 0 0 / 0.1); }
+
+/* honest by design: 2x2 */
+.honest27 { display: grid; gap: 1rem 2rem; }
+@media (min-width: 760px) { .honest27 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.honest27 li { border-top: 1px solid rgb(0 0 0 / 0.18); padding-top: 1rem; }
+
+/* phones: the thumb-reach "Run simulation" bar */
+.sticky-run { position: fixed; z-index: 45; left: 0; right: 0; bottom: 0; padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom)); background: linear-gradient(180deg, rgb(169 167 160 / 0), rgb(169 167 160 / 0.92) 40%); translate: 0 110%; transition: translate 280ms var(--ease-out, ease); pointer-events: none; }
+.sticky-run[data-show] { translate: 0 0; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) { .sticky-run { transition: none; } }
+html[data-calm] .sticky-run { transition: none; }
+/* phones: the persona card without its tall charcoal tile (it pushed the page down a whole screen) */
+@media (max-width: 639px) {
+  .persona27 { padding-bottom: 0; }
+  .persona27 .hero23-tile { display: none; }
+  .persona27 .spec { position: relative; left: 0; width: 100%; }
+}
