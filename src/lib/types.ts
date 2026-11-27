@@ -178,6 +178,9 @@ export type Persona = {
   patience: string;
   // Their inner life: why they're here and how they decide (see mind.ts). Older runs don't have it.
   mind?: import("./mind").Mind;
+  // ENGINE v2 (population.ts): a concrete wallet + history and patience in seconds. Older runs don't have them.
+  spend?: import("./population").Spend;
+  patienceSec?: number;
   // Only filled in when audience.mode === "business"
   role?: string;
   canBuyAlone?: boolean;
@@ -213,6 +216,34 @@ export type Verdict = {
   quote: string;
   firstGlance?: string; // what they noticed first (newer runs)
   thought?: string; // their inner reasoning before deciding (newer runs)
+  // ENGINE v2: reasons against come FIRST, then for; the price checked against their budget out loud;
+  // and the exact page element that decided it (evidence.ts checks the words really are on the page).
+  reasonsNot?: string[];
+  reasonsFor?: string[];
+  priceCheck?: string;
+  evidence?: Evidence;
+};
+
+export const EVIDENCE_KINDS = [
+  "headline",
+  "price",
+  "button",
+  "form",
+  "trust signal",
+  "image",
+  "copy",
+  "step",
+  "missing",
+] as const;
+export type EvidenceKind = (typeof EVIDENCE_KINDS)[number];
+
+export type Evidence = {
+  kind: EvidenceKind; // what sort of page element decided it ("missing" = something they looked for and didn't find)
+  text: string; // the exact words copied from the page, or what was missing
+  step: "hero" | "pricing" | "product" | "signup";
+  // true = these words were found on the crawled pages; false = not found (possibly made up);
+  // null = can't be checked (a missing thing, or a picture)
+  verified: boolean | null;
 };
 
 // ---------- Cost tracking ----------

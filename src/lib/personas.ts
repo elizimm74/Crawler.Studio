@@ -1,9 +1,16 @@
 // STEP 2 of the engine: build personas IN CODE (no AI, so it's free).
-// Each persona gets every attribute drawn at random from the audience
-// settings, so 100 personas come out varied instead of 100 copies.
+// Each persona gets every attribute drawn from the audience settings, so 100 personas come out
+// varied instead of 100 copies. ENGINE v2: age, budget and mindset are weighted by real-world
+// distributions (population.ts), and every persona gets a concrete wallet, a spending history,
+// patience in seconds and one dealbreaker BEFORE they see the site.
 import type { Audience, Persona } from "./types";
 import { simulateVisit } from "./behavior";
 import { describeMind, simulateMind } from "./mind";
+import { describeSpend, patienceSeconds, pickAge, pickBudget, pickMindset, simulateSpend } from "./population";
+
+// Bump when the way customers are built or asked changes, so before/after comparisons and the
+// accuracy log know which engine produced a result.
+export const ENGINE_VERSION = 2;
 
 // A "seeded" random number generator: the same seed always produces the same
 // personas. That makes runs repeatable, which matters for before/after tests.
@@ -38,32 +45,23 @@ export function generatePersonas(audience: Audience, count: number, seed: number
     return entries[0][0];
   };
 
-  const age = () => {
-    const min = Math.min(audience.ageMin, audience.ageMax);
-    const max = Math.max(audience.ageMin, audience.ageMax);
-    let r = rand();
-    // Skew: squaring r pushes values toward 0 (younger); sqrt toward 1 (older).
-    if (audience.ageSkew === "younger") r = r * r;
-    if (audience.ageSkew === "older") r = Math.sqrt(r);
-    return Math.round(min + r * (max - min));
-  };
-
   const b = audience.business;
   const personas: Persona[] = [];
   for (let i = 0; i < count; i++) {
     // (device/arrivedFrom/patience are filled in just below)
+    const age = pickAge(rand, audience.ageMin, audience.ageMax, audience.ageSkew);
     const p: Persona = {
       device: "laptop",
       arrivedFrom: "",
       patience: "",
       id: `P${String(i + 1).padStart(3, "0")}`,
-      age: age(),
+      age,
       gender: weighted(audience.genderSplit),
       country: pick(audience.countries, "United States"),
       area: weighted(audience.areaMix),
       occupation: pick(audience.occupations, "office worker"),
-      budget: pick(audience.budgets, "okay"),
-      mindset: pick(audience.mindsets, "skeptical"),
+      budget: pickBudget(rand, audience.budgets, age),
+      mindset: pickMindset(rand, audience.mindsets),
       techComfort: pick(audience.techComfort, "medium"),
       currentSolution: pick(audience.currentSolutions, "nothing"),
     };
@@ -77,6 +75,9 @@ export function generatePersonas(audience: Audience, count: number, seed: number
     Object.assign(p, simulateVisit(p, rand));
     // ...and their inner life: why they're here, what wins them, what loses them (mind.ts).
     p.mind = simulateMind(p, rand);
+    // ...and a concrete wallet + history and patience in seconds (population.ts).
+    p.spend = simulateSpend(p, rand);
+    p.patienceSec = patienceSeconds(p.patience, rand);
     personas.push(p);
   }
   return personas;
@@ -94,7 +95,8 @@ export function describePersona(p: Persona): string {
     `currently uses: ${p.currentSolution}`,
     `visiting on a ${p.device}`,
     `came from ${p.arrivedFrom}`,
-    `patience ${p.patience}`,
+    p.patienceSec ? `patience about ${p.patienceSec} seconds` : `patience ${p.patience}`,
+    ...describeSpend(p.spend),
     ...describeMind(p.mind ?? {}),
   ];
   if (p.role) {

@@ -41,6 +41,12 @@
     "src/lib/safePath.ts",
     "src/lib/insights.ts",
     "src/lib/fixPrompt.ts",
-    "src/lib/preview.ts"
+    "src/lib/preview.ts",
+    "src/lib/population.ts",
+    "src/lib/intent.ts",
+    "src/lib/calibration.ts",
+    "src/lib/evidence.ts",
+    "src/lib/aggregate.ts",
+    "src/lib/presets.ts"
   ]
 }

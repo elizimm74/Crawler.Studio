@@ -5,9 +5,9 @@
 // It's a plain function with no global state: the WORKER calls it, and saves
 // progress to the database through `onChange`. Any worker on any machine can
 // run any test.
-import { generatePersonas } from "./personas";
+import { ENGINE_VERSION, generatePersonas } from "./personas";
 import { evaluatePersonas } from "./evaluate";
-import { aggregate, type Stats } from "./aggregate";
+import { aggregate, NO_CALIBRATION, type CalibrationUsed, type Stats } from "./aggregate";
 import { answerQuality, type Quality } from "./quality";
 import { writeAdvice, type Advice } from "./report";
 import { exploreProduct } from "./explore";
@@ -37,6 +37,7 @@ export type Run = {
   audience: Audience;
   explore?: ExploreSettings; // never includes the test-account details
   seed: number;
+  engine?: number; // ENGINE_VERSION that produced this run (older runs: missing = 1)
   compareTo?: string; // a re-test: the id of the test it repeats (same customers)
   status: "queued" | "running" | "done" | "error";
   stage: string; // human-readable, shown on the progress screen
@@ -67,6 +68,7 @@ export type RunInput = {
   credentials?: Credentials | null; // kept in memory only, never in the Run
   seed?: number; // same seed = same personas (for before/after re-runs)
   compareTo?: string; // re-test of this test id
+  calibration?: CalibrationUsed; // chosen by the worker from real results (calibration.ts)
 };
 
 export type RunHooks = {
@@ -87,6 +89,7 @@ export async function runTest(input: RunInput, hooks: RunHooks): Promise<Run> {
     audience: input.audience,
     explore: input.explore?.enabled ? input.explore : undefined,
     seed,
+    engine: ENGINE_VERSION,
     compareTo: input.compareTo,
     status: "running",
     stage: "Creating personas",
@@ -140,8 +143,13 @@ export async function runTest(input: RunInput, hooks: RunHooks): Promise<Run> {
     run.costs.push(...costs);
 
     run.stage = "Crunching the numbers";
-    run.stats = aggregate(run.audience, run.personas, verdicts, Boolean(run.journey?.steps.length));
-    run.quality = answerQuality(verdicts);
+    run.stats = aggregate(run.audience, run.personas, verdicts, Boolean(run.journey?.steps.length), {
+      goal: run.profile.goal,
+      calibration: input.calibration ?? NO_CALIBRATION,
+      engine: ENGINE_VERSION,
+      seed,
+    });
+    run.quality = answerQuality(verdicts, run.stats);
 
     run.stage = "Writing your fixes";
     changed();

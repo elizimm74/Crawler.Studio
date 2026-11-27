@@ -14,12 +14,13 @@ import { readApp } from "../lib/app/read";
 import { runAppTest, type AppRun } from "../lib/app/pipeline";
 import type { AppAnalysis, AppInput, AppSettings } from "../lib/app/types";
 import { readVideo } from "../lib/video/read";
+import { calibrationFor } from "./calibrate";
 import { runVideoTest, type VideoRun } from "../lib/video/pipeline";
 import type { VideoAnalysis, VideoInput, VideoSettings } from "../lib/video/types";
 
 export type Job = {
   id: number;
-  kind: "analyze" | "run";
+  kind: "analyze" | "run" | "calibrate";
   ref_id: string;
   user_id: string;
   attempts: number;
@@ -155,8 +156,11 @@ export async function runJob(job: Job, ctx: Ctx) {
     pending = pending.then(() => ctx.db.from("tests").update(update).eq("id", job.ref_id));
   };
 
+  // Engine v2: use this site's own calibration, else the global one (calibrate.ts).
+  const calibration = await calibrationFor(ctx, job.user_id, crawl.url);
   const run = await runTest(
     {
+      calibration,
       id: job.ref_id,
       userId: job.user_id,
       crawl,

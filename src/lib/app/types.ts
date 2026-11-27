@@ -94,6 +94,11 @@ export type AppVerdict = {
   quote: string;
   firstGlance?: string; // what they noticed first (newer runs)
   thought?: string; // their inner reasoning before deciding (newer runs)
+  // engine v2: reasons against first, the price vs their budget, and the screen + words that decided it
+  reasonsNot?: string[];
+  reasonsFor?: string[];
+  priceCheck?: string;
+  evidence?: { screen: number; text: string; verified: boolean | null };
 };
 
 export type AppPersona = Persona & { platform: "iPhone" | "Android"; source: AppSource; sample: number };

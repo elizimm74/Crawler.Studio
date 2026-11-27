@@ -6,7 +6,18 @@
 import { generatePersonas, makeRandom } from "./personas";
 import { aggregate } from "./aggregate";
 import type { Run } from "./pipeline";
-import type { Audience, ObjectionCategory, ProductProfile, Verdict } from "./types";
+import type { Audience, Evidence, ObjectionCategory, ProductProfile, Verdict } from "./types";
+
+// The page element each kind of objection pointed at on the pretend MealMate page (made up, like the rest).
+const EVIDENCE: Record<string, Evidence> = {
+  price: { kind: "missing", text: "no price anywhere before signup", step: "pricing", verified: null },
+  "unclear value": { kind: "headline", text: "Dinner, solved.", step: "hero", verified: true },
+  trust: { kind: "missing", text: "no reviews or user numbers on the page", step: "hero", verified: null },
+  "signup friction": { kind: "form", text: "Phone number (required)", step: "signup", verified: true },
+  "happy with current solution": { kind: "copy", text: "Plan smarter, eat better", step: "hero", verified: true },
+  "not for me": { kind: "image", text: "a young couple cooking in a big kitchen", step: "hero", verified: null },
+  buy: { kind: "button", text: "Start free week, no card", step: "signup", verified: true },
+};
 import { PRESETS } from "./presets";
 import { generateAppPersonas, SAMPLES } from "./app/personas";
 import { aggregateApp } from "./app/aggregate";
@@ -44,7 +55,7 @@ export function exampleWebsiteRun(): Run & { filesPrefix: string } {
     const r = rand();
     const verdict = r < 0.2 + score ? "buy" : r < 0.46 + score ? "maybe" : "no";
     if (verdict === "buy") {
-      return { personaId: p.id, verdict, lostAt: "none", objectionCategory: "none", objection: "Small worry: what happens after the free week?", wouldChangeMind: "Show the price after the trial up front.", quote: pick(rand, YES_QUOTES) };
+      return { personaId: p.id, verdict, lostAt: "none", objectionCategory: "none", objection: "Small worry: what happens after the free week?", wouldChangeMind: "Show the price after the trial up front.", quote: pick(rand, YES_QUOTES), reasonsNot: ["Not sure what it costs after the free week"], reasonsFor: ["Saves planning time every Sunday", "No card needed to start"], priceCheck: "Free week, no card: costs me an email, fine.", evidence: EVIDENCE.buy };
     }
     const cat: ObjectionCategory = (p.budget === "tight" ? pick(rand, ["price", "price", "unclear value"] as const) : p.mindset === "skeptical" ? pick(rand, ["trust", "trust", "signup friction"] as const) : pick(rand, ["price", "unclear value", "signup friction", "trust", "happy with current solution", "not for me"] as const)) as ObjectionCategory;
     const lostAt = cat === "price" ? "pricing" : cat === "signup friction" ? "signup" : cat === "unclear value" || cat === "not for me" ? "hero" : pick(rand, ["hero", "pricing", "signup"] as const);
@@ -56,10 +67,10 @@ export function exampleWebsiteRun(): Run & { filesPrefix: string } {
       "happy with current solution": "Show what it does that my notes app can't.",
       "not for me": "Show someone like me using it.",
     };
-    return { personaId: p.id, verdict, lostAt, objectionCategory: cat, objection: QUOTES[cat][0], wouldChangeMind: change[cat], quote: pick(rand, QUOTES[cat]) };
+    return { personaId: p.id, verdict, lostAt, objectionCategory: cat, objection: QUOTES[cat][0], wouldChangeMind: change[cat], quote: pick(rand, QUOTES[cat]), reasonsNot: [QUOTES[cat][0]], reasonsFor: verdict === "maybe" ? ["The weekly plan idea is useful"] : [], priceCheck: cat === "price" ? `No price shown vs about $${p.spend?.monthlySpare ?? 30}/month spare: can't judge it.` : "Free to start, but it wants my details.", evidence: EVIDENCE[cat] };
   });
 
-  const stats = aggregate(audience, personas, verdicts);
+  const stats = aggregate(audience, personas, verdicts, false, { goal: "sign up", seed: 20260 });
   const profile: ProductProfile = {
     goal: "sign up",
     whatItIs: "MealMate plans a week of dinners and a grocery list for busy parents.",
@@ -71,16 +82,17 @@ export function exampleWebsiteRun(): Run & { filesPrefix: string } {
     tryTask: "",
   };
   const claimed = new Set<string>();
-  const fix = (title: string, problem: string, change: string, step: "hero" | "pricing" | "signup", addresses: ObjectionCategory[]) => {
+  const fix = (title: string, problem: string, change: string, step: "hero" | "pricing" | "signup", addresses: ObjectionCategory[], cites: string) => {
     const groups = stats.objections.filter((o) => addresses.includes(o.category) && !claimed.has(o.category));
     groups.forEach((g) => claimed.add(g.category));
-    return { title, problem, change, step, addresses, couldFlip: groups.reduce((s, g) => s + g.count, 0), likelyFlip: groups.reduce((s, g) => s + g.maybeCount, 0) };
+    const citedBy = stats.objections.filter((o) => addresses.includes(o.category)).reduce((n, o) => n + (o.evidence?.[0]?.count ?? 0), 0) || undefined;
+    return { title, problem, change, step, addresses, cites, citedBy, couldFlip: groups.reduce((s, g) => s + g.count, 0), likelyFlip: groups.reduce((s, g) => s + g.maybeCount, 0) };
   };
   const fixes = [
-    fix("Show the price on the homepage", "People can't see what it costs, so they assume the worst.", "Add a one-line price under the hero button: \"Free for a week, then $6/month.\"", "hero", ["price"]),
-    fix("Ask for an email only", "Six fields before seeing anything loses people at the last step.", "Cut signup to email. Ask the rest after they've seen their first plan.", "signup", ["signup friction"]),
-    fix("Add proof next to the button", "No reviews or user counts, so skeptics bounce.", "Add three real parent quotes and a user count under the headline.", "hero", ["trust"]),
-    fix("Say what it does in one line", "The headline is clever but vague.", "Rewrite the first line: \"Dinner planned for your whole week, with the grocery list.\"", "hero", ["unclear value", "not for me"]),
+    fix("Show the price on the homepage", "People can't see what it costs, so they assume the worst.", "Add a one-line price under the hero button: \"Free for a week, then $6/month.\"", "hero", ["price"], "missing: no price anywhere before signup"),
+    fix("Ask for an email only", "Six fields before seeing anything loses people at the last step.", "Cut signup to email. Ask the rest after they've seen their first plan.", "signup", ["signup friction"], "Phone number (required)"),
+    fix("Add proof next to the button", "No reviews or user counts, so skeptics bounce.", "Add three real parent quotes and a user count under the headline.", "hero", ["trust"], "missing: no reviews or user numbers on the page"),
+    fix("Say what it does in one line", "The headline is clever but vague.", "Rewrite the first line: \"Dinner planned for your whole week, with the grocery list.\"", "hero", ["unclear value", "not for me"], "Dinner, solved."),
   ].sort((a, b) => b.likelyFlip - a.likelyFlip || b.couldFlip - a.couldFlip);
 
   return {
@@ -91,6 +103,7 @@ export function exampleWebsiteRun(): Run & { filesPrefix: string } {
     profile,
     audience,
     seed: 20260,
+    engine: 2,
     status: "done",
     stage: "Done",
     progress: { done: 100, total: 100 },

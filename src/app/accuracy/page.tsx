@@ -5,6 +5,15 @@ import Link from "next/link";
 import { supabaseServer } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { Arrow } from "@/components/landing/UrlForm";
+import { MARGIN_PP, MIN_FOR_GLOBAL, MIN_VISITORS, summarizeAccuracy } from "@/lib/calibration";
+
+// One logged calibration (public_calibration, migration 0028). Anonymous.
+type CalRow = {
+  month: string; kind: string; goal: string | null; engine: number; simulated: number | null;
+  stated: number | null; raw: number | null; loo: number | null; real: number;
+  visitors: number | null; days: number | null; errorPp: number | null; within: boolean | null; usedInFit: boolean;
+};
+type CalState = { engine: number; delta: number; sd: number; n: number; users: number; fittedAt: string; accuracy: { n?: number; withinPct?: number | null; medianErrorPp?: number | null } };
 
 export const metadata = {
   title: "Accuracy: simulated vs real results",
@@ -19,10 +28,13 @@ const DISCLAIMER =
 
 export default async function Accuracy() {
   let rows: Row[] = [];
+  let cal: { state: CalState | null; rows: CalRow[] } = { state: null, rows: [] };
   if (AUTH_ENABLED) {
     const supabase = await supabaseServer();
     const { data } = await supabase.rpc("public_accuracy");
     rows = (data as Row[] | null) ?? [];
+    const { data: c } = await supabase.rpc("public_calibration"); // null before migration 0028
+    if (c) cal = { state: (c as typeof cal).state ?? null, rows: (c as typeof cal).rows ?? [] };
   }
   const enough = rows.length >= 5;
   const rank = enough ? spearman(rows.map((r) => r.predicted), rows.map((r) => r.real)) : null;
@@ -40,6 +52,8 @@ export default async function Accuracy() {
 
       <p className="card mt-8 p-5 text-sm">{DISCLAIMER}</p>
 
+      <CalibrationLog state={cal.state} rows={cal.rows} />
+
       <ol className="mt-12 space-y-10">
         <Part n={1} title="What Crawler measures">
           Simulated buying intent: how many AI-simulated customers, built from the audience you choose, say they would take your goal action (sign up,
@@ -56,7 +70,8 @@ export default async function Accuracy() {
           .
         </Part>
         <Part n={3} title="What the scores mean">
-          &quot;20 of 100 would sign up&quot; means 20 of the 100 simulated customers chose yes. The useful parts are the <em>reasons</em>, the
+          &quot;20 of 100 said they&apos;d sign up&quot; means 20 of the 100 simulated customers chose yes. Next to it, the report shows a
+          separate <em>predicted</em> rate (what we expect them to actually do, with a 90% range), because people say yes more than they act. The useful parts are the <em>reasons</em>, the
           <em> ranking</em> of problems, and the <em>change</em> between two versions tested on the same simulated customers.
         </Part>
         <Part n={4} title="What they do not mean">
@@ -64,10 +79,11 @@ export default async function Accuracy() {
           do, and they never see your ads, your brand&apos;s reputation or a real checkout.
         </Part>
         <Part n={5} title="How predictions are compared with real behavior">
-          After launch, founders can enter their real conversion rate (and, optionally, how many visitors and over how many days) under their report.
-          We show each result here anonymously next to the prediction. Because simulated rates run higher, the fair test is the{" "}
-          <em>ranking</em>: do pages Crawler rates higher also convert better in real life? That&apos;s the rank correlation below, shown only once
-          there are at least 5 results.
+          After launch, founders can enter their real conversion rate (and how many visitors) under their report. Crawler then keeps two numbers
+          apart: what the simulated customers <em>said</em>, and what we <em>predict</em> they&apos;d do after correcting for the well-known gap
+          between saying and doing. Each real result recalibrates that correction, and every calibration is logged above. The accuracy number is
+          measured fairly: each result is predicted by a calibration fitted on <em>all the other</em> results, never on itself. Below, the older
+          table also shows the ranking test: do pages Crawler rates higher convert better in real life?
         </Part>
         <Part n={6} title="Limits of AI-generated customer behavior">
           Models can be overconfident, miss cultural and personal context, over-represent some viewpoints, and react to wording more than real
@@ -189,4 +205,70 @@ function spearman(a: number[], b: number[]): number {
     db += (rb[i] - mb) ** 2;
   }
   return da && db ? num / Math.sqrt(da * db) : 0;
+}
+
+// The public calibration log: the headline accuracy number (leave-one-out), then month by month.
+function CalibrationLog({ state, rows }: { state: CalState | null; rows: CalRow[] }) {
+  const used = rows.filter((r) => r.usedInFit && r.loo !== null && r.errorPp !== null);
+  const enough = used.length >= MIN_FOR_GLOBAL;
+  const months = [...new Set(used.map((r) => r.month))].sort().reverse();
+  const median = (xs: number[]) => {
+    if (!xs.length) return null;
+    const s = [...xs].sort((a, b) => a - b);
+    const m = s.length >> 1;
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  };
+  return (
+    <section className="card mt-8 p-6 sm:p-8" aria-labelledby="cal-title">
+      <p className="t-label">calibration log</p>
+      <h2 id="cal-title" className="t-h3 mt-2">
+        {enough && state?.accuracy?.withinPct != null
+          ? `${state.accuracy.withinPct}% of predictions landed within ±${MARGIN_PP} points of reality`
+          : "The accuracy number, once there's enough data"}
+      </h2>
+      <p className="mt-2 text-sm text-muted">
+        {enough
+          ? `Across ${used.length} real results from ${state?.users ?? "several"} accounts (each with ${MIN_VISITORS}+ real visitors), the median miss was ${state?.accuracy?.medianErrorPp ?? "–"} percentage points. Each result was predicted by a calibration that never saw it.`
+          : `We publish an accuracy number once ${MIN_FOR_GLOBAL} real results with ${MIN_VISITORS}+ visitors each are in. So far: ${used.length}. Until then, predictions use research-based starting values and show wide ranges.`}
+      </p>
+      {months.length > 0 && (
+        <div className="mt-6 overflow-x-auto">
+          <table className="w-full min-w-[30rem] text-left text-sm">
+            <caption className="sr-only">Calibrated accuracy by month</caption>
+            <thead>
+              <tr className="t-label border-b border-line">
+                <th scope="col" className="py-2 pr-4 font-normal">month</th>
+                <th scope="col" className="py-2 pr-4 font-normal">real results</th>
+                <th scope="col" className="py-2 pr-4 font-normal">within ±{MARGIN_PP} pts</th>
+                <th scope="col" className="py-2 pr-4 font-normal">median miss</th>
+                <th scope="col" className="py-2 font-normal">miss without calibration</th>
+              </tr>
+            </thead>
+            <tbody>
+              {months.map((m) => {
+                const rs = used.filter((r) => r.month === m);
+                const acc = summarizeAccuracy(rs.map((r) => ({ errorPp: Number(r.errorPp), within: Boolean(r.within) })));
+                const rawMiss = median(rs.filter((r) => r.raw !== null).map((r) => Math.abs(Number(r.raw) - Number(r.real))));
+                return (
+                  <tr key={m} className="border-b border-line">
+                    <td className="py-3 pr-4 tabular-nums">{m}</td>
+                    <td className="py-3 pr-4 tabular-nums">{rs.length}</td>
+                    <td className="py-3 pr-4 tabular-nums">{acc.withinPct}%</td>
+                    <td className="py-3 pr-4 tabular-nums">{acc.medianErrorPp} pts</td>
+                    <td className="py-3 tabular-nums">{rawMiss === null ? "–" : `${rawMiss.toFixed(1)} pts`}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="mt-6 text-xs text-faint">
+        How it works: a real result tells us how far the same simulated crowd was from reality on that page. Combining many of them (one vote per
+        account, shrunk toward &ldquo;no correction&rdquo; while there are few) gives the correction new tests use. Results with fewer than {MIN_VISITORS} real
+        visitors are listed but not used. Results are self-reported and can&apos;t be verified; an admin can exclude one that looks wrong.
+        {state?.fittedAt ? ` Last refit: ${state.fittedAt.slice(0, 10)}.` : ""}
+      </p>
+    </section>
+  );
 }

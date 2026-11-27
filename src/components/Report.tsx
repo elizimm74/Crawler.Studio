@@ -25,6 +25,7 @@ import FixCard from "@/components/report/FixCard";
 import { FixProgress, FixStatusProvider } from "@/components/report/FixStatus";
 import PrintButton from "@/components/report/PrintButton";
 import PreviewLock from "@/components/report/PreviewLock";
+import TrustPanel from "@/components/report/TrustPanel";
 import { PRIORITIES, priorityFor } from "@/lib/priority";
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
@@ -55,6 +56,7 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
   const fixWins = fixes.slice(0, 3).reduce((n, f) => n + f.likelyFlip, 0);
   const sections = [
     { id: "answer", label: "Answer" },
+    ...(stats.behavior ? [{ id: "trust", label: "Trust" }] : []),
     { id: "fixes", label: "Fixes" },
     { id: "problems", label: "Problems" },
     { id: "customers", label: "Customers" },
@@ -121,7 +123,7 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
         tag={run.profile?.productType === "store" ? "store report" : "report"}
         value={stats.buy}
         total={stats.total}
-        headline={`would ${goal}`}
+        headline={stats.behavior ? `said they'd ${goal}` : `would ${goal}`}
         summary={firstSentence(advice.summary)}
         pills={[
           ...(top ? [{ text: `Biggest blocker: ${top.category} · ${pct(top.pctOfNonBuyers)}`, warn: true }] : []),
@@ -149,6 +151,9 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
         <VerdictBar buy={stats.buy} maybe={stats.maybe} no={stats.no} goal={goal} />
       </ReportHero>
 
+      {/* engine v2: said vs predicted, ranges, calibration, evidence */}
+      <TrustPanel behavior={stats.behavior} evidence={stats.evidence} goal={goal} total={stats.total} />
+
       {/* a re-test: before / after with the same customers */}
       {!demo && run.compareTo && <CompareBox run={run} />}
       {/* ---------- 2. Fix these first ---------- */}
@@ -174,7 +179,7 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
               win={f.likelyFlip}
               winLabel={`of ${stats.maybe} maybes`}
               priority={priorityFor(f.couldFlip, stats.total)}
-              evidence={`${f.couldFlip} of ${stats.total} simulated customers left for a reason this addresses (${f.addresses.join(", ")}); ${f.likelyFlip} of them said "maybe". Expected direction: more people say yes.`}
+              evidence={`${f.couldFlip} of ${stats.total} simulated customers left for a reason this addresses (${f.addresses.join(", ")}); ${f.likelyFlip} of them said "maybe".${f.cites ? ` What they pointed at: “${f.cites.replace(/^missing:\s*/i, "missing: ")}”${f.citedBy ? ` (${f.citedBy} customers)` : ""}.` : ""} Expected direction: more people say yes.`}
               meta={`where: ${stepNames[f.step] ?? f.step}`}
               tracked
             />
@@ -237,6 +242,11 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
                         </span>
                       </div>
                       {o.examples[0] && <p className="mt-1 text-sm text-muted">“{o.examples[0]}”</p>}
+                      {o.evidence?.[0] && (
+                        <p className="mt-1 text-xs text-muted">
+                          On the page: <span className="text-fg">{o.evidence[0].kind === "missing" ? `missing: ${o.evidence[0].text}` : `“${o.evidence[0].text}”`}</span> · cited by {o.evidence[0].count}
+                        </p>
+                      )}
                       {o.changeMind[0] && <p className="mt-1 text-xs text-faint">Would change their mind: {o.changeMind[0]}</p>}
                     </li>
                   ))}
@@ -400,9 +410,12 @@ function firstSentence(text: string) {
 // and segments where everyone is the same, e.g. all "female").
 function extremeSegments(segments: Record<string, SegmentRow[]>, total: number) {
   const minSize = Math.max(5, Math.round(total * 0.08));
-  const rows = Object.entries(segments)
+  const all = Object.entries(segments)
     .filter(([, list]) => list.length > 1)
     .flatMap(([dimension, list]) => list.filter((r) => r.n >= minSize).map((r) => ({ ...r, dimension })));
+  // engine v2: only compare groups big enough to trust, when there are any
+  const big = all.filter((r) => r.small === false);
+  const rows = big.length >= 2 ? big : all;
   if (rows.length < 2) return { best: undefined, worst: undefined };
   const sorted = [...rows].sort((a, b) => b.buyRate - a.buyRate || b.n - a.n);
   return { best: sorted[0], worst: sorted[sorted.length - 1] };
@@ -420,16 +433,27 @@ function AllSegments({ segments, goal }: { segments: Record<string, SegmentRow[]
               .sort((a, b) => b.buyRate - a.buyRate)
               .slice(0, 5)
               .map((r) => (
-                <div key={r.value} className="flex items-center gap-2 py-0.5 text-sm" title={`${r.n} personas`}>
-                  <span className="w-32 truncate text-muted">{r.value}</span>
-                  <span className="flex-1 rounded px-2 py-0.5 text-right tabular-nums" style={heat(r.buyRate)}>
-                    {pct(r.buyRate)}
-                  </span>
+                <div key={r.value} className={`py-0.5 text-sm ${r.small ? "opacity-60" : ""}`} title={`${r.n} simulated customers`}>
+                  <div className="flex items-center gap-2">
+                    <span className="w-32 truncate text-muted">{r.value}</span>
+                    <span className="flex-1 rounded px-2 py-0.5 text-right tabular-nums" style={heat(r.buyRate)}>
+                      {pct(r.buyRate)}
+                    </span>
+                  </div>
+                  {r.low !== undefined && r.high !== undefined && (
+                    <p className="pl-[8.5rem] text-[11px] text-faint">
+                      n={r.n} · range {pct(r.low)}–{pct(r.high)}
+                      {r.small ? " · too few to trust" : ""}
+                    </p>
+                  )}
                 </div>
               ))}
           </div>
         ))}
-      <p className="text-sm text-faint sm:col-span-2 lg:col-span-3">% = share who would {goal}. Stronger color = more.</p>
+      <p className="text-sm text-faint sm:col-span-2 lg:col-span-3">
+        % = share who said they&apos;d {goal}. Stronger color = more. The range is the 90% range for that group; groups under 30 simulated customers
+        are faded and marked &ldquo;too few to trust&rdquo;, because a difference there can easily be chance.
+      </p>
     </div>
   );
 }
@@ -597,7 +621,8 @@ function CustomerList({ run, goal }: { run: Run; goal: string }) {
                   </p>
                   {p && (
                     <p className="text-xs text-faint">
-                      {p.mindset} · budget {p.budget} · {p.device} · came from {p.arrivedFrom}
+                      {p.mindset} · budget {p.budget}
+                      {p.spend ? ` (~$${p.spend.monthlySpare}/mo spare)` : ""} · {p.device} · came from {p.arrivedFrom}
                     </p>
                   )}
                 </div>
@@ -607,7 +632,16 @@ function CustomerList({ run, goal }: { run: Run; goal: string }) {
               <dl className="mt-3 space-y-1.5 text-sm">
                 {p?.mind?.motivation && <Line k="Why they came" v={p.mind.motivation} />}
                 {v.objection && <Line k={v.verdict === "buy" ? "Small worry" : "Objection"} v={v.objection} />}
+                {v.reasonsNot?.length ? <Line k="Reasons not to" v={v.reasonsNot.join("; ")} /> : null}
+                {v.reasonsFor?.length ? <Line k="Reasons to" v={v.reasonsFor.join("; ")} /> : null}
+                {v.priceCheck && <Line k="Price vs budget" v={v.priceCheck} />}
                 {v.thought && <Line k="Reasoning" v={v.thought} />}
+                {v.evidence && (
+                  <Line
+                    k="Decided by"
+                    v={`${v.evidence.kind === "missing" ? `missing: ${v.evidence.text}` : `${v.evidence.kind} “${v.evidence.text}”`}${v.evidence.verified === false ? " (not found on the page)" : v.evidence.verified ? " (found on the page)" : ""}`}
+                  />
+                )}
                 {v.wouldChangeMind && v.verdict !== "buy" && <Line k="Would change their mind" v={v.wouldChangeMind} />}
               </dl>
             </li>

@@ -30,6 +30,7 @@ const AdviceSchema = z.object({
       change: z.string(), // the concrete edit to make
       step: z.enum(FUNNEL_STEPS),
       addresses: z.array(z.enum(OBJECTION_CATEGORIES)),
+      cites: z.string(), // the exact page element (from the cited evidence) this fix changes
     }),
   ),
   headlineOptions: z.array(z.string()),
@@ -37,9 +38,11 @@ const AdviceSchema = z.object({
   pricingCopy: z.string(),
 });
 
-export type Fix = z.infer<typeof AdviceSchema>["fixes"][number] & {
+export type Fix = Omit<z.infer<typeof AdviceSchema>["fixes"][number], "cites"> & {
+  cites?: string; // engine v2 (older runs don't have it)
   couldFlip: number; // non-buyers with an objection this fix addresses
   likelyFlip: number; // ...of whom said "maybe"
+  citedBy?: number; // engine v2: customers whose decision pointed at the element this fix changes (counted in code)
 };
 
 export type Advice = Omit<z.infer<typeof AdviceSchema>, "fixes"> & { fixes: Fix[] };
@@ -75,7 +78,16 @@ export async function writeAdvice(
       maybe: o.maybeCount,
       examples: o.examples.slice(0, 5),
       wouldChangeMind: o.changeMind.slice(0, 5),
+      // engine v2: the exact page elements these customers pointed at (verified on the page)
+      pageElementsCited: (o.evidence ?? []).map((e) => `${e.kind}: "${e.text}" (${e.count} people)`),
     })),
+    // engine v2: what they SAID vs what we predict they'd actually do
+    saidYes: stats.behavior ? `${Math.round(stats.behavior.stated.rate * 100)}%` : undefined,
+    predictedToActuallyDoIt: stats.behavior
+      ? `${(stats.behavior.predicted.rate * 100).toFixed(1)}% (90% range ${(stats.behavior.predicted.low * 100).toFixed(1)}-${(stats.behavior.predicted.high * 100).toFixed(1)}%)`
+      : undefined,
+    normalForThisGoal: stats.behavior?.baseRate.text,
+    mostCitedElements: stats.evidence?.top.map((e) => `${e.kind}: "${e.text}" (${e.count} people)`),
     weakestSegments: Object.entries(stats.segments).flatMap(([name, rows]) =>
       rows
         .filter((r) => r.n >= 5)
@@ -108,7 +120,9 @@ export async function writeAdvice(
           `- summary: ONE sentence (max 30 words): the single biggest problem and what to do about it.\n` +
           `- fixes: 3-5 specific changes, most impactful first, with no overlap between them. title: max 8 words. ` +
           `problem: max 20 words. change: ONE concrete action, max 30 words. For each, list which objection categories it addresses ` +
-          `(only categories present in the results) and the funnel step it fixes.\n` +
+          `(only categories present in the results) and the funnel step it fixes. cites: the page element this fix changes, copied ` +
+          `from pageElementsCited / mostCitedElements (e.g. the exact headline or price customers quoted, or "missing: no reviews"). ` +
+          `Base every fix on what customers cited, not on general best practice.\n` +
           `- headlineOptions: 3 rewritten hero headlines (max 10 words each) that answer the top objections.\n` +
           `- subheadline: one rewritten subheadline (max 20 words).\n` +
           `- pricingCopy: a rewritten pricing blurb (max 2 sentences).\n` +
@@ -142,11 +156,26 @@ export async function writeAdvice(
     const best = remaining.shift()!;
     const g = gain(best);
     g.categories.forEach((c) => claimed.add(c));
-    fixes.push({ ...best, couldFlip: g.couldFlip, likelyFlip: g.likelyFlip });
+    fixes.push({ ...best, couldFlip: g.couldFlip, likelyFlip: g.likelyFlip, citedBy: citedBy(best.cites, stats) });
   }
 
   return {
     advice: { ...raw, fixes },
     cost: costOfCall("report", response.model, response.usage),
   };
+}
+
+// How many customers' decisions pointed at the element a fix changes (matched on the words, in code).
+function citedBy(cites: string, stats: Stats): number | undefined {
+  const words = (t: string) => t.toLowerCase().replace(/[^a-z0-9$ ]+/g, " ").split(/\s+/).filter((w) => w.length > 2);
+  const want = new Set(words(cites));
+  if (!want.size) return undefined;
+  let n = 0;
+  for (const o of stats.objections) {
+    for (const e of o.evidence ?? []) {
+      const got = words(e.text);
+      if (got.length && got.filter((w) => want.has(w)).length / got.length >= 0.6) n += e.count;
+    }
+  }
+  return n || undefined;
 }

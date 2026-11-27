@@ -1,7 +1,48 @@
 // STEP 5 of the engine: turn raw verdicts into report numbers — IN CODE.
 // This is free and exact, and it's why we never need to send every raw
 // verdict to the expensive model.
-import type { Audience, Persona, Verdict, ObjectionCategory, FunnelStep } from "./types";
+import type { Audience, Goal, Persona, Verdict, ObjectionCategory, FunnelStep } from "./types";
+import { baseRateFor, followThrough, meanShifted, predictedRange, UNCALIBRATED_SD, wilson } from "./intent";
+import { topEvidence, type EvidenceCount } from "./evidence";
+
+// A segment with fewer simulated customers than this is shown, but flagged "too few to trust".
+export const MIN_SEGMENT = 30;
+
+// Which calibration a test used (see calibration.ts). Picked by the worker before counting.
+export type CalibrationUsed = {
+  source: "none" | "global" | "site";
+  delta: number; // log-odds shift applied to every person's probability
+  sd: number; // how unsure that shift is
+  n: number; // real results behind it
+  note: string; // plain English, shown in the report
+};
+
+export const NO_CALIBRATION: CalibrationUsed = {
+  source: "none",
+  delta: 0,
+  sd: UNCALIBRATED_SD,
+  n: 0,
+  note: "Not calibrated yet: the say-versus-do adjustment uses research-based starting values until enough founders add their real results.",
+};
+
+// ENGINE v2: what the crowd SAID vs what we PREDICT they'd do, both with 90% ranges.
+export type Behavior = {
+  engine: number;
+  stated: { rate: number; low: number; high: number }; // "said yes" share, Wilson 90%
+  predicted: { rate: number; low: number; high: number; count: number }; // after say-vs-do + calibration
+  baseRate: { low: number; high: number; text: string }; // what's normal for this goal on real traffic
+  calibration: CalibrationUsed;
+  topReductions: { why: string; people: number }[]; // the most common reasons yeses were discounted
+  p: number[]; // each person's probability BEFORE calibration, in persona order (calibration refits on these)
+  yesBias: boolean; // the stated rate is far above anything real (see quality.ts)
+};
+
+export type EvidenceStats = {
+  checkable: number; // decisions that quoted page words
+  verified: number; // ...whose words were really found on the page
+  missing: number; // decisions caused by something missing from the page
+  top: EvidenceCount[]; // most-cited elements overall
+};
 
 export type SegmentRow = {
   value: string;
@@ -10,6 +51,10 @@ export type SegmentRow = {
   maybe: number;
   no: number;
   buyRate: number; // 0..1
+  low?: number; // 90% range of buyRate (Wilson), engine v2
+  high?: number;
+  predicted?: number; // predicted real rate for this segment (say-vs-do + calibration)
+  small?: boolean; // fewer than MIN_SEGMENT people: don't trust the difference
 };
 
 export type ObjectionGroup = {
@@ -19,6 +64,7 @@ export type ObjectionGroup = {
   maybeCount: number; // the easiest people to flip
   examples: string[]; // a few objections in their own words
   changeMind: string[]; // what they said would win them
+  evidence?: EvidenceCount[]; // the page elements these people cited (engine v2)
 };
 
 export type QuoteItem = {
@@ -39,7 +85,11 @@ export type Stats = {
   objections: ObjectionGroup[];
   bestQuotes: QuoteItem[];
   allQuotes: QuoteItem[];
+  behavior?: Behavior; // engine v2
+  evidence?: EvidenceStats; // engine v2
 };
+
+export type AggregateOptions = { goal?: Goal; calibration?: CalibrationUsed; engine?: number; seed?: number };
 
 export function ageBucket(age: number) {
   if (age < 18) return "under 18";
@@ -56,6 +106,7 @@ export function aggregate(
   personas: Persona[],
   verdicts: Verdict[],
   triedProduct = false, // true when the explorer ran, adds a "product" funnel step
+  opts: AggregateOptions = {},
 ): Stats {
   const personaById = new Map(personas.map((p) => [p.id, p]));
   const rows = verdicts
@@ -63,6 +114,10 @@ export function aggregate(
     .filter((r) => r.p);
 
   const total = rows.length;
+  const goal: Goal = opts.goal ?? "sign up";
+  const cal = opts.calibration ?? NO_CALIBRATION;
+  const intents = rows.map((r) => followThrough(r.p, r.v, goal));
+  const probOf = new Map(rows.map((r, i) => [r.v.personaId, intents[i].p]));
   const count = (verdict: Verdict["verdict"]) => rows.filter((r) => r.v.verdict === verdict).length;
   const buy = count("buy");
 
@@ -87,17 +142,21 @@ export function aggregate(
 
   const segments: Record<string, SegmentRow[]> = {};
   for (const [name, fn] of Object.entries(segmentFns)) {
-    const groups = new Map<string, SegmentRow>();
+    const groups = new Map<string, SegmentRow & { ps: number[] }>();
     for (const { v, p } of rows) {
       const key = fn(p);
       if (!key) continue;
-      const g = groups.get(key) ?? { value: key, n: 0, buy: 0, maybe: 0, no: 0, buyRate: 0 };
+      const g = groups.get(key) ?? { value: key, n: 0, buy: 0, maybe: 0, no: 0, buyRate: 0, ps: [] as number[] };
       g.n++;
       g[v.verdict]++;
+      g.ps.push(probOf.get(v.personaId) ?? 0);
       groups.set(key, g);
     }
     segments[name] = [...groups.values()]
-      .map((g) => ({ ...g, buyRate: g.n ? g.buy / g.n : 0 }))
+      .map(({ ps, ...g }) => {
+        const [low, high] = wilson(g.buy, g.n);
+        return { ...g, buyRate: g.n ? g.buy / g.n : 0, low, high, predicted: meanShifted(ps, cal.delta), small: g.n < MIN_SEGMENT };
+      })
       .sort((a, b) => (name === "age" ? a.value.localeCompare(b.value) : b.n - a.n));
   }
 
@@ -129,6 +188,7 @@ export function aggregate(
       // Put "maybe" people first: their feedback is the most actionable.
       examples: sortMaybeFirst(list).slice(0, 8).map((r) => r.v.objection),
       changeMind: sortMaybeFirst(list).slice(0, 8).map((r) => r.v.wouldChangeMind),
+      evidence: topEvidence(list.map((r) => r.v.evidence), 3),
     }))
     .sort((a, b) => b.count - a.count);
 
@@ -140,7 +200,44 @@ export function aggregate(
     label: [p.age, p.role ?? p.occupation, p.mindset].join(", "),
   }));
 
+  // ----- Engine v2: say vs do, ranges, evidence -----
+  const ps = intents.map((x) => x.p);
+  const [sLow, sHigh] = wilson(buy, total);
+  const predictedRate = meanShifted(ps, cal.delta);
+  const [pLow, pHigh] = predictedRange(ps, cal.delta, cal.sd, opts.seed ?? 1);
+  const reductions = new Map<string, number>();
+  rows.forEach((r, i) => {
+    if (r.v.verdict !== "buy") return;
+    for (const f of intents[i].factors) reductions.set(f.why, (reductions.get(f.why) ?? 0) + 1);
+  });
+  const base = baseRateFor(goal);
+  const statedRate = total ? buy / total : 0;
+  const behavior: Behavior | undefined = total
+    ? {
+        engine: opts.engine ?? 2,
+        stated: { rate: statedRate, low: sLow, high: sHigh },
+        predicted: { rate: predictedRate, low: pLow, high: pHigh, count: Math.round(predictedRate * total) },
+        baseRate: base,
+        calibration: cal,
+        topReductions: [...reductions.entries()].map(([why, people]) => ({ why, people })).sort((a, b) => b.people - a.people).slice(0, 4),
+        p: ps.map((x) => Math.round(x * 1e4) / 1e4),
+        // more than 5x the top of the normal band AND over 30% said yes
+        yesBias: statedRate > Math.max(0.3, base.high * 5),
+      }
+    : undefined;
+  const evs = rows.map((r) => r.v.evidence).filter((e): e is NonNullable<typeof e> => Boolean(e));
+  const evidence: EvidenceStats | undefined = evs.length
+    ? {
+        checkable: evs.filter((e) => e.verified !== null).length,
+        verified: evs.filter((e) => e.verified === true).length,
+        missing: evs.filter((e) => e.kind === "missing").length,
+        top: topEvidence(evs, 6),
+      }
+    : undefined;
+
   return {
+    behavior,
+    evidence,
     total,
     buy,
     maybe: count("maybe"),

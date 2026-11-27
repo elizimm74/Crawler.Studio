@@ -16,7 +16,21 @@ export type Raw = {
   quote: string;
   first_glance?: string;
   thought?: string;
+  reasons_not?: string[];
+  reasons_for?: string[];
+  price_check?: string;
+  evidence_screen?: number;
+  evidence_text?: string;
 };
+
+// The words we know are on each screen (read from the screenshots + the paywall facts the founder checked).
+// Evidence that matches them is "verified"; anything else on a screenshot can't be checked by code (null).
+function screenText(settings: AppSettings, screen: number): string {
+  const s = settings.screens[screen - 1];
+  if (!s) return "";
+  const pay = s.type === "paywall" && settings.paywall ? [settings.paywall.headline, ...settings.paywall.plans.map((x) => `${x.name} ${x.price} ${x.period}`)] : [];
+  return [s.title, s.summary, s.cta, ...s.asks, ...pay].join(" ").toLowerCase();
+}
 
 // Fix contradictions so the counting is clean. Exported for the bench.
 export function normalizeApp(r: Raw, p: AppPersona, settings: AppSettings, hasB: boolean): AppVerdict {
@@ -59,5 +73,16 @@ export function normalizeApp(r: Raw, p: AppPersona, settings: AppSettings, hasB:
     quote: r.quote,
     ...(r.first_glance ? { firstGlance: r.first_glance } : {}),
     ...(r.thought ? { thought: r.thought } : {}),
+    ...(r.reasons_not ? { reasonsNot: r.reasons_not.slice(0, 3) } : {}),
+    ...(r.reasons_for ? { reasonsFor: r.reasons_for.slice(0, 3) } : {}),
+    ...(r.price_check ? { priceCheck: r.price_check } : {}),
+    ...(r.evidence_text
+      ? (() => {
+          const screen = Math.min(n, Math.max(1, Math.round(r.evidence_screen ?? 1)));
+          const words = r.evidence_text.toLowerCase().replace(/^missing:\s*/, "").trim();
+          const known = screenText(settings, screen);
+          return { evidence: { screen, text: r.evidence_text.slice(0, 200), verified: /^missing:/i.test(r.evidence_text) ? null : known.includes(words) ? true : null } };
+        })()
+      : {}),
   };
 }

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "bench": "tsc -p tsconfig.bench.json && node scripts/crawler-bench.cjs && node scripts/explorer-bench.cjs && node scripts/app-bench.cjs && node scripts/dashboard-bench.cjs && node scripts/video-bench.cjs",
+    "bench": "tsc -p tsconfig.bench.json && node scripts/crawler-bench.cjs && node scripts/explorer-bench.cjs && node scripts/app-bench.cjs && node scripts/dashboard-bench.cjs && node scripts/video-bench.cjs && node scripts/engine-bench.cjs",
     "realcheck": "tsc -p tsconfig.bench.json && node scripts/real-sites.cjs",
     "sitecheck": "node scripts/site-check.cjs",
     "worker:build": "tsc -p tsconfig.worker.json",

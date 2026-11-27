@@ -62,10 +62,18 @@ const PAPERS = [
 
 const STEPS = [
   ["We read your product like a visitor", "A real browser opens your site (or your app screenshots), finds pricing and sign-up, and records what's actually on the screen: text, prices, form fields, whether a card is needed. Code measures these facts; the AI doesn't guess them."],
-  ["We build a varied crowd in code", "Each simulated customer gets an age, budget, device, mindset, tech comfort, patience and a reason for visiting, rolled by code from the audience you pick. That's how 100 people stay different instead of 100 copies of one stereotype."],
-  ["Each person gets research-backed behaviour", "Findings from the studies below become rules that only apply to the people they fit (teen rules for teens, buyer rules for buyers). Our own estimates are labelled as assumptions."],
-  ["They think before they decide", "Every customer writes a first glance and a thought (need, dealbreaker, trust) before saying yes, maybe or no, and must point at something real on your screens."],
-  ["Code counts; quality is checked", "Counting, grouping reasons, drop-off and fix rankings are done in code, not by the AI. Answers are checked for copy-paste crowds and unanimous decisions, and the report flags it."],
+  ["A crowd drawn from a real population", "Inside the audience you pick, how common each kind of person is follows published numbers where they exist: budgets follow the Federal Reserve's household survey (37% of adults couldn't cover $400 in cash), early adopters are about 16% (Rogers), and ages thin out after 65. Before seeing anything, each person gets a concrete wallet (spare money a month), a recent spending habit, patience in seconds and one dealbreaker."],
+  ["Reasons against come first", "AI customers say yes too easily, so each one must list reasons NOT to buy before reasons to, check your price against their own budget out loud, and is reminded how rarely real visitors convert for your goal. We don't tell them a target number; we make them as hard to win as a real stranger."],
+  ["Every decision cites your page", "Each yes or no must point at one exact thing: a headline, a price, a button, a form field, or something missing. Code checks that the quoted words really are on your page, and fixes are built from what customers cited."],
+  ["What they said vs. what they'd do", "People say yes more than they act. Each yes becomes a chance of really doing it (lower for impulse yeses from people with little patience or money, or who need approval). The report shows both numbers, with 90% ranges, by segment, and flags groups too small to trust."],
+  ["Calibrated against real results", "When founders add their real conversion rate, the same crowd is recalibrated to it, and every new test uses that correction. Accuracy is measured fairly (each result predicted without itself) and logged publicly over time."],
+] as const;
+
+const ENGINE = [
+  ["\"AI always says yes.\"", "Yes: language models over-report buying. So customers argue against buying first, check the price against their own budget, and the report separates what they SAID from what we PREDICT they'd do."],
+  ["\"Where does 38% come from?\"", "From counting 100 decisions in code. Each one names the exact page element behind it, and code checks those words are really on your page. Unverified quotes never become a reason."],
+  ["\"Is that number precise?\"", "No, and we don't pretend it is. Every rate comes with a 90% range, broken down by age, budget, mindset and more. Groups under 30 people are marked too small to trust."],
+  ["\"Has it ever been right?\"", "Founders add their real conversion rates. Each one recalibrates the engine and is logged. We publish how often predictions land within 2 percentage points, measured without letting a result grade itself."],
 ] as const;
 
 const GOOD = [
@@ -158,6 +166,20 @@ export default function SciencePage() {
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* 2b. engine v2: why trust the number */}
+      <section id="engine" className="mt-20 scroll-mt-32" aria-labelledby="engine-title">
+        <p className="t-label">02b · why trust this number</p>
+        <h2 id="engine-title" className="t-h2 mt-3">Built to answer a skeptic</h2>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {ENGINE.map(([q, a]) => (
+            <div key={q} className="card p-5">
+              <p className="font-medium">{q}</p>
+              <p className="mt-2 text-sm text-muted">{a}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* 3. the behaviour facts + our assumptions */}
@@ -253,9 +275,10 @@ export default function SciencePage() {
         <p className="t-label">05 · measuring accuracy</p>
         <h2 id="acc" className="t-h2 mt-3">We measure ourselves against real results</h2>
         <p className="mt-3 max-w-2xl text-muted">
-          After a launch, founders can add their real conversion rate under any report. Once there are enough, we publish how
-          Crawler&apos;s predictions line up with reality, good or bad. Next, we plan to run Crawler on real, published A/B
-          tests and publish how often it picks the real winner.
+          After a launch, founders can add their real conversion rate under any report. That calibrates the engine (the same crowd is
+          matched to the real rate) and is logged. Once 5 results with 200+ real visitors each are in, we publish how often predictions
+          land within 2 percentage points of reality, measured leave-one-out, good or bad. Next, we plan to run Crawler on real,
+          published A/B tests and publish how often it picks the real winner.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href="/accuracy" className="btn btn-secondary">

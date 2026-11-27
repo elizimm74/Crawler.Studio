@@ -10,6 +10,7 @@ import { supabaseAdmin } from "../lib/supabase/admin";
 import { SupabaseBlobStore } from "../lib/blobs";
 import { analyzeJob, markFailed, runJob, type Ctx, type Job } from "./jobs";
 import { startPulse } from "./pulse";
+import { calibrateJob } from "./calibrate";
 
 const HEARTBEAT_MS = 30_000;
 const { concurrency, pollMs } = checkWorkerEnv();
@@ -26,7 +27,7 @@ let stopping = false;
 const running = new Set<Promise<void>>();
 
 async function claim(): Promise<Job | null> {
-  const { data, error } = await db.rpc("claim_job", { p_worker: workerId }).then(
+  const { data, error } = await db.rpc("claim_job_kinds", { p_worker: workerId, p_kinds: ["analyze", "run", "calibrate"] }).then(
     (r) => r,
     (err: Error) => ({ data: null, error: err }), // a network blip: try again on the next poll
   );
@@ -47,18 +48,19 @@ async function handle(job: Job) {
   }, HEARTBEAT_MS);
   try {
     if (job.kind === "analyze") await analyzeJob(job, ctx);
+    else if (job.kind === "calibrate") await calibrateJob(job, ctx);
     else await runJob(job, ctx);
     await db.from("jobs").update({ status: "done", updated_at: new Date().toISOString() }).eq("id", job.id);
     ctx.log("job done", { job: job.id, seconds: Math.round((Date.now() - started) / 1000) });
   } catch (err) {
     const message = (err as Error).message;
     // Analyses are cheap: try once more. Tests cost money: don't auto-repeat.
-    const retry = job.kind === "analyze" && job.attempts < job.max_attempts;
+    const retry = (job.kind === "analyze" || job.kind === "calibrate") && job.attempts < job.max_attempts;
     await db
       .from("jobs")
       .update({ status: retry ? "queued" : "error", last_error: message.slice(0, 500), updated_at: new Date().toISOString() })
       .eq("id", job.id);
-    if (!retry) await markFailed(job, ctx, message);
+    if (!retry && job.kind !== "calibrate") await markFailed(job, ctx, message);
     ctx.log("job failed", { job: job.id, retry, error: message });
   } finally {
     clearInterval(beat);

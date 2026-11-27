@@ -55,3 +55,38 @@ The AI then answers *as that person, on that visit*. A 15-year-old who taps a Ti
 - Most numbers are US-based.
 - Some sources are older (the NN/g teen study is from 2005) or reported second-hand.
 - Before quoting these publicly, check the original reports.
+
+## Engine v2 (2026-11-27): population, say vs do, evidence, calibration
+
+Code: `src/lib/population.ts`, `src/lib/intent.ts`, `src/lib/evidence.ts`, `src/lib/calibration.ts`,
+`src/worker/calibrate.ts`. Bench: `scripts/engine-bench.cjs` (38 checks). Keep this table, the code and
+`FACTS` / `ASSUMPTIONS` in `src/components/landing/Science.tsx` in sync.
+
+### New facts (from research)
+| Fact | Used for | Source |
+| --- | --- | --- |
+| 63% of US adults would cover a $400 emergency with cash or its equivalent; 37% would not (13% couldn't pay at all) | Budget mix for adults: tight 37% | Federal Reserve, *Economic Well-Being of U.S. Households in 2024* (SHED), May 2025 ([summary](https://www.federalreserve.gov/publications/2025-economic-well-being-of-us-households-in-2024-executive-summary.htm)) |
+| Adopter categories: innovators 2.5%, early adopters 13.5%, early majority 34%, late majority 34%, laggards 16% | "Early adopter" mindset = 16% | Everett Rogers, *Diffusion of Innovations* (via [Lumen Learning](https://courses.lumenlearning.com/clinton-marketing/chapter/reading-diffusion-of-innovation/)) |
+| About 1.5-3% of ecommerce visits end in a purchase | Base rate for the "buy" goal | 2025 benchmarks: [Triple Whale](https://www.triplewhale.com/blog/ecommerce-benchmarks), IRP Commerce, OptiMonk |
+| Stated willingness to pay / act is reliably higher than real behavior (hypothetical bias); the bias grows with the amount | Separating "said yes" from "predicted to do it" | Murphy, Allen, Stevens & Weatherhead 2005, *Environmental and Resource Economics* 30(3) ([link](https://link.springer.com/article/10.1007/s10640-004-3332-z)); Morwitz, Steckel & Gupta 2007, *International Journal of Forecasting* 23(3) ([link](https://ideas.repec.org/a/eee/intfor/v23y2007i3p347-364.html)). We could NOT verify a single ratio from these papers, so none is quoted. |
+
+### New assumptions (estimates; calibration corrects them as real results arrive)
+| Assumption | Value |
+| --- | --- |
+| Budget split of the 63% who could cover $400 | okay 38 / comfortable 25 |
+| Teen budgets | tight 60 / okay 35 / comfortable 5 |
+| Other mindsets | skeptical 30 / price-sensitive 26 / busy 20 / impulse buyer 8 |
+| Age weights | even 18-64; 65-74 at 85%, 75+ at 50% (approximates the Census age structure) |
+| Spare money a month | tight $5-30, okay $30-120, comfortable $120-500; teens $0-15 / $15-50 / $50-150 |
+| Spend without thinking | share of spare money: impulse 60%, busy/early adopter 30%, skeptical 20%, price-sensitive 15% |
+| Patience in seconds | "10 seconds" = 6-14s, "30 seconds" = 20-45s, "a few minutes" = 90-300s |
+| Follow-through of a stated yes | buy 35%, book a demo 30%, sign up / trial / download 50%, waitlist 60%; "maybe" 4%; "no" 0.2% |
+| Discounts on a yes | impulse buyer with ≤15s patience or a tight budget x0.5; ≤15s patience x0.75; tight budget and paying today x0.6; needs approval x0.5; no real need x0.5; nice-to-have x0.75; burned by a trial before (trial goal) x0.85 |
+
+### Calibration (how the assumptions get corrected)
+- A founder adds a real conversion rate (+ visitors) under a report -> a `calibrate` job.
+- The SAME crowd's per-person probabilities are shifted by one number (log-odds "delta") until they match the real rate. No AI is re-run.
+- Global delta = weighted average of site deltas, one vote per account, results with < 200 visitors ignored, shrunk toward 0 as if 3 extra "no correction" results existed. It's applied once 5+ results back it.
+- Published accuracy = leave-one-out: each result predicted by a fit that never saw it; "hit" = within ±2 percentage points.
+- A re-test of a site you calibrated uses that site's own delta.
+- Limits: real results are self-reported; a person could lie (one vote per account + admin exclusion limit the damage); the simulated traffic mix may differ from a site's real traffic mix; app and video tests are logged but not yet used to fit.

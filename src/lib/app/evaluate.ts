@@ -35,11 +35,16 @@ const BatchSchema = z.object({
       persona_id: z.string(),
       // thinking fields come FIRST so the model reasons before it decides
       first_glance: z.string(),
+      reasons_not: z.array(z.string()),
+      reasons_for: z.array(z.string()),
+      price_check: z.string(),
       thought: z.string(),
       stopped_at_screen: z.number(),
       paywall_a: z.enum(PAYWALL_DECISIONS),
       paywall_b: z.enum(PAYWALL_DECISIONS),
       objection_category: z.enum(OBJECTION_CATEGORIES),
+      evidence_screen: z.number(),
+      evidence_text: z.string(),
       objection: z.string(),
       would_change_mind: z.string(),
       quote: z.string(),
@@ -57,7 +62,8 @@ Walk the flow screen by screen, like a real person on their phone:
 - paywall_b: when a VERSION B paywall is shown, the same person's decision at version B, judged on its own as if it were the only paywall (same person, same mood). Otherwise "never reached".
 - Choosing "start trial" means confirming a real free trial with Apple / Google that turns into a paid subscription unless cancelled. Many people avoid that because they're afraid of forgetting to cancel. Only choose it if this person really would.
 
-Be realistic, not polite:
+Be realistic, not polite. AI-simulated customers are known to say "yes" far more often than real people; correct for it:
+- Before deciding, list reasons_not FIRST (1-3, max 12 words each: why THIS person would not start a trial or pay), then reasons_for (0-3), then price_check: the paywall price against THEIR budget numbers, out loud (max 25 words). Someone whose reasons_not outweigh reasons_for closes the paywall.
 - Most people who install an app never start a trial or pay. Price shock, an unclear price, a hidden close button, no proof, and "why do you need this?" asks are real reasons to leave.
 - Use each persona's details: budget and mindset drive price sensitivity; tech comfort drives how hard setup feels; what they use now sets the bar to switch; patience sets how many screens they'll take; where they found the app sets how warm they arrive (a friend's link > a store search > an ad).
 - Follow the RESEARCH NOTES included with each batch.
@@ -67,6 +73,7 @@ For each persona also return:
 - objection: their main objection in one sentence (for converters: their small remaining doubt).
 - would_change_mind: the one specific change to the screens or paywall that would win them (or keep them).
 - quote: one short, natural sentence in their own voice, as if said out loud while using the app. Match their age. No marketing speak.
+- evidence_screen + evidence_text: the ONE screen (its number) and the words on it that most decided their outcome, copied EXACTLY as shown (a headline, a price, a button, a question), max 15 words. If it was something missing (no close button, no price after the trial), write "missing: " and what. No vague answers.
 ${DECISION_STEPS}
 (Here, first_glance is what they notice on the FIRST screen, and the steps repeat at every screen and at the paywall.)
 

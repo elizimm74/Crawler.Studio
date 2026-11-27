@@ -8,6 +8,7 @@
 // the report can show a range ("28–36%") instead of one fake-precise number.
 import { generatePersonas, makeRandom } from "../personas";
 import { describeMind, simulateMind } from "../mind";
+import { describeSpend } from "../population";
 import type { Audience } from "../types";
 import type { AppPersona, AppSettings } from "./types";
 
@@ -39,6 +40,7 @@ export function generateAppPersonas(audience: Audience, settings: AppSettings, p
         device: "phone",
         arrivedFrom: source,
         patience,
+        patienceSec: undefined, // app patience is counted in screens, not seconds
         platform: rand() * 100 < settings.iphonePct ? "iPhone" : "Android",
         source,
         sample: s,
@@ -62,6 +64,7 @@ export function describeAppPersona(p: AppPersona): string {
     `on ${p.platform === "iPhone" ? "an iPhone" : "an Android phone"}`,
     `found the app via ${p.source}`,
     `patience ${p.patience}`,
+    ...describeSpend(p.spend),
     ...describeMind(p.mind ?? {}),
   ];
   if (p.role) {

@@ -20,6 +20,10 @@ export const FACTS = [
   { finding: "Most teens read comments (75%) and reviews (72%) before buying, and trust friends over influencers", who: "Ages 13-17", source: "Teen shopping survey, via Net Influencer" },
   { finding: "About 87% of US teens own an iPhone", who: "Ages 13-17", source: "Piper Sandler, Fall 2025 (10,959 teens)" },
   { finding: "Median download-to-trial for subscription apps is about 6.2%", who: "App users", source: "RevenueCat, 2025" },
+  { finding: "About 1.5-3% of visits to online stores end in a purchase", who: "Shoppers", source: "2025 ecommerce benchmarks (Triple Whale, IRP Commerce, OptiMonk)" },
+  { finding: "37% of US adults couldn't cover a $400 emergency with cash", who: "Adults (budget mix)", source: "Federal Reserve SHED, 2024 data (May 2025)" },
+  { finding: "About 16% of people adopt new things early (innovators 2.5% + early adopters 13.5%)", who: "Everyone (mindset mix)", source: "Rogers, Diffusion of Innovations" },
+  { finding: "What people say they'd pay or do runs above what they really do (hypothetical bias)", who: "Everyone (say vs do)", source: "Murphy et al. 2005; Morwitz, Steckel & Gupta 2007" },
 ] as const;
 
 export const ASSUMPTIONS = [
@@ -27,6 +31,9 @@ export const ASSUMPTIONS = [
   { what: "Patience", value: "About 10 sec, 30 sec or a few minutes; teens skew shorter" },
   { what: "Teens and card-required trials", value: "Mostly a dead end (most have no card of their own)" },
   { what: "Inner life", value: "Why they're here, how much they need it, past bad experiences (about 1 in 4), what wins them, their dealbreaker" },
+  { what: "Wallet", value: "Spare money a month by budget (tight $5-30, okay $30-120, comfortable $120-500; teens less) + a recent spending habit" },
+  { what: "Other mindsets", value: "Skeptical 30 · price-sensitive 26 · busy 20 · impulse buyer 8 (early adopters 16 come from Rogers)" },
+  { what: "Say vs do", value: "A stated yes becomes the real action 30-60% of the time by goal (buy lowest), less for impulse yeses with little patience or money" },
 ] as const;
 
 export default function Science() {
