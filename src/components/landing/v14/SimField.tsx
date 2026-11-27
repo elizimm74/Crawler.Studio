@@ -17,12 +17,12 @@ import type { CrowdPoint } from "@/lib/homeDemo";
 import Mark from "@/components/Mark";
 
 type V3 = [number, number, number];
-const GREEN = "#3e4a6e";
+const GREEN = "#000000";
 const DEEP = "#000000"; // darker green for the "would buy" number (readable text on white)
 const MAYBE = "#8f8e87"; // "maybe" = light green (one brand green, in shades)
 const GREY = "#c9d1cb";
 // mindsets in step 2: shades of the brand green plus ink and grey, so the field stays on-brand
-const MIND_COLORS = ["#3e4a6e", "#9f9f9f", "#cacaca", "#17221b", "#a3ada6"];
+const MIND_COLORS = ["#000000", "#9f9f9f", "#cacaca", "#17221b", "#a3ada6"];
 
 // Crawler's own words for each step. `status` is the little live chip on the stage.
 const STEPS = [

@@ -371,7 +371,7 @@ function PhoneHook({ src, hook }: { src: string; hook: Range }) {
           <div className="flex items-center gap-3">
             <svg viewBox="0 0 72 72" className="h-14 w-14 -rotate-90" aria-hidden>
               <circle cx="36" cy="36" r={r} fill="none" stroke="rgb(255 255 255 / 0.15)" strokeWidth="6" />
-              <circle cx="36" cy="36" r={r} fill="none" stroke="#3e4a6e" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${hook.mid * c} ${c}`} className="ring-draw" />
+              <circle cx="36" cy="36" r={r} fill="none" stroke="#000000" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${hook.mid * c} ${c}`} className="ring-draw" />
             </svg>
             <div>
               <p className="text-2xl font-semibold tabular-nums">{pct(hook.mid)}</p>
@@ -409,8 +409,8 @@ function WatchCurve({ run, img }: { run: VideoRun; img: (f: string) => string })
       <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={`Still watching: ${stats.curve.map((c) => `${c.t.toFixed(1)}s ${pct(c.watching)}`).join(", ")}`}>
         <defs>
           <linearGradient id="watch-fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#3e4a6e" stopOpacity="0.45" />
-            <stop offset="1" stopColor="#3e4a6e" stopOpacity="0" />
+            <stop offset="0" stopColor="#000000" stopOpacity="0.45" />
+            <stop offset="1" stopColor="#000000" stopOpacity="0" />
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75].map((f) => (

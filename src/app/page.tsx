@@ -121,7 +121,7 @@ export default async function Home() {
               <span className="absolute bottom-5 left-5 text-[11px] uppercase tracking-[0.16em] text-white/60">example · demo data</span>
             </div>
             <span className="glass-chip float-a absolute -left-4 top-8 z-20 hidden sm:inline-flex">
-              <i className="h-2 w-2 rounded-full bg-[#3e4a6e]" /> {s.total} simulated customers
+              <i className="h-2 w-2 rounded-full bg-[#000000]" /> {s.total} simulated customers
             </span>
             <span className="glass-chip float-b absolute -right-3 top-[38%] z-20 hidden sm:inline-flex">
               Biggest blocker · {s.objections[0]?.category} {s.objections[0]?.pct}%

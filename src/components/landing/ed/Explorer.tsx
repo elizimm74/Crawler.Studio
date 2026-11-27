@@ -83,7 +83,7 @@ function Bars({ seed }: { seed: string }) {
         {rows.map((p, i) => (
           <g key={i} transform={`translate(0 ${i * 24})`}>
             <polyline points={p} fill="none" stroke={i % 2 ? "rgb(23 34 27 / 0.22)" : "#ffffff"} strokeWidth="1.4" />
-            <line x1={120 + ((h >> i) % 200)} x2={120 + ((h >> i) % 200)} y1="4" y2="20" stroke="#3e4a6e" strokeWidth="2" />
+            <line x1={120 + ((h >> i) % 200)} x2={120 + ((h >> i) % 200)} y1="4" y2="20" stroke="#000000" strokeWidth="2" />
           </g>
         ))}
       </svg>

@@ -258,7 +258,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
         <aside className="fl-rail min-w-0 px-4 pt-4 sm:px-6 lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto lg:px-4 lg:py-5">
           <div className="hidden h-full flex-col lg:flex">
             <Link href="/?home=1" className="flex h-10 items-center gap-2 px-2 text-[15px] font-semibold tracking-tight" aria-label="Crawler home">
-              <span className="logo-tile is-small" aria-hidden><Mark size={24} fill="#ffffff" /></span> crawler
+              <span className="logo-tile is-small" aria-hidden><Mark size={24} /></span> crawler
             </Link>
 
             <p className="fl-label mt-8 px-3">Workspace</p>
@@ -358,7 +358,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
           {/* phones: a small top bar + a tab row instead of the rail */}
           <div className="flex h-12 items-center justify-between lg:hidden">
             <Link href="/?home=1" className="flex items-center gap-2 font-semibold tracking-tight" aria-label="Crawler home">
-              <span className="logo-tile is-small" aria-hidden><Mark size={24} fill="#ffffff" /></span> crawler
+              <span className="logo-tile is-small" aria-hidden><Mark size={24} /></span> crawler
             </Link>
             <div className="flex items-center gap-1 text-sm">
               <Link href="/settings" className="btn btn-text h-10 px-3 text-sm">
@@ -575,7 +575,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                           <Link href={`/run/${f.testId}`} className="group flex items-center gap-3 py-3.5 transition-colors hover:text-fg">
                             <span className="w-5 font-mono text-xs text-faint">{String(i + 1).padStart(2, "0")}</span>
                             <span className="min-w-0 flex-1 text-sm">{f.title}</span>
-                            {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#3e4a6e]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
+                            {f.wins > 0 && <span className="shrink-0 rounded-full bg-[#000000]/25 px-2 py-0.5 text-xs font-medium tabular-nums">+{f.wins}</span>}
                           </Link>
                         </li>
                       ))}
