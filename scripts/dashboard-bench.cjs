@@ -172,7 +172,7 @@ test("final pricing: free 25 once, $19 = 1,000, $49 = 5,000, $99 = 15,000, $199 
 test("test sizes offered = only what fits in what's left this month", () =>
   eq([sizesFor({ allowance: 1000, used: 700, left: 300, resets: null }, false, TEST_SIZES), sizesFor(null, false, TEST_SIZES), sizesFor(null, true, TEST_SIZES), sizesFor({ allowance: 1000, used: 950, left: 50, resets: null }, false, TEST_SIZES),
       sizesFor(null, false, TEST_SIZES, 500), sizesFor({ allowance: 1000, used: 950, left: 50, resets: null }, false, TEST_SIZES, 200)],
-    [[100, 250], [], [100, 250, 500, 1000], [], [100, 250, 500], [100, 250]], "sizes"));
+    [[25, 100, 250], [], [25, 100, 250, 500, 1000], [25], [25, 100, 250, 500], [25, 100, 250]], "sizes"));
 const subEv = (o = {}, type = "customer.subscription.updated") => ({
   type, created: NOW, data: { object: { id: "sub_test_abc123", customer: "cus_test_abc123", status: "active", cancel_at_period_end: false, metadata: { user_id: UID, plan_id: "growth" }, items: { data: [{ current_period_start: NOW, current_period_end: NOW + 86400 * 30 }] }, ...o } },
 });
@@ -479,6 +479,19 @@ test("plan switch: upgrade charges the difference now and fails on a bad card; d
   test("github: live site = website field, else production deployment, never github.com", () => {
     const r = [G.pickLiveUrl("mealmate.app", []).url, G.pickLiveUrl(null, ["https://x.vercel.app"]).source, G.pickLiveUrl("https://github.com", []).url, G.pickLiveUrl("javascript:alert(1)", []).url, G.pickLiveUrl("", []).url];
     return JSON.stringify(r) === '["https://mealmate.app/","deployment",null,null,null]' ? null : JSON.stringify(r);
+  });
+  test("github: previews = newest successful https preview per branch, never production, max 3", () => {
+    const p = G.pickPreviews([
+      { env: "Preview", branch: "new-pricing", url: "https://a-old.vercel.app", at: "2026-11-01" },
+      { env: "Preview", branch: "new-pricing", url: "https://a-new.vercel.app", at: "2026-11-05" },
+      { env: "Production", branch: "main", url: "https://site.com", at: "2026-11-06" },
+      { env: "Preview", branch: "hero", url: null, at: "2026-11-07" },
+      { env: "Preview", branch: "evil", url: "javascript:alert(1)", at: "2026-11-08" },
+      { env: "Preview", branch: "b1", url: "https://b1.vercel.app", at: "2026-11-02" },
+      { env: "Preview", branch: "b2", url: "https://b2.vercel.app", at: "2026-11-03" },
+      { env: "Preview", branch: "b3", url: "https://b3.vercel.app", at: "2026-11-01" },
+    ]);
+    return JSON.stringify(p.map((x) => x.url)) === '["https://a-new.vercel.app","https://b2.vercel.app","https://b1.vercel.app"]' ? null : JSON.stringify(p);
   });
 }
 

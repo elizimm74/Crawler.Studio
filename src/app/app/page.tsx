@@ -24,6 +24,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import type { Audience, Credentials, ExploreSettings, ProductProfile } from "@/lib/types";
 import { FOCUS, cleanFocus } from "@/lib/productTypes";
+import { IDEA_LIMITS, IDEA_MIN_PITCH, type IdeaInput } from "@/lib/idea";
 import type { PlanInfo } from "@/components/dashboard/usePlan";
 
 // "1 of your free tests" / "250 of 800 left this month" for the confirm screen (from the server's my_plan).
@@ -37,6 +38,7 @@ function usesLine(plan: PlanInfo | null, customers: number) {
 type CrawlInfo = {
   id: string;
   url: string;
+  mode?: "store" | "idea";
   pages: { step: string; url: string; title: string; screenshots: string[]; note?: string }[];
 };
 
@@ -75,13 +77,24 @@ function Entry() {
 
   if (params.get("kind") === "app") return <AppWizard key={params.toString()} />;
   if (params.get("kind") === "video") return <VideoWizard key={params.toString()} />;
+  if (params.get("kind") === "idea") return <Wizard key={params.toString()} idea />;
   if (params.get("url")) return <Wizard key={params.toString()} />;
   return <Onboarding startUrl="" />;
 }
 
-function Wizard() {
+// idea = "Just an idea": step 1 is a short form instead of a URL (no website is opened).
+function Wizard({ idea: ideaMode = false }: { idea?: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
+  const [idea, setIdea] = useState<IdeaInput>({
+    name: "",
+    pitch: (params.get("what") ?? "").slice(0, IDEA_LIMITS.pitch),
+    who: (params.get("for") ?? "").slice(0, IDEA_LIMITS.who),
+    price: "",
+    how: "",
+    alternatives: "",
+  });
+  const ideaReady = idea.name.trim().length >= 2 && idea.pitch.trim().length >= IDEA_MIN_PITCH;
   const [step, setStep] = useState(0);
   const [url, setUrl] = useState(params.get("url") ?? "");
   const [busy, setBusy] = useState<null | "analyzing" | "starting">(null);
@@ -97,7 +110,9 @@ function Wizard() {
   const [ownsProduct, setOwnsProduct] = useState(false);
   const autoStarted = useRef(false);
   const plan = usePlan(); // how many customers this account's test gets (25 starter / 100 full)
-  const [size, setSize] = useState(100); // paid plans pick 100 / 250 / 500 / 1,000
+  // a site on your computer (through a tunnel) starts as a cheap 25-customer quick check
+  const tunnel = /\.trycloudflare\.com/i.test(params.get("url") ?? "");
+  const [size, setSize] = useState(tunnel ? 25 : 100); // paid plans pick 25 (quick check) / 100 / 250 / 500 / 1,000
   // shown on the launch step: the picked size on paid plans, else what the server will give (25 / 100)
   const customers = canPickSize(plan) ? fitSize(plan, size) : (plan?.customers ?? 100);
 
@@ -109,7 +124,7 @@ function Wizard() {
       const res = await fetch("/api/crawls", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: target, kind: params.get("type") === "store" ? "store" : "website" }),
+        body: JSON.stringify(ideaMode ? { kind: "idea", idea } : { url: target, kind: params.get("type") === "store" ? "store" : "website" }),
       });
       const started = await res.json();
       if (!res.ok) throw new Error(started.error);
@@ -124,7 +139,7 @@ function Wizard() {
           ? {
               ...data.profile,
               ...(forParam ? { whoItsFor: forParam.slice(0, 400) } : {}),
-              ...(whatParam && !data.profile.whatItIs ? { whatItIs: whatParam.slice(0, 600) } : {}),
+              ...(whatParam && !data.profile.whatItIs && !ideaMode ? { whatItIs: whatParam.slice(0, 600) } : {}),
               focus: focus.length ? focus : undefined,
             }
           : data.profile,
@@ -151,10 +166,24 @@ function Wizard() {
   // Came from the landing page with ?url=...? Start right away.
   useEffect(() => {
     const fromLanding = params.get("url");
-    if (fromLanding && !autoStarted.current) {
+    if (fromLanding && !ideaMode && !autoStarted.current) {
       autoStarted.current = true;
       void analyze(fromLanding);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Re-testing an idea (?from=<analysis id>): start from the words you used last time, so you can
+  // change one thing and see who changes their mind.
+  useEffect(() => {
+    const from = params.get("from");
+    if (!ideaMode || !from || !/^[a-z0-9]{4,40}$/i.test(from)) return;
+    void fetch(`/api/crawls/${from}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { idea?: Partial<IdeaInput> } | null) => {
+        if (d?.idea) setIdea((cur) => ({ ...cur, ...Object.fromEntries(Object.entries(d.idea!).filter(([k, v]) => k in cur && typeof v === "string")) }));
+      })
+      .catch(() => null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -170,8 +199,8 @@ function Wizard() {
           count: fitSize(plan, size), // only a request: the database checks it against the plan
           crawlId: crawl.id,
           audience,
-          profile: { ...profile, productType: params.get("type") === "store" ? "store" : "website" },
-          explore,
+          profile: { ...profile, productType: ideaMode ? "idea" : params.get("type") === "store" ? "store" : "website" },
+          explore: ideaMode ? { ...explore, enabled: false, reputation: false } : explore,
           credentials: explore.enabled && explore.access === "account" ? credentials : undefined,
           ownsProduct,
           // re-test: the server reuses the earlier test's audience + seed (same customers)
@@ -197,8 +226,25 @@ function Wizard() {
         </p>
       )}
 
+      {tunnel && step <= 1 && (
+        <p role="status" className="card p-4 text-sm">
+          <span className="font-medium">Testing your localhost:</span> keep the tunnel command running until we&apos;ve finished reading your site (and while
+          the explorer runs, if you turn it on). Then press Ctrl+C to close it.
+        </p>
+      )}
       {/* ---------- 1. Site ---------- */}
+      {step === 0 && ideaMode && busy !== "analyzing" && (
+        <IdeaForm idea={idea} onChange={setIdea} ready={ideaReady} error={error} onSubmit={() => void analyze()} />
+      )}
+      {step === 0 && ideaMode && busy === "analyzing" && (
+        <Working
+          label={`reading ${idea.name || "your idea"}`}
+          title="Reading your idea…"
+          lines={["Reading what it is and who it's for", "Spotting what's missing (price, proof)", "Working out the likely customers"]}
+        />
+      )}
       {step === 0 &&
+        !ideaMode &&
         (busy === "analyzing" ? (
           <Working
             label={`reading ${url.replace(/^https?:\/\//, "").replace(/\/$/, "")}`}
@@ -248,6 +294,20 @@ function Wizard() {
       {step === 1 && crawl && profile && (
         <section className="space-y-8">
           <Heading n={2} title="Here's what we found" sub="Every AI customer reads this. Fix anything that's off." />
+          {crawl.mode === "idea" ? (
+            <div className="card p-5">
+              <p className="t-label">your idea</p>
+              <p className="mt-1 text-lg font-medium">{idea.name || crawl.pages[0]?.title}</p>
+              <p className="mt-2 whitespace-pre-line text-sm text-muted">{idea.pitch}</p>
+              <p className="mt-3 text-xs text-faint">
+                Simulated customers judge the idea itself (the problem, the price, the switch), not a design. To change the words,{" "}
+                <button type="button" className="underline" onClick={() => setStep(0)}>
+                  go back
+                </button>{" "}
+                and read it again.
+              </p>
+            </div>
+          ) : (
           <div className="grid grid-cols-3 gap-2 sm:gap-4">
             {(["hero", "pricing", "signup"] as const).map((s) => {
               const p = crawl.pages.find((x) => x.step === s);
@@ -267,6 +327,7 @@ function Wizard() {
               );
             })}
           </div>
+          )}
           <div className="card p-6">
             <ProfileEditor profile={profile} onChange={setProfile} />
           </div>
@@ -340,17 +401,22 @@ function Wizard() {
       {/* ---------- 4. Launch ---------- */}
       {step === 3 && crawl && profile && (
         <section className="space-y-8">
-          <Heading n={4} title="Ready to launch" sub="Optional: let an AI explorer actually use your product first." />
+          <Heading n={4} title="Ready to launch" sub={ideaMode ? "Simulated customers hear your idea and decide if they'd want it." : "Optional: let an AI explorer actually use your product first."} />
           <dl className="card grid divide-y divide-line sm:grid-cols-2 sm:[&>*:nth-child(odd)]:border-r sm:[&>*:nth-child(odd)]:border-line">
-            <Summary label="Website" value={crawl.url.replace(/^https?:\/\//, "").replace(/\/$/, "")} />
+            <Summary label={ideaMode ? "Idea" : "Website"} value={ideaMode ? idea.name || crawl.pages[0]?.title || "Your idea" : crawl.url.replace(/^https?:\/\//, "").replace(/\/$/, "")} />
             <Summary label="Simulated customers" value={`${customers.toLocaleString("en-US")} · ${presetName}`} />
             <Summary label="Learning about" value={profile.focus?.length ? profile.focus.map((f) => FOCUS[f].label).join(" · ") : `Would they ${profile.goal}?`} />
             <Summary label="Uses" value={usesLine(plan, customers)} />
           </dl>
+          {ideaMode ? (
+            <p className="text-sm text-muted">Scope: your written idea (the pitch{idea.price ? ", the price" : ""}{idea.how ? ", how people get it" : ""}). Nothing is opened or built. Nothing runs until you press the button below.</p>
+          ) : (
           <p className="text-sm text-muted">
             Scope: the landing page{params.get("type") === "store" ? ", a product page and the cart" : ", pricing and signup if we found them"}, on desktop and phone
             {explore.enabled ? ", plus the AI explorer trying the product" : ""}. Nothing runs until you press the button below.
           </p>
+          )}
+          {!ideaMode && (
           <div className="card p-6">
             <ExplorePanel
               settings={explore}
@@ -361,6 +427,7 @@ function Wizard() {
               onOwnsProduct={setOwnsProduct}
             />
           </div>
+          )}
           <SizePicker plan={plan} value={fitSize(plan, size)} onChange={setSize} />
           <StarterNote plan={plan} />
           <ErrorNote error={error} />
@@ -376,5 +443,68 @@ function Wizard() {
         </section>
       )}
     </div>
+  );
+}
+
+// "Just an idea": a few short boxes. Only the name and the pitch are required; every extra
+// answer (price, how people get it, what they use today) makes the customers' answers sharper.
+function IdeaForm({ idea, onChange, ready, error, onSubmit }: { idea: IdeaInput; onChange: (i: IdeaInput) => void; ready: boolean; error: string | null; onSubmit: () => void }) {
+  const set = (k: keyof IdeaInput) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange({ ...idea, [k]: e.target.value.slice(0, IDEA_LIMITS[k]) });
+  return (
+    <form
+      className="space-y-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (ready) onSubmit();
+      }}
+    >
+      <Heading n={1} title="Describe your idea" sub="Nothing built yet? That's fine. Simulated customers judge the idea itself: the problem, the price and the switch." />
+      <div className="card space-y-5 p-6">
+        <label className="block">
+          <span className="field-label">Name <span className="font-normal text-faint">a working name is fine</span></span>
+          <input value={idea.name} onChange={set("name")} className="field mt-2" placeholder="MealMate" autoFocus required />
+        </label>
+        <label className="block">
+          <span className="field-label">What is it, and what problem does it solve?</span>
+          <textarea
+            value={idea.pitch}
+            onChange={set("pitch")}
+            rows={4}
+            className="field mt-2 h-auto py-3"
+            placeholder="An app that plans a week of dinners from what's already in your fridge, so busy parents stop deciding what to cook every night."
+            required
+          />
+          <span className="field-hint">
+            {idea.pitch.trim().length < IDEA_MIN_PITCH ? `At least a sentence or two (${IDEA_MIN_PITCH - idea.pitch.trim().length} more characters).` : `${idea.pitch.length} / ${IDEA_LIMITS.pitch}`}
+          </span>
+        </label>
+        <label className="block">
+          <span className="field-label">Who is it for? <span className="font-normal text-faint">optional</span></span>
+          <input value={idea.who} onChange={set("who")} className="field mt-2" placeholder="Parents with young kids who cook most nights" />
+        </label>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <label className="block">
+            <span className="field-label">Price <span className="font-normal text-faint">optional</span></span>
+            <input value={idea.price} onChange={set("price")} className="field mt-2" placeholder="$5/month after a 7-day free trial" />
+          </label>
+          <label className="block">
+            <span className="field-label">How would people get it? <span className="font-normal text-faint">optional</span></span>
+            <input value={idea.how} onChange={set("how")} className="field mt-2" placeholder="Download from the App Store" />
+          </label>
+        </div>
+        <label className="block">
+          <span className="field-label">What do people do today instead? <span className="font-normal text-faint">optional</span></span>
+          <input value={idea.alternatives} onChange={set("alternatives")} className="field mt-2" placeholder="Google recipes, meal kits, or order takeout" />
+        </label>
+      </div>
+      <ErrorNote error={error} />
+      <div className="flex justify-end">
+        <button type="submit" disabled={!ready} className="btn btn-primary h-12 px-8">
+          Read my idea
+          <Arrow />
+        </button>
+      </div>
+      <p className="text-xs text-faint">Honest limit: people liking an idea is a weaker signal than people using a real page. Treat the result as direction, then test the real thing.</p>
+    </form>
   );
 }

@@ -151,9 +151,10 @@ test("unknown screens, bad types and huge trials are cleaned", () => {
 
 // ---------- product types: game + store ----------
 const baseProfile = { goal: "buy", whatItIs: "x", whoItsFor: "y", mainPromise: "z", prices: [], proof: [], friction: [], tryTask: "" };
-test("game profile adds the game lens (teens, no under-13, no pressure tactics)", () => {
-  const t = profileToText({ ...baseProfile, productType: "game" });
-  return /game/i.test(t) && /under 13/.test(t) && /fake countdowns/.test(t) ? null : "game lens missing";
+test("games are retired: a game profile adds no lens; an idea profile adds the idea lens", () => {
+  const g = profileToText({ ...baseProfile, productType: "game" });
+  const i = profileToText({ ...baseProfile, productType: "idea" });
+  return !/PRODUCT TYPE/.test(g) && /product IDEA/.test(i) && /never judge looks/.test(i) ? null : "lens";
 });
 test("store profile adds the store lens (shipping, returns, fake urgency)", () => {
   const t = profileToText({ ...baseProfile, productType: "store" });
@@ -166,8 +167,8 @@ test("website/app/unknown types add NO extra text (no prompt injection through t
   }
   return null;
 });
-test("isProductType only accepts the four known types", () => {
-  return eq(["website", "app", "game", "store", "x", null].map(types.isProductType), [true, true, true, true, false, false], "isProductType");
+test("isProductType only accepts the types new tests may use (games retired)", () => {
+  return eq(["website", "app", "game", "store", "idea", "x", null].map(types.isProductType), [true, true, false, true, true, false, false], "isProductType");
 });
 test("game checks are never labelled as app-store rules", () => {
   const facts = { plans: [{ name: "VIP", price: "400 Robux", period: "other", trialDays: 0, highlighted: false }], closeButton: "visible", restorePurchases: false, termsLink: false, privacyLink: false, priceAfterTrialShown: false, autoRenewExplained: false, socialProof: [], headline: "", ctaText: "" };

@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { crawlSite, BlockedError, MissingPageError, SlowSiteError } from "../lib/crawl";
 import { publicUrlProblem } from "../lib/netguard";
 import { understandSite, EMPTY_PROFILE } from "../lib/suggest";
+import { cleanIdea, ideaCrawl, type IdeaInput } from "../lib/idea";
 import { runTest, type Run } from "../lib/pipeline";
 import { logRunCost } from "../lib/cost";
 import { stripCosts } from "../lib/stripCosts";
@@ -31,7 +32,7 @@ export type Job = {
 export type Ctx = { db: SupabaseClient; store: BlobStore; log: (msg: string, extra?: object) => void };
 
 // Saved on a finished crawl (what the web app reads back).
-export type CrawlData = { crawl: Crawl; profile: ProductProfile; audience: Audience | null; suggestError?: string };
+export type CrawlData = { crawl: Crawl; profile: ProductProfile; audience: Audience | null; suggestError?: string; input?: { kind?: string } & Partial<IdeaInput> };
 
 // Saved on a test when it's started (by start_test) and read by the worker.
 export type TestSettings = {
@@ -53,6 +54,7 @@ export async function analyzeJob(job: Job, ctx: Ctx) {
   await ctx.db.from("crawls").update({ status: "running", updated_at: now() }).eq("id", job.ref_id);
   if (row.url.startsWith("app://")) return analyzeAppJob(job, ctx, (row.data as { input: AppInput }).input);
   if (row.url.startsWith("video://")) return analyzeVideoJob(job, ctx, (row.data as { input: VideoInput }).input);
+  if (row.url.startsWith("idea://")) return analyzeIdeaJob(job, ctx, (row.data as { input?: unknown } | null)?.input);
 
   // Never visit private / internal addresses (see src/lib/netguard.ts).
   const problem = await publicUrlProblem(row.url);
@@ -90,6 +92,33 @@ export async function analyzeJob(job: Job, ctx: Ctx) {
     .update({ status: "done", data: stripCosts(data), updated_at: now() })
     .eq("id", job.ref_id);
   if (saveError) throw new Error(`couldn't save crawl: ${saveError.message}`);
+}
+
+// ---------- analyze (idea): no website yet, the founder's words become the "pages" ----------
+// No browser is opened. One cheap AI call reads the idea (like understandSite for a website).
+async function analyzeIdeaJob(job: Job, ctx: Ctx, input: unknown) {
+  const { idea, problem } = cleanIdea(input);
+  if (!idea) {
+    await ctx.db.from("crawls").update({ status: "error", error: problem, updated_at: now() }).eq("id", job.ref_id);
+    return;
+  }
+  const crawl = ideaCrawl(job.ref_id, idea, `${job.user_id}/crawls/${job.ref_id}`);
+  let data: CrawlData;
+  try {
+    const { profile, audience, cost } = await understandSite(crawl);
+    logRunCost(`analyze idea ${crawl.id}`, [cost]);
+    data = { crawl, profile: { ...profile, productType: "idea", tryTask: "" }, audience, input: { kind: "idea", ...idea } };
+  } catch (err) {
+    data = {
+      crawl,
+      profile: { ...EMPTY_PROFILE, productType: "idea", whatItIs: idea.pitch.slice(0, 300), whoItsFor: idea.who, prices: idea.price ? [idea.price] : [] },
+      audience: null,
+      suggestError: (err as Error).message,
+      input: { kind: "idea", ...idea },
+    };
+  }
+  const { error } = await ctx.db.from("crawls").update({ status: "done", data: stripCosts(data), updated_at: now() }).eq("id", job.ref_id);
+  if (error) throw new Error(`couldn't save idea analysis: ${error.message}`);
 }
 
 // ---------- analyze (app): read the uploaded screenshots ----------
@@ -167,7 +196,8 @@ export async function runJob(job: Job, ctx: Ctx) {
       profile: settings.profile,
       audience: settings.audience,
       count: settings.count ?? 100,
-      explore: settings.explore,
+      // an idea has nothing to open or search for yet: no explorer, no reputation search
+      explore: crawl.mode === "idea" ? undefined : settings.explore,
       credentials,
       seed: settings.seed,
       compareTo: settings.compareTo,

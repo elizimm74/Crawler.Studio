@@ -80,7 +80,7 @@ function Frame({ children }: { children: React.ReactNode }) {
 export async function scorecardImage(s: Shared) {
   const pct = (x: number) => Math.round(x * 100);
   const range = s.kind !== "website" && s.low !== null && s.high !== null && pct(s.low) !== pct(s.high) ? `range ${pct(s.low)}–${pct(s.high)}%` : null;
-  const what = s.kind === "video" ? "a short video" : s.kind === "app" ? "app onboarding + paywall" : (s.host ?? "a website");
+  const what = s.kind === "video" ? "a short video" : s.kind === "app" ? "app onboarding + paywall" : s.host === "idea:" ? "a product idea" : (s.host ?? "a website");
   const goal = s.goal ? `would ${s.goal}` : "would convert";
   return new ImageResponse(
     (

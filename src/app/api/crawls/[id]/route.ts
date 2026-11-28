@@ -59,6 +59,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     crawl: {
       id,
       url: d.crawl.url,
+      mode: d.crawl.mode,
       pages: d.crawl.pages.map((p) => ({
         step: p.step,
         url: p.url,
@@ -67,6 +68,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         screenshots: p.screenshotFiles.map((f) => fileUrl(d.crawl.filesPrefix, f)),
       })),
     },
+    // an idea test: the founder's own words, so the review screen (and a re-test) can show them
+    idea: d.crawl.mode === "idea" && d.input?.kind === "idea" ? d.input : undefined,
     profile: d.profile,
     audience: d.audience,
     suggestError: friendlyAiError(d.suggestError),

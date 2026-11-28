@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { token } = await params;
   const s = await getShared(token);
   if (!s) return { title: "Shared report", robots: { index: false } };
-  const what = s.kind === "app" ? "an app" : (s.host ?? "a website");
+  const what = s.kind === "app" ? "an app" : s.host === "idea:" ? "a product idea" : (s.host ?? "a website");
   const title = `${s.score} of ${s.total} simulated customers ${s.goal ? `would ${s.goal}` : "would convert"} · ${what}`;
   return {
     title: `${title}`,
@@ -28,7 +28,7 @@ export default async function SharedScorecard({ params }: Props) {
   const { token } = await params;
   const s = await getShared(token);
   if (!s) notFound();
-  const what = s.kind === "video" ? "A short video" : s.kind === "app" ? "App onboarding + paywall" : (s.host ?? "A website");
+  const what = s.kind === "video" ? "A short video" : s.kind === "app" ? "App onboarding + paywall" : s.host === "idea:" ? "A product idea" : (s.host ?? "A website");
   const pct = (x: number) => Math.round(x * 100);
 
   return (

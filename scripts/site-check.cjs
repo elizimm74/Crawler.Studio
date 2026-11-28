@@ -110,12 +110,13 @@ const record = (r) => {
       record({ type: "flow", check: name, ok: false, detail: e.message.split("\n")[0].slice(0, 200) });
     }
   };
-  await flow("hero: 'Testing an app, game or ad instead?' opens the onboarding at 'What do you want to test?'", async () => {
+  await flow("hero: 'Testing an app, an ad or just an idea?' opens 'What do you want to test?' (no games)", async () => {
     await p.goto(BASE + "/", { waitUntil: "networkidle" });
-    await p.getByRole("link", { name: /Testing an app, game or ad instead/ }).first().click();
+    await p.getByRole("link", { name: /Testing an app, an ad or just an idea/ }).first().click();
     await p.waitForURL(/\/onboarding$/, { timeout: 8000 });
     await p.getByRole("heading", { name: /What do you want to test/ }).waitFor();
-    for (const t of ["Website", "Online store", "Mobile app", "Game", "Video or ad"]) await p.getByRole("button", { name: new RegExp("^" + t) }).first().waitFor();
+    for (const t of ["Website", "Mobile app", "Just an idea", "Video or ad"]) await p.getByRole("button", { name: new RegExp("^" + t) }).first().waitFor();
+    if (await p.getByRole("button", { name: /^Game/ }).count()) throw new Error("the Game tile is still there");
   });
   await flow("onboarding: the 'Website' tile asks for the link; a bad address shows an error", async () => {
     await p.getByRole("button", { name: /^Website/ }).first().click();
@@ -145,6 +146,28 @@ const record = (r) => {
     const price = p.getByRole("button", { name: /Is my price reasonable/ });
     await price.click();
     if ((await price.getAttribute("aria-pressed")) !== "true") throw new Error("objective didn't toggle on");
+  });
+  await flow("onboarding: typing localhost shows the tunnel steps with the right port", async () => {
+    await p.goto(BASE + "/onboarding?kind=website", { waitUntil: "networkidle" });
+    await p.fill("#ob-url", "localhost:5173");
+    await p.locator("#ob-url").press("Enter");
+    await p.getByText("npx cloudflared tunnel --url http://localhost:5173").waitFor({ timeout: 4000 });
+    const use = p.getByRole("button", { name: "Use this address" });
+    if (!(await use.isDisabled())) throw new Error("'Use this address' should wait for a pasted address");
+    await p.getByLabel("Your tunnel address").fill("Your quick Tunnel has been created! Visit it at https://calm-bird-12.trycloudflare.com");
+    if (await use.isDisabled()) throw new Error("the pasted tunnel address wasn't recognised");
+  });
+  await flow("onboarding: 'Just an idea' goes to the idea form; it waits for a name and a real description", async () => {
+    await p.goto(BASE + "/onboarding", { waitUntil: "networkidle" });
+    await p.getByRole("button", { name: /^Just an idea/ }).first().click();
+    await p.getByRole("heading", { name: /Testing an idea/ }).waitFor();
+    await p.goto(BASE + "/app?kind=idea", { waitUntil: "networkidle" });
+    await p.getByRole("heading", { name: /Describe your idea/ }).waitFor();
+    const go = p.getByRole("button", { name: /Read my idea/ });
+    if (!(await go.isDisabled())) throw new Error("should be disabled while empty");
+    await p.getByPlaceholder("MealMate").fill("MealMate");
+    await p.locator("textarea").fill("A meal planner that plans a week of dinners from what is already in your fridge.");
+    if (await go.isDisabled()) throw new Error("should be enabled once filled in");
   });
   await flow("onboarding: switching to 'Mobile app' changes the step", async () => {
     await p.goto(BASE + "/onboarding", { waitUntil: "networkidle" });

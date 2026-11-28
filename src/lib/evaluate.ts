@@ -195,7 +195,9 @@ async function buildSiteContent(
       )
       .join("\n\n") +
     (missing.length
-      ? `\n\nNOTE: No ${missing.join(" or ")} page could be found from the landing page. A visitor looking for it would not find it.`
+      ? crawl.mode === "idea"
+        ? `\n\nNOTE: The founder hasn't said ${missing.map((m) => (m === "pricing" ? "what it will cost" : "how people would get it")).join(" or ")} yet. If you'd need that to decide, say so.`
+        : `\n\nNOTE: No ${missing.join(" or ")} page could be found from the landing page. A visitor looking for it would not find it.`
       : "");
 
   // cache_control marks the end of the part that's the same for every batch.

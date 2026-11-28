@@ -120,8 +120,13 @@ export async function understandSite(
       {
         role: "user",
         content:
-          `Here is what a visitor sees on a product's website.\n\n${pageText}\n\n` +
-          (missing.length ? `No ${missing.join(" or ")} page could be found.\n\n` : "") +
+          (crawl.mode === "idea"
+            ? `Here is a product IDEA, described in words by its founder. Nothing is built yet: judge only what is written.\n\n${pageText}\n\n` +
+              (missing.length ? `The founder hasn't said ${missing.map((m) => (m === "pricing" ? "the price" : "how people would get it")).join(" or ")} yet.\n\n` : "") +
+              `For an idea: goal = the action the founder would ask for at launch (e.g. "download the app" for a phone app, "buy" for a paid product, "sign up" for a free web tool). ` +
+              `friction = what would make people hesitate (unclear price, no proof it works, effort to switch, a crowded market). tryTask = "" (there is nothing to try yet).\n\n`
+            : `Here is what a visitor sees on a product's website.\n\n${pageText}\n\n` +
+              (missing.length ? `No ${missing.join(" or ")} page could be found.\n\n` : "")) +
           `PART 1 — Product profile. Be factual; only use what's on the pages.\n` +
           `- goal: the main action the site wants a new visitor to take right now (its main button). ` +
           `Use "buy" only if visitors pay immediately; a free account is "sign up".\n` +

@@ -3,7 +3,7 @@
 // Honesty rules are written INTO the prompt: no invented reviews, numbers, discounts or urgency;
 // a TODO instead of making up facts; small focused changes; mobile must keep working.
 
-export type PromptKind = "website" | "app" | "game" | "store" | "video";
+export type PromptKind = "website" | "app" | "game" | "store" | "video" | "idea";
 export type PromptFix = {
   title: string;
   problem: string;
@@ -31,8 +31,10 @@ const TARGET: Record<PromptKind, string> = {
   app: "my app's onboarding and paywall",
   game: "my game's first minutes and shop",
   video: "my video (ad / short-form post)",
+  idea: "my product idea (nothing is built yet)",
 };
 const ASK: Record<PromptKind, string> = {
+  idea: "Nothing is built yet, so don't write code. Rewrite my pitch: a one-line headline, a 2-sentence description, who it's for, and the price line, then list what I should find out or build first.",
   website: "Make these changes in the code of my site.",
   store: "Make these changes in my store (theme/code and product pages).",
   app: "Make these changes in my app's onboarding and paywall screens.",

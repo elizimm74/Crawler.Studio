@@ -7,7 +7,6 @@ export const PRESET_HINT: Record<string, string> = {
   "High school teens": "Phones, short attention, rarely a card",
   "Gen Z students": "Price-sensitive, social-first",
   "Solo SaaS founders": "Skeptical, compare everything",
-  "Roblox and game players": "13-20, free-to-play minds, parent pays",
   "Gen Z streetwear shoppers": "Impulse, price-aware, phone-first",
   "Gen Z creators": "Free tools first, early adopters",
   "Busy moms": "Short on time, want it to just work",

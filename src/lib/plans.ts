@@ -35,7 +35,10 @@ export type Plan = {
 };
 
 export const CUSTOMERS_PER_TEST = 100; // the usual test size
-export const TEST_SIZES = [100, 250, 500, 1000] as const; // paid plans and packs pick one per test
+// Paid plans and packs pick one per test. 25 = a QUICK CHECK: cheap, for trying a change on your
+// localhost or a preview before a full test (allowed by start_test since migration 0029).
+export const TEST_SIZES = [25, 100, 250, 500, 1000] as const;
+export const QUICK_CHECK = 25;
 // The free trial is one smaller "starter" test; inviting friends unlocks one full-size test.
 // These two numbers must match starter_customers() and referrals_needed() in migration 0007.
 export const STARTER_CUSTOMERS = 25;

@@ -14,11 +14,11 @@ const CASES = [
     fix: "Show the first win before the paywall, and put the price and trial length next to the button.",
   },
   {
-    id: "game",
-    tab: "Games (Roblox and more)",
-    problem: "Players quit during a long tutorial, or reach the shop and can't tell what the game pass is worth.",
-    looks: ["The first minutes: loading, tutorial, first quests", "The shop: game pass, premium and currency prices", "Whether a teen would need a parent to pay"],
-    fix: "Get players to their first win faster, and show exactly what each offer gives before the price.",
+    id: "idea",
+    tab: "Just an idea",
+    problem: "You're about to spend months building something, and only your friends have said it sounds good.",
+    looks: ["Whether people have the problem at all", "What they use today instead", "Whether your price fits their budget"],
+    fix: "Narrow who it's for, lead with the one problem they feel most, and test a clear price before you build.",
   },
   {
     id: "saas",
@@ -57,7 +57,7 @@ export default function UseCases() {
   return (
     <div className="mx-auto max-w-4xl">
       <p className="t-label text-center">what can I test?</p>
-      <h2 className="t-chunk mt-3 text-center">Apps, games, pages and stores.</h2>
+      <h2 className="t-chunk mt-3 text-center">Apps, pages, stores and ideas.</h2>
 
       <div className="mt-8 flex flex-wrap justify-center gap-2" role="group" aria-label="Choose a product type">
         {CASES.map((x) => (
@@ -88,8 +88,8 @@ export default function UseCases() {
         <div>
           <p className="t-label">a typical fix</p>
           <p className="mt-2 font-medium">{c.fix}</p>
-          <Link href={c.id === "app" ? "/onboarding?kind=app" : c.id === "game" ? "/onboarding?kind=game" : c.id === "shop" ? "/onboarding?kind=store" : "/onboarding"} className="btn btn-text mt-3 h-10 px-0 text-sm">
-            {c.id === "shop" ? "Test my store" : c.id === "game" ? "Test my game" : c.id === "app" ? "Test my app" : "Test my page"}
+          <Link href={c.id === "app" ? "/onboarding?kind=app" : c.id === "idea" ? "/onboarding?kind=idea" : c.id === "shop" ? "/onboarding" : "/onboarding"} className="btn btn-text mt-3 h-10 px-0 text-sm">
+            {c.id === "shop" ? "Test my store" : c.id === "idea" ? "Test my idea" : c.id === "app" ? "Test my app" : "Test my page"}
             <Arrow />
           </Link>
         </div>

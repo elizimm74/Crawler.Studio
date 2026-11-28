@@ -78,10 +78,22 @@ export async function confirmInstallation(code: string, installationId: number):
 }
 
 // ---------- repos + their live website ----------
-export type RepoInfo = { id: number; fullName: string; private: boolean; homepage: string | null; liveUrl: string | null; source: "website field" | "deployment" | null; updatedAt: string };
+export type RepoInfo = {
+  id: number;
+  fullName: string;
+  private: boolean;
+  homepage: string | null;
+  liveUrl: string | null;
+  source: "website field" | "deployment" | null;
+  updatedAt: string;
+  // NOT-YET-LIVE versions: the latest successful PREVIEW deployment per branch (Vercel, Netlify...),
+  // so a change can be tested before it's merged. Newest first, max 3.
+  previews: Preview[];
+};
+export type Preview = { branch: string; url: string; at: string };
 
 type GhRepo = { id: number; full_name: string; private: boolean; homepage: string | null; updated_at: string };
-type GhDeployment = { id: number; environment: string; statuses_url: string };
+type GhDeployment = { id: number; environment: string; statuses_url: string; ref: string; created_at: string };
 type GhStatus = { state: string; environment_url?: string; target_url?: string };
 
 // The repo's "website" field if it's a real web address, else the latest successful PRODUCTION
@@ -107,7 +119,7 @@ export async function listRepos(installationId: number): Promise<RepoInfo[]> {
   const { repositories } = await gh<{ repositories: GhRepo[] }>("/installation/repositories?per_page=100", token);
   const repos = repositories.sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, 30);
   return Promise.all(
-    repos.map(async (r) => {
+    repos.map(async (r, i) => {
       let deployUrls: string[] = [];
       if (!r.homepage) {
         try {
@@ -123,7 +135,43 @@ export async function listRepos(installationId: number): Promise<RepoInfo[]> {
         }
       }
       const live = pickLiveUrl(r.homepage, deployUrls);
-      return { id: r.id, fullName: r.full_name, private: r.private, homepage: r.homepage, liveUrl: live.url, source: live.source, updatedAt: r.updated_at };
+      const previews = i < PREVIEW_REPOS ? await listPreviews(r.full_name, token).catch(() => []) : [];
+      return { id: r.id, fullName: r.full_name, private: r.private, homepage: r.homepage, liveUrl: live.url, source: live.source, updatedAt: r.updated_at, previews };
     }),
   );
+}
+
+// Previews are looked up for the most recently updated repos only (each costs a few GitHub calls).
+const PREVIEW_REPOS = 8;
+
+// Picks the newest successful preview per branch from deployments (newest first). Pure, benched.
+export function pickPreviews(items: { env: string; branch: string; url: string | null; at: string }[], max = 3): Preview[] {
+  const seen = new Set<string>();
+  const out: Preview[] = [];
+  for (const d of [...items].sort((a, b) => b.at.localeCompare(a.at))) {
+    if (/^production$/i.test(d.env) || !d.url || seen.has(d.branch)) continue;
+    try {
+      const u = new URL(d.url);
+      if (u.protocol !== "https:") continue;
+    } catch {
+      continue;
+    }
+    seen.add(d.branch);
+    out.push({ branch: d.branch, url: d.url, at: d.at });
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+async function listPreviews(fullName: string, token: string): Promise<Preview[]> {
+  const deps = await gh<GhDeployment[]>(`/repos/${fullName}/deployments?per_page=15`, token);
+  const candidates = deps.filter((d) => !/^production$/i.test(d.environment)).slice(0, 6);
+  const items = await Promise.all(
+    candidates.map(async (d) => {
+      const st = await gh<GhStatus[]>(d.statuses_url + "?per_page=5", token).catch(() => [] as GhStatus[]);
+      const good = st.find((x) => x.state === "success" && (x.environment_url || x.target_url));
+      return { env: d.environment, branch: d.ref, url: good ? good.environment_url || good.target_url! : null, at: d.created_at };
+    }),
+  );
+  return pickPreviews(items);
 }

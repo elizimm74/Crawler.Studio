@@ -1,9 +1,10 @@
 "use client";
-// "Import from GitHub": pick one of your repos and Crawler fills in its live website.
+// "Import from GitHub": pick one of your repos and Crawler fills in its live website, or a
+// PREVIEW of a branch that isn't live yet (Vercel, Netlify and others report previews to GitHub).
 // Hidden when the GitHub app isn't set up, or for signed-out visitors (they just paste a URL).
 import { useEffect, useState } from "react";
 
-type Repo = { id: number; fullName: string; private: boolean; liveUrl: string | null; source: string | null; account: string };
+type Repo = { id: number; fullName: string; private: boolean; liveUrl: string | null; source: string | null; account: string; previews?: { branch: string; url: string; at: string }[] };
 type State = { enabled: boolean; signedIn?: boolean; connected?: boolean; repos?: Repo[]; accounts?: string[] };
 
 export default function GitHubImport({ onPick, next = "/onboarding" }: { onPick: (url: string, repo: string) => void; next?: string }) {
@@ -37,22 +38,35 @@ export default function GitHubImport({ onPick, next = "/onboarding" }: { onPick:
         <ul className="mt-3 max-h-80 divide-y divide-line overflow-y-auto rounded-xl border border-line">
           {repos.length === 0 && <li className="p-4 text-sm text-muted">No repos shared with Crawler yet. Add some in the GitHub app settings.</li>}
           {repos.map((r) => (
-            <li key={r.id} className="flex items-center justify-between gap-3 p-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">
-                  {r.fullName} {r.private && <span className="text-xs text-faint">· private</span>}
-                </p>
-                <p className="truncate text-xs text-faint">{r.liveUrl ? `${r.liveUrl.replace(/^https?:\/\//, "")} · from the ${r.source}` : "No live website found (add one in the repo's About → Website)"}</p>
+            <li key={r.id} className="p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">
+                    {r.fullName} {r.private && <span className="text-xs text-faint">· private</span>}
+                  </p>
+                  <p className="truncate text-xs text-faint">{r.liveUrl ? `${r.liveUrl.replace(/^https?:\/\//, "")} · from the ${r.source}` : "No live website found (add one in the repo's About → Website)"}</p>
+                </div>
+                <button type="button" disabled={!r.liveUrl} onClick={() => r.liveUrl && (onPick(r.liveUrl, r.fullName), setOpen(false))} className="btn btn-secondary h-10 shrink-0 px-3 text-sm">
+                  Use live
+                </button>
               </div>
-              <button type="button" disabled={!r.liveUrl} onClick={() => r.liveUrl && (onPick(r.liveUrl, r.fullName), setOpen(false))} className="btn btn-secondary h-10 shrink-0 px-3 text-sm">
-                Use
-              </button>
+              {(r.previews ?? []).map((p) => (
+                <div key={p.branch} className="mt-2 flex items-center justify-between gap-3 rounded-lg bg-subtle px-3 py-2">
+                  <p className="min-w-0 truncate text-xs">
+                    <span className="font-medium">Preview</span> · branch <span className="font-mono">{p.branch}</span>
+                  </p>
+                  <button type="button" onClick={() => (onPick(p.url, r.fullName), setOpen(false))} className="btn btn-text h-9 shrink-0 px-2 text-xs">
+                    Test this preview
+                  </button>
+                </div>
+              ))}
             </li>
           ))}
         </ul>
       )}
       <p className="mt-2 text-xs text-faint">
-        Crawler only sees repo names and deployment addresses, never your code. Manage access in{" "}
+        Previews on Vercel are private by default: turn off Vercel Authentication for previews (Project → Settings → Deployment Protection), or test your
+        localhost instead. Crawler only sees repo names and deployment addresses, never your code. Manage access in{" "}
         <a href="/settings" className="underline underline-offset-2">
           Settings
         </a>

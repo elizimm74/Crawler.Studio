@@ -22,5 +22,5 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
   // Came from the landing page's URL box (next = /app?url=...)? Pre-fill that URL.
   // Or straight from the home page hero (?url=...). Never silently dropped.
   const startUrl = (url ?? new URL(safeNext, "http://x").searchParams.get("url") ?? "").slice(0, 2000);
-  return <Onboarding startUrl={startUrl} startKind={kind === "app" || kind === "game" || kind === "store" || kind === "video" ? kind : "website"} mind={mind && /^[0-9a-f-]{36}$/.test(mind) ? mind : undefined} preset={preset?.slice(0, 40)} firstTime={!onboarded} choose={!startUrl && !kind && !mind && !preset} />;
+  return <Onboarding startUrl={startUrl} startKind={kind === "app" || kind === "game" ? "app" : kind === "idea" || kind === "video" ? kind : "website"} mind={mind && /^[0-9a-f-]{36}$/.test(mind) ? mind : undefined} preset={preset?.slice(0, 40)} firstTime={!onboarded} choose={!startUrl && !kind && !mind && !preset} />;
 }

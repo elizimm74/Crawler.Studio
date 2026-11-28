@@ -6,6 +6,7 @@
 //   4. Everything else, folded away (click to open), most useful first
 // Every number comes from run.stats (calculated in code); the advice text
 // comes from run.advice (written by Sonnet).
+import { displayUrl, isIdeaUrl } from "@/lib/idea";
 import QualityNote from "./QualityNote";
 import CompareBox from "./CompareBox";
 import Link from "next/link";
@@ -52,7 +53,13 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
   const fixes = advice.fixes.filter((f) => f.couldFlip > 0);
   const shownFixes = moreFixes ? fixes : fixes.slice(0, 3);
 
-  const retestHref = `/app?url=${encodeURIComponent(run.url)}&retest=${run.id}${run.profile?.productType === "store" ? "&type=store" : ""}`;
+  const isIdea = isIdeaUrl(run.url);
+  // an idea re-test reopens the idea form with last time's words (?from=), the same customers come back
+  const retestHref = isIdea
+    ? `/app?kind=idea&retest=${run.id}&from=${encodeURIComponent(run.crawlId)}`
+    : `/app?url=${encodeURIComponent(run.url)}&retest=${run.id}${run.profile?.productType === "store" ? "&type=store" : ""}`;
+  const kind = isIdea ? "idea" : run.profile?.productType === "store" ? "store" : "website";
+  const shownName = displayUrl(run.url);
   const fixWins = fixes.slice(0, 3).reduce((n, f) => n + f.likelyFlip, 0);
   const sections = [
     { id: "answer", label: "Answer" },
@@ -69,7 +76,7 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
     return (
       <ReportShell sections={[{ id: "answer", label: "Answer" }, { id: "problems", label: "Problems" }, { id: "unlock", label: "Full report" }]}>
         <ReportHero
-          label={run.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+          label={shownName}
           tag="free trial preview"
           value={stats.buy}
           total={stats.total}
@@ -119,8 +126,8 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
     <ReportShell sections={sections}>
       {/* ---------- 1. The answer ---------- */}
       <ReportHero
-        label={run.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-        tag={run.profile?.productType === "store" ? "store report" : "report"}
+        label={shownName}
+        tag={isIdea ? "idea report" : run.profile?.productType === "store" ? "store report" : "report"}
         value={stats.buy}
         total={stats.total}
         headline={stats.behavior ? `said they'd ${goal}` : `would ${goal}`}
@@ -187,9 +194,9 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
         </div>
         <CopyFixPrompt
           input={{
-            kind: run.profile?.productType === "store" ? "store" : "website",
-            name: run.url.replace(/^https?:\/\//, "").replace(/\/$/, ""),
-            url: run.url,
+            kind,
+            name: shownName,
+            url: isIdea ? undefined : run.url,
             whatItIs: run.profile?.whatItIs,
             whoItsFor: run.profile?.whoItsFor,
             goal,
@@ -375,16 +382,16 @@ export default function Report({ run, demo = false }: { run: Run & { filesPrefix
           <ReportRevenue
             testId={run.id}
             url={run.url}
-            kind={run.profile?.productType === "store" ? "store" : "website"}
+            kind={kind}
             yes={stats.buy}
             total={stats.total}
             goal={goal}
             fixes={fixes.map((f) => ({ title: f.title, wins: f.likelyFlip }))}
             createdAt={run.createdAt}
           />
-          <NextSteps kind={run.profile?.productType === "store" ? "store" : "website"} fixWins={fixWins} retestHref={retestHref} newVersionHref={retestHref} />
-          <ShareBox testId={run.id} headline={`${stats.buy} of ${stats.total} simulated customers would ${goal} on ${run.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/.*$/, "")}`} />
-          <AskBox testId={run.id} rerunHref={`/app?url=${encodeURIComponent(run.url)}`} />
+          <NextSteps kind={kind} fixWins={fixWins} retestHref={retestHref} newVersionHref={retestHref} />
+          <ShareBox testId={run.id} headline={`${stats.buy} of ${stats.total} simulated customers would ${goal}${isIdea ? ` (${shownName.toLowerCase()})` : ` on ${run.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/.*$/, "")}`}`} />
+          <AskBox testId={run.id} rerunHref={isIdea ? `/app?kind=idea&from=${encodeURIComponent(run.crawlId)}` : `/app?url=${encodeURIComponent(run.url)}`} />
           <ActualBox testId={run.id} kind="website" />
         </>
       )}

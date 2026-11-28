@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { sizesFor, type PlanData } from "@/lib/dashboard";
-import { TEST_SIZES } from "@/lib/plans";
+import { QUICK_CHECK, TEST_SIZES } from "@/lib/plans";
 
 export type PlanInfo = PlanData;
 
@@ -57,6 +57,7 @@ export function SizePicker({ plan, value, onChange, video = false }: { plan: Pla
     : [
         plan.monthly ? `${n(plan.monthly.left)} of ${n(plan.monthly.allowance)} Crawlers left this month.` : "",
         packs > 0 ? `${n(packs)} extra Crawlers${plan.monthly ? " on top" : " left"} (never expire).` : "",
+        `${QUICK_CHECK} = a quick check: cheap, for trying a change before a full test.`,
         "Bigger crowds take longer (1,000 is a few minutes).",
       ]
         .filter(Boolean)
@@ -69,7 +70,7 @@ export function SizePicker({ plan, value, onChange, video = false }: { plan: Pla
         <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Test size">
           {fits.map((x) => (
             <button key={x} type="button" className="chip" aria-pressed={value === x} onClick={() => onChange(x)}>
-              {n(x)}
+              {x === QUICK_CHECK ? `${n(x)} · quick check` : n(x)}
             </button>
           ))}
         </div>

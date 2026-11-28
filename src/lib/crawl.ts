@@ -319,6 +319,17 @@ async function waitForContent(page: Page) {
 // "Checking your browser..." pages: wait a bit (some pass by themselves),
 // then stop with a clear message instead of reviewing a block page.
 async function checkBlocked(page: Page) {
+  // A private PREVIEW (e.g. Vercel Authentication) sends visitors to a log-in page. Never test that.
+  let host = "";
+  try {
+    host = new URL(page.url()).hostname;
+  } catch {}
+  const title0 = await page.title().catch(() => "");
+  if (/(^|\.)vercel\.com$/.test(host) && /login|log in|sign in|authentication/i.test(page.url() + " " + title0)) {
+    throw new BlockedError(
+      "This preview is private: Vercel asks for a log-in first. Turn off Vercel Authentication for previews (Project → Settings → Deployment Protection), or test your localhost instead.",
+    );
+  }
   const looksBlocked = async () => {
     const title = await page.title().catch(() => "");
     const text = await page.evaluate(() => document.body?.innerText ?? "").catch(() => "");

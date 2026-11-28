@@ -20,6 +20,7 @@ export const PEOPLE_LABEL: Record<Analysis["kind"], string> = {
   app: "installs a month",
   game: "new players a month",
   video: "views a month",
+  idea: "people who'd hear about it a month",
 };
 
 export function useRevenue(latest: Analysis | undefined, fixes: QueuedFix[]) {

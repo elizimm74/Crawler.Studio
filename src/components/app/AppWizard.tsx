@@ -115,7 +115,7 @@ export default function AppWizard() {
           count: fitSize(plan, size), // only a request: the database checks it against the plan
           crawlId,
           audience,
-          profile: { ...profile, productType: params.get("type") === "game" ? "game" : "app" },
+          profile: { ...profile, productType: "app" },
           app: { screens: screens.map(strip), screensB: screensB.map(strip), paywall, paywallB, iphonePct, sources },
         }),
       });
@@ -159,7 +159,7 @@ export default function AppWizard() {
           />
         ) : (
           <section className="space-y-8">
-            <Heading n={1} title="Add your screens" sub={params.get("type") === "game" ? "Screenshots of the first minutes, in order: the loading screen, tutorial, first quests, and the shop or game-pass offer. You only upload pictures. Crawler never logs into your game or account." : "Screenshots of your onboarding, in the order people see them, ending with the paywall."} />
+            <Heading n={1} title="Add your screens" sub="Screenshots of your onboarding, in the order people see them, ending with the paywall." />
             <Dropzone shots={shots} onChange={setShots} max={MAX_A} label="Onboarding + paywall" />
             <details className="card group" open={shotsB.length > 0}>
               <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-6 py-4">

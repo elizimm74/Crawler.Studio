@@ -3,22 +3,27 @@
 // judge. It is chosen by the founder in the questions and travels inside the product profile.
 //
 //   website: a landing page / web app          app: a mobile app's onboarding + paywall
-//   game:    a Roblox or mobile game's first session + shop/offer (screenshots you upload)
-//   store:   an online store (e.g. Shopify, clothing, dropshipping): product page, shipping, trust
+//   store:   an online store (picked automatically when the site looks like a shop)
+//   idea:    a product IDEA described in words: no website yet (src/lib/idea.ts)
+//   game:    RETIRED (2026-11-28, the founder: "only apps, websites and ads"). Old game tests
+//            still open, but new tests can't pick it (NEW_PRODUCT_TYPES).
 //
 // SAFETY: we only ever put one of these fixed sentences into a prompt (never text typed by a
 // user), so a bad value can't inject instructions. Unknown values are ignored.
 
-export const PRODUCT_TYPES = ["website", "app", "game", "store"] as const;
+export const PRODUCT_TYPES = ["website", "app", "game", "store", "idea"] as const;
 export type ProductType = (typeof PRODUCT_TYPES)[number];
+// What a NEW test may use (the server drops anything else).
+export const NEW_PRODUCT_TYPES: readonly ProductType[] = ["website", "app", "store", "idea"];
 
-export const isProductType = (x: unknown): x is ProductType => PRODUCT_TYPES.includes(x as ProductType);
+export const isProductType = (x: unknown): x is ProductType => NEW_PRODUCT_TYPES.includes(x as ProductType);
 
 export const PRODUCT_LABEL: Record<ProductType, string> = {
   website: "Website",
   app: "Mobile app",
-  game: "Game (Roblox and more)",
+  game: "Game (retired)",
   store: "Online store",
+  idea: "Idea",
 };
 
 // Extra guidance for the simulated customers. These are general principles and ASSUMPTIONS,
@@ -37,6 +42,11 @@ const LENS: Partial<Record<ProductType, string>> = {
     "Extra costs that only show at checkout and slow or unclear delivery are common reasons shoppers leave. " +
     "Fake urgency (countdown timers, 'only 2 left') makes careful shoppers distrust a store, so never recommend it. " +
     "In this store test the 'pricing' page is a PRODUCT page and the 'signup' page is the CART (one item was added; nobody checks out or pays): lost_at pricing = left at the product page, signup = left at the cart.",
+  idea:
+    "PRODUCT TYPE: a product IDEA, described in words by the founder. There is NO website, app or design yet, so never judge looks, layout or missing screenshots. " +
+    "Judge the idea itself as if a friend pitched it to you: do you have this problem, is it clearly better than what you do now, would you trust a new product like this, and is the price (if given) worth it on YOUR budget. " +
+    "In this idea test the 'hero' page is the pitch, the 'pricing' page is the price (if the founder gave one) and the 'signup' page is how you would get it: lost_at hero = the pitch didn't grab you, pricing = the price, signup = getting it was too much effort. " +
+    "Liking an idea is not the same as paying for it: most people who say 'cool idea' never sign up, so be strict. If key facts are missing (price, how it works), say what you would need to know.",
 };
 
 export function lensFor(t: unknown): string {

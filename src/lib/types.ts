@@ -84,7 +84,8 @@ export type Crawl = {
   filesPrefix: string; // where this crawl's screenshots are, e.g. "{userId}/crawls/{id}"
   // "store": an online-store crawl. Then the "pricing" page is a PRODUCT page and the
   // "signup" page is the CART (see crawlStore in crawl.ts).
-  mode?: "store";
+  // "idea": no website yet; the pages are the founder's written description (src/lib/idea.ts).
+  mode?: "store" | "idea";
 };
 
 // What the product IS, written by Haiku after the crawl. The founder can
@@ -100,7 +101,7 @@ export const GOALS = [
 export type Goal = (typeof GOALS)[number];
 
 export type ProductProfile = {
-  productType?: import("./productTypes").ProductType; // website (default) | app | game | store: changes what customers judge
+  productType?: import("./productTypes").ProductType; // website (default) | app | store | idea (game = retired): changes what customers judge
   goal: Goal; // what "converting" means for this site
   whatItIs: string;
   whoItsFor: string;

@@ -10,7 +10,7 @@ import { usePlan } from "@/components/dashboard/usePlan";
 import { Icon } from "@/components/dashboard/viz";
 import { PLANS, priceLabel } from "@/lib/plans";
 
-type Kind = "website" | "store" | "app" | "game" | "video";
+type Kind = "website" | "store" | "app" | "game" | "video" | "idea";
 
 export default function NextSteps({
   kind,
@@ -39,7 +39,7 @@ export default function NextSteps({
   ideas.push({ href: "/dashboard#overview", title: "See what it could be worth", text: "Put in your visitors and price: a rough monthly revenue what-if, with and without your fixes.", icon: "chart" });
   if (kind !== "video") ideas.push({ href: "/onboarding?kind=video", title: "Test an ad or creator video", text: "Would simulated viewers stop, watch and tap through to this product? Plus a creator deal check.", icon: "play" });
   if (kind === "video") ideas.push({ href: "/onboarding", title: "Test where the video sends people", text: "Run the landing page or app the video points to, and see if they'd stay.", icon: "cart" });
-  if (kind === "website" || kind === "store") ideas.push({ href: "/onboarding?kind=app", title: "Test the mobile app too", text: "Upload onboarding screenshots and see where people quit and what the paywall costs you.", icon: "phone" });
+  if (kind === "website" || kind === "store" || kind === "idea") ideas.push({ href: "/onboarding?kind=app", title: "Test the mobile app too", text: "Upload onboarding screenshots and see where people quit and what the paywall costs you.", icon: "phone" });
   if (kind === "app" || kind === "game") ideas.push({ href: "/onboarding", title: "Test your website too", text: "Most people see your site before they install. Does it make them want to?", icon: "cart" });
   ideas.push({ href: "/dashboard#minds", title: "Try a different crowd", text: "Save a customer mind (say, students on a budget) and test the same product with them.", icon: "minds" });
 

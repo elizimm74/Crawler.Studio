@@ -147,9 +147,8 @@ function nextStep(d: DashboardData, latest: Analysis | undefined, running: Analy
 // Quick-start tiles: every kind of test, one tap away.
 const QUICK: { href: string; label: string; icon: string }[] = [
   { href: "/onboarding?kind=website", label: "Website", icon: "overview" },
-  { href: "/onboarding?kind=store", label: "Online store", icon: "cart" },
   { href: "/onboarding?kind=app", label: "Mobile app", icon: "phone" },
-  { href: "/onboarding?kind=game", label: "Game", icon: "bolt" },
+  { href: "/onboarding?kind=idea", label: "Idea", icon: "bolt" },
   { href: "/onboarding?kind=video", label: "Video or ad", icon: "play" },
 ];
 
@@ -231,7 +230,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
   const subLine = subscriptionLine(plan.subscription);
   const summary = latest
     ? `${latest.label} ${latest.delta === null ? "scored" : latest.delta > 0 ? "climbed to" : latest.delta < 0 ? "slipped to" : "held at"} ${latest.score} of ${latest.total}.${latest.blocker ? ` Biggest blocker: ${latest.blocker}.` : ""}`
-    : `Your first test is free. ${plan.customers} simulated customers try your app, game, site or store.`;
+    : `Your first test is free. ${plan.customers} simulated customers try your website, app, ad or idea.`;
 
   const rev = useRevenue(latest, data.fixes);
   const running = data.analyses.filter((a) => a.status !== "done" && a.status !== "error");
@@ -241,7 +240,7 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
     ["Run your first test", data.analyses.length > 0],
     ["Read a finished report", done.length > 0],
     ["Re-test after a fix", done.some((a) => done.filter((b) => b.label === a.label && b.kind === a.kind).length > 1)],
-    ["Test a second kind (app, store or ad)", new Set(data.analyses.map((a) => a.kind)).size > 1],
+    ["Test a second kind (app, ad or idea)", new Set(data.analyses.map((a) => a.kind)).size > 1],
     ["Save a customer mind", data.minds.length > 0],
   ];
   const ticked = checklist.filter(([, ok]) => ok).length;

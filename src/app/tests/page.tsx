@@ -1,5 +1,6 @@
 // /tests: "My tests", every test this account has run, newest first.
 // Row Level Security means this list can only ever contain YOUR tests.
+import { displayUrl } from "@/lib/idea";
 import Link from "next/link";
 import { supabaseServer } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
@@ -55,7 +56,7 @@ export default async function MyTests() {
                   {t.status === "done" && <span className="text-sm text-faint">/{t.total}</span>}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-medium">{t.url.startsWith("video://") ? "Video / ad test" : t.url.startsWith("app://") ? (t.ptype === "game" ? "Game first session + shop" : "App onboarding + paywall") : t.url.replace(/^https?:\/\//, "")}</span>
+                  <span className="block truncate font-medium">{t.url.startsWith("video://") ? "Video / ad test" : t.url.startsWith("app://") ? (t.ptype === "game" ? "Game first session + shop" : "App onboarding + paywall") : displayUrl(t.url)}</span>
                   <span className="text-sm text-muted">
                     {t.status === "done"
                       ? `would ${t.goal ?? "buy"}`

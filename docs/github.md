@@ -37,5 +37,19 @@ Two separate things. Sign-in never touches anyone's code; the import app only se
 
 Database: migration `0022_github.sql` must be applied (Claude does this when you approve it in Supabase).
 
+## Testing a branch before it's live (built 2026-11-28)
+The repo picker also lists each repo's latest successful PREVIEW deployment per branch (Vercel, Netlify
+and others report them to GitHub; up to 3 per repo, for the 8 most recently updated repos):
+"Test this preview". Vercel previews are PRIVATE by default (Vercel Authentication): the crawler then
+stops with a clear message (crawl.ts checkBlocked) instead of testing Vercel's log-in page. Fix: Project →
+Settings → Deployment Protection → turn off Vercel Authentication for previews, or test localhost.
+
+## Testing localhost (built 2026-11-28)
+The cloud can't open anyone's localhost. Onboarding detects a typed localhost / 192.168.x address and shows
+`LocalHelp`: run `npx cloudflared tunnel --url http://localhost:<port>` (Cloudflare's free quick tunnel,
+no account), paste the https://….trycloudflare.com address, test it like any site. A tunnel address starts
+as a 25-customer QUICK CHECK on paid plans. NOT yet tried on a real computer (the cloud sandbox refused to
+open a public tunnel): try it once on the Mac before telling users.
+
 ## What's next (not built yet): automatic tests on pull requests
 Turn on the app's webhook (`/api/github/webhook`, secret in `GITHUB_WEBHOOK_SECRET`), add "Pull requests: write" + "Deployment statuses" events, and per repo an "auto-test previews" switch with a monthly cap. When Vercel reports a preview deployment, Crawler runs a test on it with the repo's saved customer mind and comments "34/100 would sign up (+3 vs main) · top fix: …" on the pull request. Needs: a server-only way to start a test for a user, chaining analyze → test in the worker without the review step, and posting the comment from the worker.

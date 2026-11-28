@@ -1,6 +1,7 @@
 // The dashboard's numbers, worked out IN CODE from a person's own saved tests.
 // Pure functions (no database, no AI), so the bench can test them with known answers.
 import { playsFor, type Play } from "./playbook";
+import { ideaLabel, isIdeaUrl } from "./idea";
 import { planName } from "./plans";
 
 // One saved test, reduced to what the dashboard needs. Rows come newest first.
@@ -13,7 +14,7 @@ export type TestRow = {
   total: number | null;
   created_at: string;
   kind: string | null; // "app" for app tests
-  ptype?: string | null; // the product type the founder picked: website | app | game | store
+  ptype?: string | null; // the product type the founder picked: website | app | store | idea (game = retired)
   thumb?: string | null; // a screenshot address for the thumbnail (filled in by the dashboard page)
   objections: { category: string; count?: number }[] | null;
   fixes: { title: string; change?: string; couldFlip?: number; likelyFlip?: number; couldWin?: number; atPaywall?: number }[] | null;
@@ -23,7 +24,7 @@ export type Analysis = {
   id: string;
   url: string; // used for "test again"
   label: string; // "mealmate.app", "App onboarding + paywall" or "Game first session + shop"
-  kind: "website" | "app" | "game" | "store" | "video";
+  kind: "website" | "app" | "game" | "store" | "video" | "idea";
   thumb: string | null; // screenshot for the thumbnail, if we have one
   status: string;
   pct: number | null; // score as a percent of customers
@@ -37,8 +38,9 @@ export type Analysis = {
 
 export const isApp = (r: TestRow) => r.kind === "app" || r.url.startsWith("app://");
 export const isVideo = (r: TestRow) => r.kind === "video" || r.url.startsWith("video://");
+export const isIdea = (r: TestRow) => r.ptype === "idea" || isIdeaUrl(r.url);
 export const kindOf = (r: TestRow): Analysis["kind"] =>
-  isVideo(r) ? "video" : isApp(r) ? (r.ptype === "game" ? "game" : "app") : r.ptype === "store" ? "store" : "website";
+  isVideo(r) ? "video" : isApp(r) ? (r.ptype === "game" ? "game" : "app") : isIdea(r) ? "idea" : r.ptype === "store" ? "store" : "website";
 export const labelOf = (r: TestRow) =>
   isVideo(r)
     ? "Video / ad test"
@@ -46,6 +48,8 @@ export const labelOf = (r: TestRow) =>
     ? r.ptype === "game"
       ? "Game first session + shop"
       : "App onboarding + paywall"
+    : isIdeaUrl(r.url)
+    ? ideaLabel(r.url)
     : r.url.replace(/^https?:\/\/(www\.)?/, "").replace(/[/?#].*$/, "");
 
 export function analyses(rows: TestRow[]): Analysis[] {

@@ -154,5 +154,37 @@ test(`segments under ${MIN_SEGMENT} people are flagged 'too small'`, () => {
 test("the per-person probabilities are saved for later calibration", () => (stats.behavior.p.length === 100 ? null : String(stats.behavior.p.length)));
 test("evidence is counted (100% verified here)", () => (stats.evidence.verified === 100 && stats.evidence.checkable === 100 ? null : JSON.stringify(stats.evidence)));
 
+console.log("\nIdea tests (no website yet)");
+const { cleanIdea, ideaCrawl, ideaSlug, ideaLabel, displayUrl } = require(path.join(lib, "idea.js"));
+const { lensFor } = require(path.join(lib, "productTypes.js"));
+test("an idea needs a name and a real description", () => {
+  const a = cleanIdea({ name: "M", pitch: "a meal planner that plans dinners from your fridge" }).problem;
+  const b = cleanIdea({ name: "MealMate", pitch: "meal app" }).problem;
+  const c = cleanIdea({ name: "MealMate", pitch: "A meal planner that plans a week of dinners from your fridge." }).problem;
+  return a && b && c === null ? null : JSON.stringify({ a, b, c });
+});
+test("idea text is trimmed to the limits and control characters removed", () => {
+  const { idea } = cleanIdea({ name: "  Meal\u0007Mate  ", pitch: "x".repeat(5000), price: 42 });
+  return idea.name === "MealMate" && idea.pitch.length === 1500 && idea.price === "" ? null : JSON.stringify({ n: idea.name, p: idea.pitch.length, price: idea.price });
+});
+test("the idea becomes pages: pitch = hero, price = pricing, how = signup (no screenshots)", () => {
+  const { idea } = cleanIdea({ name: "MealMate!", pitch: "A meal planner that plans a week of dinners from your fridge.", price: "$5/month", how: "App Store" });
+  const c = ideaCrawl("abc", idea);
+  const steps = c.pages.map((p) => p.step).join(",");
+  return c.mode === "idea" && c.url === "idea://mealmate" && steps === "hero,pricing,signup" && c.pages.every((p) => p.screenshotFiles.length === 0) && c.pages[1].signals.pricesSeen[0] === "$5/month"
+    ? null
+    : JSON.stringify({ mode: c.mode, url: c.url, steps });
+});
+test("no price / no 'how' = only the pitch page", () => {
+  const { idea } = cleanIdea({ name: "Fit", pitch: "A gym buddy finder for people who hate working out alone." });
+  return ideaCrawl("x", idea).pages.length === 1 ? null : "extra pages";
+});
+test("slug + labels", () =>
+  ideaSlug("Ça va: Meal—Mate 2.0!") === "a-va-meal-mate-2-0" && ideaSlug("!!!") === "idea" && ideaLabel("idea://meal-mate") === "Idea: meal mate" && displayUrl("https://x.com/") === "x.com"
+    ? null
+    : ideaSlug("Ça va: Meal—Mate 2.0!"));
+test("customers are told it's an idea (fixed sentence), games are retired", () =>
+  /IDEA/.test(lensFor("idea")) && lensFor("game") === "" ? null : "lens");
+
 console.log(`\n${pass}/${total} engine checks passed\n`);
 if (pass !== total) process.exit(1);

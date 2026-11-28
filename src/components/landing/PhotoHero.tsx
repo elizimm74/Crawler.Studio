@@ -58,7 +58,7 @@ export default function PhotoHero({ launch, starter, proof }: { launch: LaunchSt
           {proof ? ` · ${proof.tests.toLocaleString("en-US")} simulations run` : ""}
         </p>
         <Link href="/onboarding" className="ph-link rise d3">
-          Testing an app, game or ad instead? Start here →
+          Testing an app, an ad or just an idea? Start here →
         </Link>
       </div>
 

@@ -26,19 +26,6 @@ export const DEFAULT_AUDIENCE: Audience = {
 
 export const PRESETS: Record<string, Audience> = {
   // Gen Z businesses. Ages start at 13 on purpose: Crawler never simulates younger children.
-  "Roblox and game players": {
-    ...DEFAULT_AUDIENCE,
-    ageMin: 13,
-    ageMax: 20,
-    ageSkew: "younger",
-    genderSplit: { female: 40, male: 57, nonbinary: 3 },
-    areaMix: { urban: 35, suburban: 50, rural: 15 },
-    occupations: ["middle or high school student", "student gamer", "part-time job (food or retail)", "aspiring creator or streamer"],
-    budgets: ["tight", "okay"],
-    mindsets: ["impulse buyer", "skeptical", "price-sensitive", "early adopter"],
-    techComfort: ["high", "medium"],
-    currentSolutions: ["free games", "YouTube / TikTok creators", "what friends play", "nothing"],
-  },
   "Gen Z streetwear shoppers": {
     ...DEFAULT_AUDIENCE,
     ageMin: 16,
