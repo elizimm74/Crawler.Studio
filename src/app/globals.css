@@ -3595,3 +3595,123 @@ table tr { border-color: rgb(0 0 0 / 0.07) !important; }
 :focus-visible, .night18 :focus-visible { outline: 2px solid #000000 !important; outline-offset: 3px; }
 .nav-pill .btn-secondary, .nav-pill .nav-link, .nav-link { border-color: transparent !important; background: transparent !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 .nav-pill .nav-link:hover, .nav-pill .btn-secondary:hover { background: rgb(0 0 0 / 0.05) !important; }
+
+/* =================================================================================================
+   v29 HOME HERO "PHOTO + GLASS" (2026-11-28, founder's mockup). PhotoHero.tsx: a full-screen nature
+   photo (public/nature, no people) under the floating nav, a soft dark wash, the giant bold white
+   "crawler", a dark frosted-glass URL box with a solid white button, and a glass example customer.
+   The rest of the page keeps the v27/v28 white + bold black + glass look.
+   ================================================================================================= */
+.photo-hero {
+  position: relative; isolation: isolate; overflow: hidden;
+  min-height: 100svh;
+  margin-top: calc(-1 * var(--ph-nav, 5.5rem)); /* slide under the floating nav so the photo reaches the top */
+  padding: calc(var(--ph-nav, 5.5rem) + 2rem) 0 6rem;
+  display: flex; align-items: center;
+  color: #ffffff;
+  --fg: #ffffff; --fg-muted: rgb(255 255 255 / 0.82); --fg-faint: rgb(255 255 255 / 0.7);
+}
+.ph-photo { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); animation: ph-drift 24s ease-in-out infinite alternate; }
+@keyframes ph-drift { from { transform: scale(1.04) translate3d(0, 0, 0); } to { transform: scale(1.1) translate3d(-1%, -1%, 0); } }
+.ph-wash {
+  position: absolute; inset: 0; z-index: -1;
+  background:
+    radial-gradient(70% 55% at 50% 48%, rgb(8 14 10 / 0.18), rgb(8 14 10 / 0.5) 75%),
+    linear-gradient(180deg, rgb(8 14 10 / 0.35) 0%, rgb(8 14 10 / 0.15) 35%, rgb(8 14 10 / 0.25) 70%, rgb(8 14 10 / 0.7) 100%);
+}
+.ph-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.ph-title { display: flex; flex-direction: column; align-items: center; margin: 0; }
+.photo-hero .ph-word {
+  display: block; color: #ffffff !important; font-weight: 850 !important; letter-spacing: -0.06em; line-height: 0.85;
+  font-size: clamp(4.5rem, min(19vw, 22vh), 15rem); text-shadow: 0 6px 40px rgb(0 0 0 / 0.3);
+}
+.ph-sub { display: block; margin-top: 1.25rem; max-width: 40rem; font-size: clamp(1.05rem, 1.6vw, 1.35rem); font-weight: 600; letter-spacing: -0.01em; line-height: 1.35; color: #ffffff; text-shadow: 0 2px 16px rgb(0 0 0 / 0.35); text-wrap: balance; }
+.photo-hero .ph-pill { margin-bottom: 1.75rem; }
+.photo-hero .launch-pill { background: rgb(12 16 14 / 0.42) !important; color: #ffffff !important; border: 1px solid rgb(255 255 255 / 0.22) !important; box-shadow: 0 8px 30px -12px rgb(0 0 0 / 0.5) !important; -webkit-backdrop-filter: blur(16px) !important; backdrop-filter: blur(16px) !important; }
+.photo-hero .launch-dot { background: #ffffff !important; }
+
+/* the URL box: one dark glass bar */
+.ph-form {
+  width: min(100%, 46rem); margin-top: 2rem; padding: 0.5rem; border-radius: 1.25rem;
+  background: rgb(12 16 14 / 0.42); border: 1px solid rgb(255 255 255 / 0.2);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 24px 60px -24px rgb(0 0 0 / 0.6);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3); backdrop-filter: blur(22px) saturate(1.3);
+}
+.ph-form .field { background: transparent !important; border: 0 !important; box-shadow: none !important; color: #ffffff !important; font-weight: 500; }
+.ph-form .field::placeholder { color: rgb(255 255 255 / 0.62) !important; }
+.ph-form .field:focus { box-shadow: none !important; }
+.ph-form:focus-within { border-color: rgb(255 255 255 / 0.45); }
+.ph-form .btn-primary { background: #ffffff !important; color: #000000 !important; border-color: #ffffff !important; box-shadow: 0 8px 24px -10px rgb(0 0 0 / 0.5) !important; }
+.ph-form .btn-primary:hover { background: #eef0ee !important; }
+.ph-form .btn-secondary { background: rgb(255 255 255 / 0.1) !important; color: #ffffff !important; border: 1px solid rgb(255 255 255 / 0.24) !important; box-shadow: none !important; }
+.ph-form .btn-secondary:hover { background: rgb(255 255 255 / 0.18) !important; }
+.ph-form [role="alert"] { color: #ffffff !important; padding: 0 0.5rem 0.25rem; text-align: left; }
+.ph-small { margin-top: 1rem; font-size: 0.875rem; font-weight: 600; color: rgb(255 255 255 / 0.85); text-shadow: 0 1px 10px rgb(0 0 0 / 0.4); }
+.ph-link { margin-top: 0.25rem; display: inline-flex; min-height: 2.75rem; align-items: center; font-size: 0.875rem; color: rgb(255 255 255 / 0.78); text-underline-offset: 4px; }
+.ph-link:hover { color: #ffffff; text-decoration: underline; }
+.photo-hero :focus-visible { outline-color: #ffffff !important; }
+
+/* the floating example customer */
+.ph-card {
+  position: absolute; z-index: 1; right: clamp(1rem, 6vw, 7rem); top: 56%; width: 16.5rem; padding: 1rem 1.1rem;
+  border-radius: 1rem; text-align: left; color: #ffffff; transform: rotate(1.5deg);
+  background: rgb(12 16 14 / 0.45); border: 1px solid rgb(255 255 255 / 0.18);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 24px 50px -20px rgb(0 0 0 / 0.6);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+}
+.ph-card-head { display: flex; align-items: center; gap: 0.6rem; font-weight: 750; font-size: 0.95rem; }
+.ph-card-head i { width: 1.7rem; height: 1.7rem; border-radius: 99px; background: linear-gradient(135deg, #cfd8cc, #8a9a86); flex: none; }
+.ph-card-verdict { margin-top: 0.6rem; font-weight: 750; font-size: 0.85rem; color: #ffb3b3; }
+.ph-card-quote { margin-top: 0.3rem; font-size: 0.85rem; line-height: 1.4; color: rgb(255 255 255 / 0.88); }
+.ph-card-note { margin-top: 0.6rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: rgb(255 255 255 / 0.6); }
+@media (max-width: 1100px) { .ph-card { display: none; } }
+
+.ph-scroll {
+  position: absolute; z-index: 1; left: 50%; bottom: 1.5rem; transform: translateX(-50%);
+  display: inline-flex; flex-direction: column; align-items: center; gap: 0.35rem; min-height: 2.75rem;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgb(255 255 255 / 0.85);
+}
+.ph-scroll svg { animation: ph-bob 1.8s ease-in-out infinite; }
+@keyframes ph-bob { 50% { transform: translateY(4px); } }
+
+/* the nav pill floats over the photo: darker glass with white links until you scroll */
+html:not([data-scrolled]) body:has(.photo-hero) .nav-pill { background: rgb(12 16 14 / 0.35) !important; border-color: rgb(255 255 255 / 0.18) !important; box-shadow: none !important; }
+html:not([data-scrolled]) body:has(.photo-hero) .nav-pill .nav-link,
+html:not([data-scrolled]) body:has(.photo-hero) .nav-pill .logo-word,
+html:not([data-scrolled]) body:has(.photo-hero) .nav-pill .btn-text,
+html:not([data-scrolled]) body:has(.photo-hero) .nav-pill > a { color: #ffffff !important; }
+html:not([data-scrolled]) body:has(.photo-hero) .nav-pill svg path { fill: #ffffff; stroke: #ffffff; }
+html:not([data-scrolled]) body:has(.photo-hero) .nav-pill .btn-primary { background: #ffffff !important; color: #000000 !important; border-color: #ffffff !important; }
+
+@media (max-width: 640px) {
+  .photo-hero { padding-bottom: 5rem; }
+  .ph-scroll { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .ph-photo, .ph-scroll svg { animation: none; } }
+html[data-calm] .ph-photo, html[data-calm] .ph-scroll svg { animation: none; }
+/* v29 fixes: reach the very top (the page also has 2rem of top padding), keep the card clear of the URL box */
+.photo-hero { --ph-nav: 7.5rem; }
+.ph-title { max-width: none !important; }
+.ph-sub { max-width: 46rem; }
+.ph-card { right: clamp(1rem, 2.5vw, 3rem); top: 30%; }
+@media (max-width: 1320px) { .ph-card { display: none; } }
+/* v29.1 astronaut scene: the astronaut lies on the right, so the words sit on the left (desktop) over a darker left side */
+@media (min-width: 1024px) {
+  .photo-hero[data-scene="astronaut"] .ph-inner { align-items: flex-start; text-align: left; }
+  .photo-hero[data-scene="astronaut"] .ph-title { align-items: flex-start; }
+  .photo-hero[data-scene="astronaut"] .ph-wash {
+    background:
+      linear-gradient(90deg, rgb(6 10 8 / 0.72) 0%, rgb(6 10 8 / 0.5) 38%, rgb(6 10 8 / 0.08) 62%, rgb(6 10 8 / 0) 100%),
+      linear-gradient(180deg, rgb(6 10 8 / 0.3) 0%, rgb(6 10 8 / 0) 30%, rgb(6 10 8 / 0) 75%, rgb(6 10 8 / 0.55) 100%);
+  }
+  .photo-hero[data-scene="astronaut"] .ph-card { top: auto; bottom: 9%; right: 3vw; }
+  .photo-hero[data-scene="astronaut"] .ph-word { font-size: clamp(5rem, min(15vw, 20vh), 13rem); }
+}
+@media (max-width: 1023px) {
+  .photo-hero[data-scene="astronaut"] .ph-wash { background: linear-gradient(180deg, rgb(6 10 8 / 0.45), rgb(6 10 8 / 0.35) 50%, rgb(6 10 8 / 0.7)); }
+}
+@media (max-width: 767px) { .photo-hero[data-scene="astronaut"] .ph-photo { object-position: 50% 100% !important; } }
+@media (max-width: 767px) {
+  .photo-hero[data-scene="astronaut"] { min-height: max(100svh, 70rem); align-items: flex-start; }
+  .photo-hero[data-scene="astronaut"] .ph-wash { background: linear-gradient(180deg, rgb(6 10 8 / 0.55) 0%, rgb(6 10 8 / 0.4) 50%, rgb(6 10 8 / 0) 66%, rgb(6 10 8 / 0) 92%, rgb(6 10 8 / 0.5) 100%) !important; }
+}

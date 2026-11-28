@@ -15,12 +15,11 @@
 // and the second animation were removed from here; the science lives on /science.
 import Link from "next/link";
 import HeroForm from "@/components/landing/home/HeroForm";
+import PhotoHero from "@/components/landing/PhotoHero";
 import ReportLab from "@/components/landing/home/ReportLab";
 import LabSequence, { type LabStage } from "@/components/landing/lab/LabSequence";
-import Claws from "@/components/Claws";
 import Reveal from "@/components/Reveal";
 import Faq from "@/components/landing/Faq";
-import LaunchBanner from "@/components/landing/LaunchBanner";
 import StickyRun from "@/components/landing/StickyRun";
 import { homeDemo } from "@/lib/homeDemo";
 import { PACKS, PLANS, STARTER_CUSTOMERS } from "@/lib/plans";
@@ -75,7 +74,6 @@ export default async function Home() {
   const demo = homeDemo();
   const s = demo.sample;
   const mix = { buy: s.buy / s.total, maybe: s.maybe / s.total, no: s.no / s.total };
-  const p = s.people[0];
   const real = publishedCaseStudies();
   const [launch, proof] = await Promise.all([launchState(), proofStats()]);
   const paid = PLANS.filter((pl) => pl.priceUsd > 0);
@@ -83,67 +81,8 @@ export default async function Home() {
 
   return (
     <div className="v14 home27 bleed-full">
-      {/* ================= 1. HERO ================= */}
-      <section className="hero23 hero27 home-wide" aria-labelledby="hero-title">
-        <Claws className="hero23-claws" color="#0b0b0a" />
-        <p className="wordmark21 hero23-mark rise d1" aria-hidden>
-          crawler
-        </p>
-        <div className="mt-6 grid items-start gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-14">
-          <div className="rise d2">
-            <LaunchBanner state={launch} className="mb-6" />
-            <h1 id="hero-title" className="hero21-h !mt-0">
-              Meet your customers <span>before they meet your website.</span>
-            </h1>
-            <p className="lead14 mt-5 max-w-xl">
-              Paste your website. Simulated customers visit it, decide whether they&apos;d buy, and tell you exactly what stopped them and what to fix first.
-            </p>
-            <div className="url14 mt-7 max-w-3xl">
-              <HeroForm cta="Run simulation" sample />
-            </div>
-            <p className="mt-3 text-sm font-medium">
-              Free · {STARTER_CUSTOMERS} simulated customers · no card · results in a few minutes
-            </p>
-            {proof && (
-              <p className="proof27 mt-2 text-sm">
-                {proof.tests.toLocaleString("en-US")} simulations run · {proof.sites.toLocaleString("en-US")} sites and apps analyzed
-              </p>
-            )}
-            <Link href="/onboarding" className="mt-1 inline-flex min-h-11 items-center text-sm text-faint underline-offset-4 hover:text-fg hover:underline">
-              Testing an app, game or ad instead? Start here →
-            </Link>
-          </div>
-
-          {/* one example simulated customer, on a charcoal tile (demo data) */}
-          <div className="persona27 rise d3 relative mx-auto w-full max-w-[24rem] pb-8 lg:mt-14" aria-label="An example simulated customer">
-            <div className="hero23-tile" aria-hidden>
-              <Claws className="hero23-tile-claws" color="#ffffff" delay={300} />
-              <span className="absolute bottom-5 left-5 text-[11px] uppercase tracking-[0.16em] text-white/60">example · demo data</span>
-            </div>
-            <span className="glass-chip float-a absolute -left-4 top-8 z-20 hidden sm:inline-flex">
-              <i className="h-2 w-2 rounded-full bg-[#000000]" /> {s.total} simulated customers
-            </span>
-            <span className="glass-chip float-b absolute -right-3 top-[38%] z-20 hidden sm:inline-flex">
-              Biggest blocker · {s.objections[0]?.category} {s.objections[0]?.pct}%
-            </span>
-            <dl className="spec glass-spec absolute bottom-0 left-[-0.5rem] z-10 w-[80%] sm:left-[-1.5rem]">
-              <p className="mb-1 inline-block rounded-full bg-[#e4e3dd] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#3a3a3a]">{p ? p.label.split(",").slice(0, 2).join(",") : "24, student"}</p>
-              {[
-                ["Came from", "a TikTok video"],
-                ["Budget", "Tight"],
-                ["Patience", "about 10 seconds"],
-                ["Dealbreaker", "a hidden price"],
-                ["Decision", "Wouldn't buy"],
-              ].map(([k, v]) => (
-                <div key={k} className="spec-row">
-                  <dt>{k}</dt>
-                  <dd className="text-[#0a0a0a]">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </div>
-      </section>
+      {/* ================= 1. HERO: full-screen nature photo + glass (PhotoHero.tsx) ================= */}
+      <PhotoHero launch={launch} starter={STARTER_CUSTOMERS} proof={proof} />
 
       {/* ================= 2. ONE COMPACT SIMULATION ================= */}
       <section className="night18 lab lab27" aria-label="A simulation, illustrated">

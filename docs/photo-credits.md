@@ -17,3 +17,8 @@ We did NOT use aaru.com's photos; only their layout idea (a photo behind a produ
 Pages: https://commons.wikimedia.org/wiki/<the file name above>. Resized to at most 1920 px and
 saved as WebP (about 40-400 KB each). To swap a photo: keep it public domain / CC0 (or one you took
 yourself), no people, landscape, then add it to `PHOTOS` in `src/components/Nature.tsx`.
+
+## Home hero (2026-11-28)
+| File | Source | Licence |
+|---|---|---|
+| `public/hero/astronaut-wide.webp`, `public/hero/astronaut-tall.webp` | Supplied by the founder (a lone astronaut in a pink flower field, seen from above). Widened for computers / lengthened for phones by blending in more of the same flower field (no AI). | **UNKNOWN: confirm before launch.** If it isn't the founder's own image or clearly free for commercial use (e.g. made with an AI tool whose terms allow commercial use, or a licensed stock photo), replace it: set `DEFAULT_SCENE` in `src/components/landing/PhotoHero.tsx` back to `ridge`. |
