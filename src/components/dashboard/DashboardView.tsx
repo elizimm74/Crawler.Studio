@@ -349,9 +349,11 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
                   <span className="block truncate text-sm font-medium">{data.name}</span>
                   <span className="block truncate text-xs text-faint">{planLabel}</span>
                 </span>
-                <a href="/auth/signout" className="text-xs text-faint transition-colors hover:text-fg">
-                  Sign out
-                </a>
+                <form action="/auth/signout" method="post">
+                  <button type="submit" className="text-xs text-faint transition-colors hover:text-fg">
+                    Sign out
+                  </button>
+                </form>
               </div>
             </div>
           </div>
@@ -364,9 +366,11 @@ export default function DashboardView({ data, paid }: { data: DashboardData; pai
               <Link href="/settings" className="btn btn-text h-10 px-3 text-sm">
                 Settings
               </Link>
-              <a href="/auth/signout" className="btn btn-text h-10 px-3 text-sm">
-                Sign out
-              </a>
+              <form action="/auth/signout" method="post">
+                <button type="submit" className="btn btn-text h-10 px-3 text-sm">
+                  Sign out
+                </button>
+              </form>
             </div>
           </div>
           <nav aria-label="Dashboard views" className="-mx-4 mt-2 flex gap-1 overflow-x-auto px-4 pb-1 lg:hidden">
