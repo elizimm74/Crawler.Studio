@@ -5,6 +5,7 @@ import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { SITE_URL } from "@/lib/config";
 import { findPack } from "@/lib/plans";
+import ResumeNext from "@/components/ResumeNext";
 import DashboardView from "@/components/dashboard/DashboardView";
 import { analyses, fixQueue, nextMoves, recurringBlockers, type DashboardData, type PlanData, type TestRow, type Trends } from "@/lib/dashboard";
 
@@ -82,5 +83,11 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     trends: (trendsRes.data as Trends | null) ?? null,
   };
   const thanks = (["starter", "growth", "pro", "agency"] as string[]).includes(paid ?? "") ? paid : findPack(pack) ? pack : undefined;
-  return <DashboardView data={data} paid={thanks} />;
+  return (
+    <>
+      {/* finishing sign-up mid-task? carry on where they were going (src/lib/pendingNext.ts) */}
+      <ResumeNext />
+      <DashboardView data={data} paid={thanks} />
+    </>
+  );
 }

@@ -112,7 +112,7 @@ export default function Onboarding({ startUrl, startKind = "website", mind, pres
         if (signup) await supabaseBrowser().rpc("save_signup_answers", { p: signup }).then(() => null, () => null);
       } else {
         try {
-          sessionStorage.setItem("crawler-onboarding", JSON.stringify({ ...answers, signup }));
+          localStorage.setItem("crawler-onboarding", JSON.stringify({ ...answers, signup, t: Date.now() }));
         } catch {
           // storage blocked: the answers just aren't saved to the account
         }

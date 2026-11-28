@@ -37,8 +37,15 @@ Anything marked **(parent)** needs your parent/guardian (they own the Stripe acc
 - [ ] Create the inbox **support@crawler.studio** (it's on the Terms, Privacy and Refund pages and in Checkout).
 - [ ] Resend: add crawler.studio, add its DNS records in Squarespace, wait for "Verified".
 - [ ] Supabase → Authentication → Emails → SMTP settings: use Resend (so sign-up emails actually arrive).
-- [ ] Supabase → Authentication → URL Configuration: Site URL `https://crawler.studio`,
-      Redirect URLs include `https://crawler.studio/**`.
+- [ ] Supabase → Authentication → URL Configuration: Site URL `https://crawler.studio`.
+      **Redirect URLs must list EVERY address people use**, one per line:
+      `https://crawler.studio/**`, `https://www.crawler.studio/**`, `https://crawler-for-vercel.vercel.app/**`,
+      `http://localhost:3000/**`. (Nov 27 bug: new accounts were created but never signed in, because the
+      return address wasn't on this list, so Supabase sent people to the bare home page.)
+- [ ] Supabase → Authentication → Emails → "Confirm signup" template: change the link to
+      `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard`
+      (works even when the email is opened on a phone or another browser; the default link only works in
+      the same browser that signed up). Do the same for "Reset password" with `type=recovery&next=/auth/reset`.
 - [ ] Sign up with a brand-new email address and make sure the confirmation email arrives.
 
 ### 5. Legal + people

@@ -6,6 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { AUTH_ENABLED } from "@/lib/supabase/config";
 import { safePath } from "@/lib/safePath";
+import { savePendingNext } from "@/lib/pendingNext";
+
+// GitHub sign-in shows only once it's switched on in Supabase (else people hit "provider is not enabled").
+const GITHUB_LOGIN = process.env.NEXT_PUBLIC_GITHUB_LOGIN === "1";
 
 export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   const router = useRouter();
@@ -37,6 +41,7 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
     e.preventDefault();
     setBusy(true);
     setMessage(null);
+    if (mode === "signup") savePendingNext(after); // survives the email link opening a new tab
     const supabase = supabaseBrowser();
     const { data, error } =
       mode === "signup"
@@ -60,6 +65,7 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   // ("read:user user:email"): signing in never gives Crawler access to anyone's code.
   async function oauth(provider: "github" | "google" | "apple") {
     setMessage(null);
+    savePendingNext(after);
     const { error } = await supabaseBrowser().auth.signInWithOAuth({
       provider,
       options: { redirectTo: callback(), ...(provider === "github" ? { scopes: "read:user user:email" } : {}) },
@@ -106,9 +112,11 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   return (
     <div className="space-y-4">
       {/* GitHub first: most indie hackers and developers already have it open. */}
-      <button onClick={() => oauth("github")} type="button" className="btn btn-secondary w-full">
-        <GitHubMark /> Continue with GitHub
-      </button>
+      {GITHUB_LOGIN && (
+        <button onClick={() => oauth("github")} type="button" className="btn btn-secondary w-full">
+          <GitHubMark /> Continue with GitHub
+        </button>
+      )}
       {/* Apple's rules: a black button with the white Apple logo. */}
       <button onClick={() => oauth("apple")} type="button" className="btn w-full bg-[#000000] text-white hover:opacity-85">
         <AppleMark /> Continue with Apple

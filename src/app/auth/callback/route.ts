@@ -21,6 +21,11 @@ export async function GET(request: Request) {
     const supabase = await supabaseServer();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(new URL(next, url.origin));
+    console.error("[auth/callback] code exchange failed:", error.message);
   }
-  return NextResponse.redirect(new URL("/signin?error=That+sign-in+link+didn't+work.+Try+again.", url.origin));
+  // Usually: the email link was opened in another browser/app than the one used to sign up (so the
+  // one-time code can't be finished here), or it was already used. The email IS confirmed by now,
+  // so one normal sign-in finishes it, and `next` keeps them on track.
+  const msg = "Almost there: your email is confirmed. Sign in once more to continue.";
+  return NextResponse.redirect(new URL(`/signin?next=${encodeURIComponent(next)}&error=${encodeURIComponent(msg)}`, url.origin));
 }

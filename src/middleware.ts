@@ -41,6 +41,13 @@ export async function middleware(request: NextRequest) {
   };
 
   const path = request.nextUrl.pathname;
+  const q = request.nextUrl.searchParams;
+  if (!path.startsWith("/auth/") && (q.has("code") || q.has("token_hash") || q.has("error_description"))) {
+    const target = new URL(q.has("token_hash") ? "/auth/confirm" : "/auth/callback", request.url);
+    q.forEach((v, k) => target.searchParams.set(k, v));
+    if (!target.searchParams.has("next") && path !== "/") target.searchParams.set("next", path);
+    return redirect(target);
+  }
   const starts = (list: string[]) => list.some((p) => path === p || path.startsWith(p + "/"));
   if (!user && starts(PRIVATE_APIS)) {
     return NextResponse.json({ error: "Please sign in first." }, { status: 401 });

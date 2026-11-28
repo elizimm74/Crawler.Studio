@@ -58,11 +58,14 @@ function Entry() {
   useEffect(() => {
     let saved: string | null = null;
     try {
-      saved = sessionStorage.getItem("crawler-onboarding");
+      // localStorage (not sessionStorage) so the answers survive the sign-up email opening a new tab
+      saved = localStorage.getItem("crawler-onboarding") ?? sessionStorage.getItem("crawler-onboarding");
+      localStorage.removeItem("crawler-onboarding");
+      sessionStorage.removeItem("crawler-onboarding");
     } catch {}
     if (!saved || !AUTH_ENABLED) return;
-    sessionStorage.removeItem("crawler-onboarding");
-    const { signup, ...onboarding } = JSON.parse(saved) as { signup?: object | null } & Record<string, unknown>;
+    const { signup, t, ...onboarding } = JSON.parse(saved) as { signup?: object | null; t?: number } & Record<string, unknown>;
+    if (t && Date.now() - t > 24 * 60 * 60 * 1000) return; // older than a day: stale
     void supabaseBrowser()
       .auth.updateUser({ data: { onboarded: true, onboarding } })
       .catch(() => null);
