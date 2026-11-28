@@ -15,9 +15,10 @@ export const metadata = {
 export default async function Example({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {
   const { kind } = await searchParams;
   const app = kind === "app";
-  // The client components only need the counted results, so drop the raw per-customer lists.
-  const website = { ...exampleWebsiteRun(), personas: [], verdicts: [] };
-  const appRun = { ...exampleAppRun(), personas: [], verdicts: [] };
+  // Keep the made-up customers: the report's "Every simulated customer" list shows them one by one
+  // (it showed "All 0" when they were stripped to save page weight).
+  const website = exampleWebsiteRun();
+  const appRun = exampleAppRun();
 
   return (
     <div className="mx-auto max-w-4xl space-y-12">

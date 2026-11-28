@@ -4,7 +4,7 @@
 // or yellow"). The old names stay so the scenes didn't need rewriting: COBALT = mid gray,
 // LIME = bright green #3e4a6e (v22), GREY = dark gray.
 
-export const INK = "#05070b"; // the near-black behind both animations
+export const INK = "#111a10"; // deep moss (v30: from the hero photo) behind both animations
 export const WHITE = "#f4f6fb";
 export const COBALT = "#8e8e8a"; // mid gray: "hesitate" dots, the sketch's button (monochrome since 2026-11-25)
 export const COBALT_SOFT = "#c8c8c4"; // light gray for thin lines and small labels on black

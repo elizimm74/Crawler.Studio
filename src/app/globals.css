@@ -3715,3 +3715,63 @@ html[data-calm] .ph-photo, html[data-calm] .ph-scroll svg { animation: none; }
   .photo-hero[data-scene="astronaut"] { min-height: max(100svh, 70rem); align-items: flex-start; }
   .photo-hero[data-scene="astronaut"] .ph-wash { background: linear-gradient(180deg, rgb(6 10 8 / 0.55) 0%, rgb(6 10 8 / 0.4) 50%, rgb(6 10 8 / 0) 66%, rgb(6 10 8 / 0) 92%, rgb(6 10 8 / 0.5) 100%) !important; }
 }
+
+/* =================================================================================================
+   v30 "BLOSSOM + MOSS" (2026-11-28, founder: "apply those colors from the landing page subtly to the rest
+   of the site"). Taken from the hero picture (pink flowers on deep green grass). SUBTLE on purpose:
+   white page, black bold type and black main buttons stay; the colours only appear as
+   - soft pink + green glows behind the glass (body::before)
+   - MOSS green (#3f6b3a, ~6:1 on white) for highlights, key numbers, "would buy" marks, links
+   - deep MOSS (#273420) for selected states (chips, nav, tabs, dashboard rail)
+   - BLOSSOM pink (#e7a3c2 fills, #9c3d68 text) for "maybe", link underlines, selection, small accents
+   ================================================================================================= */
+:root, .card, .card-raised, .paper, .glass, .nav-pill, .tile14, .bento14-cell, .plan-card, .pack-card, .fl-panel, .fl-tile, .rp, .honest14,
+.night18, .lab, .band-dark, .dash-app, .dash-app .card, .dash-app .gpanel, .dash-app .fl-rail, .dash-app .dash-banner, .report {
+  --accent: #3f6b3a; --accent-hover: #335a2f; --accent-ink: #3f6b3a; --accent-fg: #ffffff;
+  --green: #3f6b3a; --green-hover: #335a2f; --green-pale: #eef4ec;
+  --blossom: #e7a3c2; --blossom-ink: #9c3d68; --blossom-wash: #fbeef4; --moss: #273420; --leaf: #3f6b3a; --leaf-wash: #eef4ec;
+  --glass-shadow: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 1px 2px rgb(39 52 32 / 0.05), 0 18px 40px -22px rgb(60 40 52 / 0.22);
+}
+body::before {
+  content: "" !important; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(50vw 42vw at 4% 0%, rgb(231 163 194 / 0.16), transparent 70%),
+    radial-gradient(46vw 40vw at 100% 30%, rgb(63 107 58 / 0.10), transparent 70%),
+    radial-gradient(44vw 38vw at 20% 100%, rgb(63 107 58 / 0.08), transparent 70%),
+    radial-gradient(40vw 36vw at 92% 96%, rgb(231 163 194 / 0.12), transparent 70%) !important;
+}
+::selection { background: var(--blossom); color: #2a0f1c; }
+
+/* highlights + numbers in moss */
+.text-accent, .accent-text, .hl14, .lab .text-accent, .lab .hl14 { color: var(--leaf) !important; }
+.t-number, .fl-num, .t-display .text-accent { color: inherit; }
+.bg-accent { background-color: var(--leaf) !important; }
+.text-accent-ink { color: var(--leaf) !important; }
+.t-label, .fl-label, .eyebrow { color: var(--moss) !important; }
+
+/* links in reading text: moss with a soft pink underline */
+main p a:not(.btn), main li a:not(.btn), main dd a:not(.btn) { color: var(--leaf); text-decoration: underline; text-decoration-color: var(--blossom); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+main p a:not(.btn):hover, main li a:not(.btn):hover { text-decoration-color: var(--leaf); }
+
+/* decisions: would buy = moss, maybe = blossom, no = white glass */
+.pill-buy { background: var(--leaf) !important; color: #ffffff !important; border-color: var(--leaf) !important; }
+.pill-maybe { background: var(--blossom-wash) !important; color: var(--blossom-ink) !important; border-color: rgb(231 163 194 / 0.6) !important; }
+
+/* selected states in deep moss (main buttons stay black) */
+.chip[aria-pressed="true"], .seg [aria-pressed="true"], .seg [aria-selected="true"],
+.nav-link[aria-current="page"], .rnav a[aria-current="true"],
+.dash-app .fl-rail .dash-active, .dash-app nav[aria-label="Dashboard"] button[aria-current] {
+  background: var(--moss) !important; color: #ffffff !important; border-color: var(--moss) !important;
+}
+.dash-app .fl-rail .dash-pill { background: var(--moss) !important; }
+:focus-visible, .night18 :focus-visible { outline-color: var(--moss) !important; }
+
+/* small touches: the launch dot blossoms, the dashboard greeting gets the hero's two glows */
+.launch-dot { background: var(--blossom) !important; box-shadow: 0 0 0 4px rgb(231 163 194 / 0.25) !important; }
+.dash-app .dash-banner { background: radial-gradient(60% 120% at 0% 0%, rgb(231 163 194 / 0.22), transparent 60%), radial-gradient(60% 120% at 100% 100%, rgb(63 107 58 / 0.14), transparent 60%), rgb(255 255 255 / 0.62) !important; }
+.dash-check.is-done .dash-check-box { background: var(--leaf) !important; border-color: var(--leaf) !important; }
+.dash-live { background: var(--blossom) !important; }
+
+/* the compact simulation panel: deep moss instead of plain black */
+.lab27 .lab-pin, .lab27 .lab-stage, .lab27 canvas { background-color: #141c12; }
+.lab27 { --lab-bg: #141c12; }
