@@ -11,7 +11,7 @@ export const SCRATCH_PATHS = [
 ];
 export const SCRATCH_TRANSFORM = "rotate(16 92 115)";
 // a square box around the tilted scratches (measured in a browser) + room for the border
-export const SCRATCH_VIEWBOX = "-40.6 -25.3 294 294";
+export const SCRATCH_VIEWBOX = "-25.6 -10.3 264 264"; // tight around the bare scratches (no outline)
 
 // The OLD Crawler logo (v3, 2026-11-19, founder's pick "A1"): a letter C made of three wavy claw
 // scratches. Each scratch is thick in the middle, sharp at both ends, with a small wiggle, and
@@ -43,7 +43,7 @@ export default function Mark({
 }) {
   return (
     <svg width={size} height={size} viewBox={SCRATCH_VIEWBOX} className={className} aria-hidden>
-      <g transform={SCRATCH_TRANSFORM} fill={fill} stroke={fill} strokeWidth={30} strokeLinejoin="round">
+      <g transform={SCRATCH_TRANSFORM} fill={fill}>
         {SCRATCH_PATHS.map((d) => (
           <path key={d} d={d} />
         ))}

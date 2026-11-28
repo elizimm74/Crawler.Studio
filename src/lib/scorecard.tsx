@@ -54,8 +54,8 @@ const HEAVY = "Geist, sans-serif"; // used on the big words only
 function Claws({ color }: { color: string }) {
   const paths = ["M28 6 C 50 60, 58 140, 40 214 C 86 142, 80 58, 28 6 Z", "M80 0 C 102 60, 110 146, 92 224 C 136 148, 130 56, 80 0 Z", "M132 14 C 150 66, 156 140, 140 206 C 180 140, 176 64, 132 14 Z"];
   return (
-    <svg width="96" height="96" viewBox="-40.6 -25.3 294 294">
-      <g transform="rotate(16 92 115)" fill={color} stroke={color} strokeWidth="30" strokeLinejoin="round">
+    <svg width="96" height="96" viewBox="-25.6 -10.3 264 264">
+      <g transform="rotate(16 92 115)" fill={color}>
         {paths.map((d) => <path key={d} d={d} />)}
       </g>
     </svg>
